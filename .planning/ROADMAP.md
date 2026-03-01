@@ -13,7 +13,7 @@ ACD is built as an immutable four-stage pipeline: Parser → Normalizer → Diff
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Scaffold and Data Models** - Project structure, pyproject.toml, and all typed dataclasses that every stage communicates through (completed 2026-03-01)
-- [ ] **Phase 2: XML Parser and Validation** - lxml-based parser that loads .yxmd files, validates structure, and emits WorkflowDoc
+- [x] **Phase 2: XML Parser and Validation** - lxml-based parser that loads .yxmd files, validates structure, and emits WorkflowDoc (completed 2026-03-01)
 - [ ] **Phase 3: Normalization Layer** - C14N canonicalization, GUID/timestamp stripping, position separation, and SHA-256 config hashing
 - [ ] **Phase 4: Node Matcher** - Two-pass ToolID-first lookup with Hungarian algorithm fallback to prevent phantom add/remove pairs
 - [ ] **Phase 5: Diff Engine** - NodeDiffer and EdgeDiffer producing DiffResult with full before/after field-level values
@@ -53,7 +53,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Implement exceptions.py (ParseError hierarchy) and parser.py (lxml-based parse() with pre-flight, parse, and convert stages)
-- [ ] 02-02-PLAN.md — Write fixture-based parser tests in tests/fixtures/__init__.py and tests/test_parser.py covering happy path, all error classes, edge cases, and fail-fast behavior
+- [x] 02-02-PLAN.md — Write fixture-based parser tests in tests/fixtures/__init__.py and tests/test_parser.py covering happy path, all error classes, edge cases, and fail-fast behavior
 
 ### Phase 3: Normalization Layer
 **Goal**: Two functionally identical workflows that differ only in GUIDs, timestamps, whitespace, attribute ordering, or canvas position produce identical normalized config hashes.
@@ -187,7 +187,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scaffold and Data Models | 3/3 | Complete   | 2026-03-01 |
-| 2. XML Parser and Validation | 1/2 | In progress | - |
+| 2. XML Parser and Validation | 2/2 | Complete   | 2026-03-01 |
 | 3. Normalization Layer | 0/4 | Not started | - |
 | 4. Node Matcher | 0/3 | Not started | - |
 | 5. Diff Engine | 0/3 | Not started | - |

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-01T14:58:46.000Z"
+last_updated: "2026-03-01T20:45:25.000Z"
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 27
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 2 of 9 (XML Parser and Validation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-01 — Plan 02-01 complete: lxml-based parse() returning tuple[WorkflowDoc, WorkflowDoc]; typed ParseError hierarchy; mypy --strict exits 0; 22 tests pass
+Last activity: 2026-03-01 — Plan 02-02 complete: 12-test fixture-based parser acceptance suite; tests/fixtures/__init__.py with 7 XML constants; 34 total tests pass
 
-Progress: [█░░░░░░░░░] 15% (4/27 plans)
+Progress: [██░░░░░░░░] 18% (5/27 plans)
 
 ## Performance Metrics
 
@@ -41,15 +41,16 @@ Progress: [█░░░░░░░░░] 15% (4/27 plans)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-scaffold-and-data-models | 3 | 13 min | 4 min |
-| 02-xml-parser-and-validation | 1 | 7 min | 7 min |
+| 02-xml-parser-and-validation | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6 min), 01-02 (4 min), 01-03 (3 min), 02-01 (7 min)
-- Trend: —
+- Last 5 plans: 01-01 (6 min), 01-02 (4 min), 01-03 (3 min), 02-01 (7 min), 02-02 (3 min)
+- Trend: decreasing
 
 *Updated after each plan completion*
 | Phase 01-scaffold-and-data-models P03 | 3 | 1 tasks | 1 files |
 | Phase 02-xml-parser-and-validation P01 | 7 | 2 tasks | 4 files |
+| Phase 02-xml-parser-and-validation P02 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [02-01]: lxml-stubs added to dev deps and pre-commit mypy hook additional_dependencies — required for mypy --strict to resolve lxml private types
 - [02-01]: type: ignore[type-arg] on _ElementTree[_Element] — lxml-stubs 0.5.1 is non-generic; annotation preserves intent, ignore suppresses stubs error
 - [02-01]: ParseError hierarchy carries filepath + message attributes; CLI catches ParseError base for exit code 2
+- [02-02]: test_parse_directory_raises accepts (UnreadableFileError, MalformedXMLError) — OS-level directory read behavior varies between platforms
+- [02-02]: b"..." byte-string literals used for all XML fixture constants — explicit bytes, UTF-8 implicit, no BOM required for lxml
 
 ### Pending Todos
 
@@ -86,5 +89,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Completed 02-01-PLAN.md — lxml-based parse() returning tuple[WorkflowDoc, WorkflowDoc]; typed ParseError hierarchy; mypy --strict exits 0; 22 tests pass — ready for Phase 2 Plan 02 (parser tests/fixtures)
+Stopped at: Completed 02-02-PLAN.md — 12-test fixture-based parser acceptance suite; tests/fixtures/__init__.py with 7 XML constants; 34 total tests pass — ready for Phase 2 Plan 03
 Resume file: None
