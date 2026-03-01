@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Initialize uv project, pyproject.toml, directory structure, and pre-commit hooks
+- [x] 01-01-PLAN.md — Initialize uv project, pyproject.toml, directory structure, and pre-commit hooks
 - [ ] 01-02-PLAN.md — Define all frozen dataclasses in models/ (WorkflowDoc, AlteryxNode, AlteryxConnection, DiffResult, NodeDiff, EdgeDiff)
 - [ ] 01-03-PLAN.md — Write model unit tests and verify pytest passes on clean scaffold
 
@@ -187,7 +187,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffold and Data Models | 0/3 | Not started | - |
+| 1. Scaffold and Data Models | 1/3 | In progress | - |
 | 2. XML Parser and Validation | 0/3 | Not started | - |
 | 3. Normalization Layer | 0/4 | Not started | - |
 | 4. Node Matcher | 0/3 | Not started | - |

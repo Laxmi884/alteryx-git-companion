@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 1 of 9 (Scaffold and Data Models)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-03-01 — Roadmap created; 24 requirements mapped across 9 phases
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-01 — Plan 01-01 complete: uv scaffold with src-layout, pyproject.toml, pre-commit hooks
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 4% (1/27 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: —
+- Total plans completed: 1
+- Average duration: 6 min
+- Total execution time: 6 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| — | — | — | — |
+| 01-scaffold-and-data-models | 1 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: —
+- Last 5 plans: 01-01 (6 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - [Roadmap]: NodeMatcher built in Phase 4 before any diff logic — ToolID phantom pair risk is HIGH recovery cost if shipped wrong
 - [Roadmap]: pyvis CDN spike scheduled as first plan of Phase 8 before committing to pyvis vs D3.js
 - [Roadmap]: CLI built last (Phase 9) as thin Typer adapter — pipeline.run() is the only entry point for all stages
+- [01-01]: Used Python 3.13 in .python-version (not 3.11) — 3.13.7 installed locally, satisfies >=3.11, avoids uv python download
+- [01-01]: pre-commit mypy hook restricted to src/ only (files: ^src/) — isolated hook env cannot resolve project package imports in tests/
+- [01-01]: Added tests/test_import.py smoke test — pytest exits code 5 with zero tests, plan requires exit 0
 
 ### Pending Todos
 
@@ -59,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Roadmap and STATE.md written; REQUIREMENTS.md traceability updated; ready to begin Phase 1 planning
+Stopped at: Completed 01-01-PLAN.md — uv scaffold with src-layout, pre-commit hooks, pyproject.toml; ready for Plan 02 (data models)
 Resume file: None
