@@ -49,12 +49,11 @@ Plans:
   2. Given a malformed XML file, the parser raises a typed exception before any downstream processing begins, not a generic lxml traceback
   3. Given a missing or unreadable file, the error message identifies the file path and problem in plain English
   4. Parser contains zero calls to `sys.exit`, `print`, or file I/O outside of loading the input file — importable and callable without a CLI context
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Implement lxml-based parser loading .yxmd files, extracting all tool nodes, positions, configs, and connections into WorkflowDoc
-- [ ] 02-02: Implement XML structure validation with typed exception hierarchy and descriptive error messages for malformed, missing, and corrupted files
-- [ ] 02-03: Write fixture-based parser tests using real and synthetic .yxmd XML samples covering valid input, malformed XML, missing files, empty workflows, and encoding edge cases
+- [x] 02-01-PLAN.md — Implement exceptions.py (ParseError hierarchy) and parser.py (lxml-based parse() with pre-flight, parse, and convert stages)
+- [ ] 02-02-PLAN.md — Write fixture-based parser tests in tests/fixtures/__init__.py and tests/test_parser.py covering happy path, all error classes, edge cases, and fail-fast behavior
 
 ### Phase 3: Normalization Layer
 **Goal**: Two functionally identical workflows that differ only in GUIDs, timestamps, whitespace, attribute ordering, or canvas position produce identical normalized config hashes.
@@ -188,7 +187,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scaffold and Data Models | 3/3 | Complete   | 2026-03-01 |
-| 2. XML Parser and Validation | 0/3 | Not started | - |
+| 2. XML Parser and Validation | 1/2 | In progress | - |
 | 3. Normalization Layer | 0/4 | Not started | - |
 | 4. Node Matcher | 0/3 | Not started | - |
 | 5. Diff Engine | 0/3 | Not started | - |
