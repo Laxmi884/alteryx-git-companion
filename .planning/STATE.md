@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 1 of 9 (Scaffold and Data Models)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-01 — Plan 01-01 complete: uv scaffold with src-layout, pyproject.toml, pre-commit hooks
+Last activity: 2026-03-01 — Plan 01-02 complete: six frozen dataclasses and three NewType aliases in models/ package
 
-Progress: [█░░░░░░░░░] 4% (1/27 plans)
+Progress: [█░░░░░░░░░] 7% (2/27 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 6 min
-- Total execution time: 6 min
+- Total plans completed: 2
+- Average duration: 5 min
+- Total execution time: 10 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-scaffold-and-data-models | 1 | 6 min | 6 min |
+| 01-scaffold-and-data-models | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6 min)
+- Last 5 plans: 01-01 (6 min), 01-02 (4 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -49,6 +49,10 @@ Recent decisions affecting current work:
 - [01-01]: Used Python 3.13 in .python-version (not 3.11) — 3.13.7 installed locally, satisfies >=3.11, avoids uv python download
 - [01-01]: pre-commit mypy hook restricted to src/ only (files: ^src/) — isolated hook env cannot resolve project package imports in tests/
 - [01-01]: Added tests/test_import.py smoke test — pytest exits code 5 with zero tests, plan requires exit 0
+- [01-02]: All 6 dataclasses use frozen=True, kw_only=True, slots=True — immutability, explicit construction, memory efficiency
+- [01-02]: AlteryxNode.config is dict[str, Any] with field(default_factory=dict) — flat map; raw XML not in model layer
+- [01-02]: WorkflowDoc collections (nodes, connections) are tuple[T, ...] — immutable, compatible with frozen=True
+- [01-02]: AlteryxNode is topology-free; all connections stored on WorkflowDoc
 
 ### Pending Todos
 
@@ -62,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Completed 01-01-PLAN.md — uv scaffold with src-layout, pre-commit hooks, pyproject.toml; ready for Plan 02 (data models)
+Stopped at: Completed 01-02-PLAN.md — six frozen dataclasses and three NewType aliases in models/ package; mypy --strict zero errors; ready for Plan 03
 Resume file: None

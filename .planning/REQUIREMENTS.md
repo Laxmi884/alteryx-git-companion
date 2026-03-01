@@ -12,7 +12,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **PARSE-01**: User can provide two `.yxmd` files as CLI arguments and the system loads both
 - [ ] **PARSE-02**: System validates XML structure on load and rejects malformed files before any processing begins
 - [ ] **PARSE-03**: System provides descriptive error messages for malformed, corrupted, or missing files
-- [ ] **PARSE-04**: System extracts ToolID, tool type, canvas X/Y position, configuration XML, and upstream/downstream connections for each tool into a typed internal object model
+- [x] **PARSE-04**: System extracts ToolID, tool type, canvas X/Y position, configuration XML, and upstream/downstream connections for each tool into a typed internal object model
 
 ### Normalization
 
@@ -97,7 +97,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PARSE-01 | Phase 2 | Pending |
 | PARSE-02 | Phase 2 | Pending |
 | PARSE-03 | Phase 2 | Pending |
-| PARSE-04 | Phase 1 | Pending |
+| PARSE-04 | Phase 1 | Complete |
 | NORM-01 | Phase 3 | Pending |
 | NORM-02 | Phase 3 | Pending |
 | NORM-03 | Phase 3 | Pending |
