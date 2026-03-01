@@ -12,7 +12,7 @@ ACD is built as an immutable four-stage pipeline: Parser → Normalizer → Diff
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Scaffold and Data Models** - Project structure, pyproject.toml, and all typed dataclasses that every stage communicates through
+- [x] **Phase 1: Scaffold and Data Models** - Project structure, pyproject.toml, and all typed dataclasses that every stage communicates through (completed 2026-03-01)
 - [ ] **Phase 2: XML Parser and Validation** - lxml-based parser that loads .yxmd files, validates structure, and emits WorkflowDoc
 - [ ] **Phase 3: Normalization Layer** - C14N canonicalization, GUID/timestamp stripping, position separation, and SHA-256 config hashing
 - [ ] **Phase 4: Node Matcher** - Two-pass ToolID-first lookup with Hungarian algorithm fallback to prevent phantom add/remove pairs
@@ -187,7 +187,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Scaffold and Data Models | 2/3 | In Progress|  |
+| 1. Scaffold and Data Models | 3/3 | Complete   | 2026-03-01 |
 | 2. XML Parser and Validation | 0/3 | Not started | - |
 | 3. Normalization Layer | 0/4 | Not started | - |
 | 4. Node Matcher | 0/3 | Not started | - |
