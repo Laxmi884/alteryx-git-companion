@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-01T20:51:00.704Z"
+last_updated: "2026-03-02T03:08:16Z"
 progress:
-  total_phases: 2
+  total_phases: 9
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 27
+  completed_plans: 7
 ---
 
 # Project State
@@ -23,18 +23,18 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 3 of 9 (Normalization Layer)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-01 — Plan 03-01 complete: NormalizedNode and NormalizedWorkflowDoc frozen dataclasses with two-path config_hash/position separation; all 10 model types importable from alteryx_diff.models; 34 tests pass
+Last activity: 2026-03-02 — Plan 03-02 complete: SHA-256 config hashing pipeline via strip_noise + json.dumps(sort_keys=True); patterns.py single-source registry; normalize() entry point; all 34 tests pass
 
-Progress: [██░░░░░░░░] 22% (6/27 plans)
+Progress: [███░░░░░░░] 26% (7/27 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 4 min
-- Total execution time: 22 min
+- Total execution time: 25 min
 
 **By Phase:**
 
@@ -42,17 +42,18 @@ Progress: [██░░░░░░░░] 22% (6/27 plans)
 |-------|-------|-------|----------|
 | 01-scaffold-and-data-models | 3 | 13 min | 4 min |
 | 02-xml-parser-and-validation | 2 | 10 min | 5 min |
-| 03-normalization-layer | 1 | 2 min | 2 min |
+| 03-normalization-layer | 2 | 5 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (3 min), 02-01 (7 min), 02-02 (3 min), 03-01 (2 min)
-- Trend: decreasing
+- Last 5 plans: 02-01 (7 min), 02-02 (3 min), 03-01 (2 min), 03-02 (3 min)
+- Trend: stable
 
 *Updated after each plan completion*
 | Phase 01-scaffold-and-data-models P03 | 3 | 1 tasks | 1 files |
 | Phase 02-xml-parser-and-validation P01 | 7 | 2 tasks | 4 files |
 | Phase 02-xml-parser-and-validation P02 | 3 | 2 tasks | 2 files |
 | Phase 03-normalization-layer P01 | 2 | 2 tasks | 2 files |
+| Phase 03-normalization-layer P02 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,10 @@ Recent decisions affecting current work:
 - [03-01]: NormalizedNode.source carries full AlteryxNode for downstream identity access (tool_id, tool_type)
 - [03-01]: normalized.py imports from models.types and models.workflow directly (not from models package) — avoids circular import since file lives inside models/
 - [03-01]: No __all__ in normalized.py — __init__.py is the sole public surface per project convention
+- [03-02]: GUID_VALUE_KEYS frozenset starts empty — keys added as discovered from real fixture inspection (not pre-populated speculatively)
+- [03-02]: C14N via json.dumps(sort_keys=True) not lxml etree.canonicalize() — parser produces Python dicts, not XML element objects
+- [03-02]: position=(node.x, node.y) is a separate field, never included in config_hash computation — layout noise cannot affect diff
+- [03-02]: Used typing.cast() instead of type: ignore[return-value] to satisfy mypy --strict on _strip_value Any return
 
 ### Pending Todos
 
@@ -94,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-01
-Stopped at: Completed 03-01-PLAN.md — NormalizedNode and NormalizedWorkflowDoc frozen dataclasses; two-path config_hash/position contract; 34 tests pass — ready for Phase 3 Plan 02
+Last session: 2026-03-02
+Stopped at: Completed 03-02-PLAN.md — normalize() pipeline with strip_noise + json.dumps(sort_keys=True) + sha256; patterns.py single-source registry; 34 tests pass — ready for Phase 3 Plan 03
 Resume file: None
