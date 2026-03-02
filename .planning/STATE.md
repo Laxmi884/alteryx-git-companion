@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-02T03:22:37Z"
+last_updated: "2026-03-02T15:49:00Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 27
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
-**Current focus:** Phase 3 — Normalization Layer
+**Current focus:** Phase 4 — Node Matcher
 
 ## Current Position
 
-Phase: 3 of 9 (Normalization Layer) — COMPLETE
-Plan: 4 of 4 in current phase — COMPLETE
-Status: Phase complete, ready for Phase 4
-Last activity: 2026-03-02 — Plan 03-04 complete: 15-test normalization contract suite; 48 passed, 1 xfailed (GUID pending)
+Phase: 4 of 9 (Node Matcher) — IN PROGRESS
+Plan: 1 of 3 in current phase — COMPLETE
+Status: Plan 04-01 complete, ready for Plan 04-02
+Last activity: 2026-03-02 — Plan 04-01 complete: scipy dep added, matcher package with Pass 1 exact ToolID + MatchResult contract; 48 passed, 1 xfailed
 
-Progress: [███░░░░░░░] 33% (9/27 plans)
+Progress: [████░░░░░░] 37% (10/27 plans)
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Progress: [███░░░░░░░] 33% (9/27 plans)
 | 03-normalization-layer | 4 | 9 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (2 min), 03-02 (3 min), 03-03 (2 min), 03-04 (4 min)
+- Last 5 plans: 03-02 (3 min), 03-03 (2 min), 03-04 (4 min), 04-01 (3 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -56,6 +56,7 @@ Progress: [███░░░░░░░] 33% (9/27 plans)
 | Phase 03-normalization-layer P02 | 3 | 2 tasks | 4 files |
 | Phase 03-normalization-layer P03 | 2 | 1 tasks | 1 files |
 | Phase 03-normalization-layer P04 | 4 | 2 tasks | 1 files |
+| Phase 04-node-matcher P01 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,10 @@ Recent decisions affecting current work:
 - [03-04]: xfail strict=True on GUID test — forces ERROR (not silent pass) if GUID_VALUE_KEYS populated without removing xfail mark
 - [03-04]: B905 zip(strict=True) enforced by ruff — all zip() calls require explicit strict parameter in this codebase
 - [03-04]: Unused imports removed by ruff autofix — test file only needs ToolID, AlteryxNode, WorkflowDoc from models layer
+- [04-01]: scipy>=1.13 added as runtime dep (uv resolved 1.17.1); lower bound per plan spec so future uv resolves stay flexible
+- [04-01]: _hungarian_match() stub raises NotImplementedError — enables test isolation in Plan 03 without importing scipy
+- [04-01]: MatchResult follows project-wide frozen=True, kw_only=True, slots=True pattern for all pipeline output types
+- [04-01]: Pass 2 skipped entirely when unmatched_old or unmatched_new is empty — avoids NotImplementedError on fully-matched workflows
 
 ### Pending Todos
 
@@ -108,5 +113,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 03-04-PLAN.md — 15-test normalization contract suite; 48 passed, 1 xfailed (GUID); Phase 3 complete — ready for Phase 4
+Stopped at: Completed 04-01-PLAN.md — scipy dep added, matcher package with Pass 1 exact ToolID + MatchResult contract; 48 passed, 1 xfailed; ready for Plan 04-02
 Resume file: None

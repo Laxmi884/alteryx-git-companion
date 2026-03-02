@@ -26,7 +26,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **DIFF-01**: System detects tool additions (present in new, absent in old) and removals (present in old, absent in new)
 - [ ] **DIFF-02**: System detects tool configuration modifications and reports before/after field-level values for each changed field
 - [ ] **DIFF-03**: System detects connection additions, removals, and rewirings using full 4-tuple anchor identity (src_tool + src_anchor + dst_tool + dst_anchor)
-- [ ] **DIFF-04**: System uses two-pass node matching — exact ToolID lookup first, then Hungarian algorithm similarity fallback — to prevent phantom add/remove pairs when Alteryx regenerates ToolIDs
+- [x] **DIFF-04**: System uses two-pass node matching — exact ToolID lookup first, then Hungarian algorithm similarity fallback — to prevent phantom add/remove pairs when Alteryx regenerates ToolIDs
 
 ### HTML Report
 
@@ -105,7 +105,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIFF-01 | Phase 5 | Pending |
 | DIFF-02 | Phase 5 | Pending |
 | DIFF-03 | Phase 5 | Pending |
-| DIFF-04 | Phase 4 | Pending |
+| DIFF-04 | Phase 4 | Complete |
 | REPT-01 | Phase 7 | Pending |
 | REPT-02 | Phase 7 | Pending |
 | REPT-03 | Phase 7 | Pending |
