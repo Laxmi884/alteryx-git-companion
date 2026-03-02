@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-02T15:55:39Z"
+last_updated: "2026-03-02T16:01:00Z"
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 27
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 
 ## Current Position
 
-Phase: 4 of 9 (Node Matcher) — IN PROGRESS
-Plan: 2 of 3 in current phase — COMPLETE
-Status: Plan 04-02 complete, ready for Plan 04-03
-Last activity: 2026-03-02 — Plan 04-02 complete: Hungarian Pass 2 implemented with per-type cost matrices, scipy linear_sum_assignment, threshold rejection; 48 passed, 1 xfailed
+Phase: 4 of 9 (Node Matcher) — COMPLETE
+Plan: 3 of 3 in current phase — COMPLETE
+Status: Phase 4 complete, ready for Phase 5 (Diff Engine)
+Last activity: 2026-03-02 — Plan 04-03 complete: 9 DIFF-04 contract tests, NormalizedNode fixture library; 57 passed, 1 xfailed
 
-Progress: [████░░░░░░] 41% (11/27 plans)
+Progress: [████░░░░░░] 44% (12/27 plans)
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Progress: [████░░░░░░] 41% (11/27 plans)
 | 03-normalization-layer | 4 | 9 min | 2 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (3 min), 03-03 (2 min), 03-04 (4 min), 04-01 (3 min)
+- Last 5 plans: 03-03 (2 min), 03-04 (4 min), 04-01 (3 min), 04-02 (4 min), 04-03 (2 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -58,6 +58,7 @@ Progress: [████░░░░░░] 41% (11/27 plans)
 | Phase 03-normalization-layer P04 | 4 | 2 tasks | 1 files |
 | Phase 04-node-matcher P01 | 3 | 2 tasks | 4 files |
 | Phase 04-node-matcher P02 | 4 | 2 tasks | 5 files |
+| Phase 04-node-matcher P03 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,10 @@ Recent decisions affecting current work:
 - [04-02]: x_range/y_range default to 1.0 when spread is 0 — guards ZeroDivisionError for same-coordinate type groups
 - [04-02]: Threshold (cost > 0.8) applied AFTER linear_sum_assignment per pair — pre-filtering corrupts scipy solver
 - [04-02]: scipy-stubs added as dev dep; pre-commit mypy hook updated with numpy>=2.0, scipy>=1.13, scipy-stubs>=1.13
+- [04-03]: Fixture ToolIDs start at 301 — no collision with Phase 1 (1-100), Phase 2 (1-2), Phase 3 (101-201) fixtures
+- [04-03]: THRESHOLD fixture uses (0,0) vs (10000,10000) with different hashes — guarantees cost > 0.8 reliably
+- [04-03]: Cross-type test uses same hash + same position — documents type isolation is unconditional (not cost-based)
+- [04-03]: _check_invariant() is a module-level helper called in every test — count conservation enforced as mandatory assertion
 
 ### Pending Todos
 
@@ -119,5 +124,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 04-02-PLAN.md — Hungarian Pass 2 implemented: _cost.py helpers, _hungarian_match() full implementation, scipy-stubs added; 48 passed, 1 xfailed; ready for Plan 04-03
+Stopped at: Completed 04-03-PLAN.md — 9 DIFF-04 contract tests: fixture library (matching.py), test_matcher.py with _check_invariant; 57 passed, 1 xfailed; Phase 4 complete, ready for Phase 5
 Resume file: None

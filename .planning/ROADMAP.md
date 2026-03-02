@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Scaffold and Data Models** - Project structure, pyproject.toml, and all typed dataclasses that every stage communicates through (completed 2026-03-01)
 - [x] **Phase 2: XML Parser and Validation** - lxml-based parser that loads .yxmd files, validates structure, and emits WorkflowDoc (completed 2026-03-01)
 - [x] **Phase 3: Normalization Layer** - C14N canonicalization, GUID/timestamp stripping, position separation, and SHA-256 config hashing (completed 2026-03-02)
-- [ ] **Phase 4: Node Matcher** - Two-pass ToolID-first lookup with Hungarian algorithm fallback to prevent phantom add/remove pairs
+- [x] **Phase 4: Node Matcher** - Two-pass ToolID-first lookup with Hungarian algorithm fallback to prevent phantom add/remove pairs (completed 2026-03-02)
 - [ ] **Phase 5: Diff Engine** - NodeDiffer and EdgeDiffer producing DiffResult with full before/after field-level values
 - [ ] **Phase 6: Pipeline Orchestration and JSON Renderer** - pipeline.run() entry point wiring all stages; JSONRenderer as first output serializer
 - [ ] **Phase 7: HTML Report** - Jinja2 report with color-coded summary, expandable per-tool detail sections, self-contained inline output
@@ -189,7 +189,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Scaffold and Data Models | 3/3 | Complete   | 2026-03-01 |
 | 2. XML Parser and Validation | 2/2 | Complete   | 2026-03-01 |
 | 3. Normalization Layer | 4/4 | Complete   | 2026-03-02 |
-| 4. Node Matcher | 2/3 | In Progress|  |
+| 4. Node Matcher | 3/3 | Complete   | 2026-03-02 |
 | 5. Diff Engine | 0/3 | Not started | - |
 | 6. Pipeline Orchestration and JSON Renderer | 0/3 | Not started | - |
 | 7. HTML Report | 0/4 | Not started | - |
