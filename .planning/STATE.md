@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-02T15:49:00Z"
+last_updated: "2026-03-02T15:55:39Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 27
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 4 of 9 (Node Matcher) — IN PROGRESS
-Plan: 1 of 3 in current phase — COMPLETE
-Status: Plan 04-01 complete, ready for Plan 04-02
-Last activity: 2026-03-02 — Plan 04-01 complete: scipy dep added, matcher package with Pass 1 exact ToolID + MatchResult contract; 48 passed, 1 xfailed
+Plan: 2 of 3 in current phase — COMPLETE
+Status: Plan 04-02 complete, ready for Plan 04-03
+Last activity: 2026-03-02 — Plan 04-02 complete: Hungarian Pass 2 implemented with per-type cost matrices, scipy linear_sum_assignment, threshold rejection; 48 passed, 1 xfailed
 
-Progress: [████░░░░░░] 37% (10/27 plans)
+Progress: [████░░░░░░] 41% (11/27 plans)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [████░░░░░░] 37% (10/27 plans)
 | Phase 03-normalization-layer P03 | 2 | 1 tasks | 1 files |
 | Phase 03-normalization-layer P04 | 4 | 2 tasks | 1 files |
 | Phase 04-node-matcher P01 | 3 | 2 tasks | 4 files |
+| Phase 04-node-matcher P02 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,11 @@ Recent decisions affecting current work:
 - [04-01]: _hungarian_match() stub raises NotImplementedError — enables test isolation in Plan 03 without importing scipy
 - [04-01]: MatchResult follows project-wide frozen=True, kw_only=True, slots=True pattern for all pipeline output types
 - [04-01]: Pass 2 skipped entirely when unmatched_old or unmatched_new is empty — avoids NotImplementedError on fully-matched workflows
+- [04-02]: _cost.py is internal (underscore prefix) — no __all__, not re-exported; consumed exclusively by _hungarian_match()
+- [04-02]: Canvas bounds from UNION of old+new groups — consistent normalisation, prevents asymmetric cost scaling
+- [04-02]: x_range/y_range default to 1.0 when spread is 0 — guards ZeroDivisionError for same-coordinate type groups
+- [04-02]: Threshold (cost > 0.8) applied AFTER linear_sum_assignment per pair — pre-filtering corrupts scipy solver
+- [04-02]: scipy-stubs added as dev dep; pre-commit mypy hook updated with numpy>=2.0, scipy>=1.13, scipy-stubs>=1.13
 
 ### Pending Todos
 
@@ -113,5 +119,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 04-01-PLAN.md — scipy dep added, matcher package with Pass 1 exact ToolID + MatchResult contract; 48 passed, 1 xfailed; ready for Plan 04-02
+Stopped at: Completed 04-02-PLAN.md — Hungarian Pass 2 implemented: _cost.py helpers, _hungarian_match() full implementation, scipy-stubs added; 48 passed, 1 xfailed; ready for Plan 04-03
 Resume file: None
