@@ -8,6 +8,7 @@ dependencies = [
     "lxml>=5.0",
     "networkx>=3.6",
     "scipy>=1.13",
+    "deepdiff>=8.0",
 ]
 
 [build-system]

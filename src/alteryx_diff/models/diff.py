@@ -31,7 +31,7 @@ class EdgeDiff:
     change_type: str  # Literal["added", "removed"] — str for frozen compatibility
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True)  # slots=True removed — required for @property
 class DiffResult:
     """Complete diff result between two WorkflowDoc instances."""
 
@@ -39,3 +39,13 @@ class DiffResult:
     removed_nodes: tuple[AlteryxNode, ...] = field(default_factory=tuple)
     modified_nodes: tuple[NodeDiff, ...] = field(default_factory=tuple)
     edge_diffs: tuple[EdgeDiff, ...] = field(default_factory=tuple)
+
+    @property
+    def is_empty(self) -> bool:
+        """True when no additions, removals, modifications, or edge diffs."""
+        return (
+            not self.added_nodes
+            and not self.removed_nodes
+            and not self.modified_nodes
+            and not self.edge_diffs
+        )
