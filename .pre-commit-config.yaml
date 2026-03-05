@@ -28,3 +28,4 @@ repos:
           - numpy>=2.0
           - scipy>=1.13
           - scipy-stubs>=1.13
+          - deepdiff>=8.0
