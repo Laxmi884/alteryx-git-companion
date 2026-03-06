@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Normalization Layer** - C14N canonicalization, GUID/timestamp stripping, position separation, and SHA-256 config hashing (completed 2026-03-02)
 - [x] **Phase 4: Node Matcher** - Two-pass ToolID-first lookup with Hungarian algorithm fallback to prevent phantom add/remove pairs (completed 2026-03-02)
 - [x] **Phase 5: Diff Engine** - NodeDiffer and EdgeDiffer producing DiffResult with full before/after field-level values (completed 2026-03-06)
-- [ ] **Phase 6: Pipeline Orchestration and JSON Renderer** - pipeline.run() entry point wiring all stages; JSONRenderer as first output serializer
+- [x] **Phase 6: Pipeline Orchestration and JSON Renderer** - pipeline.run() entry point wiring all stages; JSONRenderer as first output serializer (completed 2026-03-06)
 - [ ] **Phase 7: HTML Report** - Jinja2 report with color-coded summary, expandable per-tool detail sections, self-contained inline output
 - [ ] **Phase 8: Visual Graph** - Interactive graph with hierarchical auto-layout default and opt-in canvas X/Y positioning via --canvas-layout flag; color-coded change types and hover/click inline diff
 - [ ] **Phase 9: CLI Entry Point** - Typer CLI adapter over pipeline.run(), exit codes, --output, --canvas-layout, and --include-positions flags, governance metadata, performance validation
@@ -191,7 +191,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Normalization Layer | 4/4 | Complete   | 2026-03-02 |
 | 4. Node Matcher | 3/3 | Complete   | 2026-03-02 |
 | 5. Diff Engine | 3/3 | Complete   | 2026-03-06 |
-| 6. Pipeline Orchestration and JSON Renderer | 2/3 | In Progress|  |
+| 6. Pipeline Orchestration and JSON Renderer | 3/3 | Complete   | 2026-03-06 |
 | 7. HTML Report | 0/4 | Not started | - |
 | 8. Visual Graph | 0/6 | Not started | - |
 | 9. CLI Entry Point | 0/5 | Not started | - |
