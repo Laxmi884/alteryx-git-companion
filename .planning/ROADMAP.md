@@ -99,12 +99,12 @@ Plans:
   3. A tool with a changed filter expression shows before and after values for exactly the changed fields — unchanged fields are not reported
   4. A rewired connection (same source tool, different destination anchor) appears in `DiffResult.edge_diffs` using full 4-tuple anchor identity (src_tool + src_anchor + dst_tool + dst_anchor)
   5. Two functionally identical workflows produce an empty `DiffResult` — no additions, no removals, no modifications
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Implement NodeDiffer using config hash fast-path for equality, DeepDiff dict conversion for field-level before/after values on modified tools; emit NodeDiff per matched pair
-- [ ] 05-02: Implement EdgeDiffer using frozenset symmetric difference on connection 4-tuples (src_tool, src_anchor, dst_tool, dst_anchor); classify additions, removals, and rewirings
-- [ ] 05-03: Write diff engine integration tests covering all change types (add, remove, modify, rewire) using fixture workflow pairs; verify empty result for functionally identical workflows
+- [ ] 05-01-PLAN.md — Patch DiffResult (add is_empty property, remove slots=True); install deepdiff; implement differ/ package with diff(), _diff_node() using DeepDiff, and _diff_edges() using frozenset symmetric difference
+- [ ] 05-02-PLAN.md — Create tests/fixtures/diffing.py fixture library: 11 scenario tuples covering all change types (ToolIDs start at 401)
+- [ ] 05-03-PLAN.md — Write tests/test_differ.py with 11 tests covering DIFF-01, DIFF-02, DIFF-03, and identical-workflow empty result; run full suite gate
 
 ### Phase 6: Pipeline Orchestration and JSON Renderer
 **Goal**: A single call to `pipeline.run(DiffRequest)` produces a `DiffResponse` containing a JSON-serializable diff summary, and both CLI and future API can call it without importing any CLI or rendering concerns.
@@ -190,7 +190,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. XML Parser and Validation | 2/2 | Complete   | 2026-03-01 |
 | 3. Normalization Layer | 4/4 | Complete   | 2026-03-02 |
 | 4. Node Matcher | 3/3 | Complete   | 2026-03-02 |
-| 5. Diff Engine | 0/3 | Not started | - |
+| 5. Diff Engine | 2/3 | In Progress|  |
 | 6. Pipeline Orchestration and JSON Renderer | 0/3 | Not started | - |
 | 7. HTML Report | 0/4 | Not started | - |
 | 8. Visual Graph | 0/6 | Not started | - |
