@@ -1,0 +1,176 @@
+# ruff: noqa: E501
+"""Graph-building helpers for the visual graph renderer.
+
+Public API:
+    build_digraph(result, all_connections, all_nodes) -> nx.DiGraph
+    hierarchical_positions(G) -> dict[int, tuple[float, float]]
+    canvas_positions(nodes_old, nodes_new) -> dict[int, tuple[float, float]]
+    load_vis_js() -> str
+
+This module is internal (underscore prefix); it is consumed exclusively by
+graph_renderer.py in Plan 02. Unit tests import directly from here.
+"""
+
+from __future__ import annotations
+
+import importlib.resources as pkg_resources
+from typing import Any
+
+import networkx as nx
+
+from alteryx_diff.models import DiffResult
+from alteryx_diff.models.workflow import AlteryxConnection, AlteryxNode
+
+# Color constants — single source of truth for both Python (graph builder) and JS (template)
+COLOR_MAP: dict[str, str] = {
+    "added": "#28a745",
+    "removed": "#dc3545",
+    "modified": "#ffc107",
+    "connection": "#007bff",
+    "unchanged": "#adb5bd",
+}
+
+LAYOUT_SCALE = 800  # pixel scale factor for vis-network viewport
+
+
+def build_digraph(
+    result: DiffResult,
+    all_connections: tuple[AlteryxConnection, ...],
+    all_nodes: tuple[AlteryxNode, ...],
+) -> nx.DiGraph[int]:
+    """Build a directed graph from a DiffResult and the full node/connection sets.
+
+    Args:
+        result: The diff output containing added/removed/modified/edge_diffs.
+        all_connections: Union of old and new workflow connections.
+        all_nodes: Union of old and new workflow nodes.
+
+    Returns:
+        A nx.DiGraph where each node has ``label``, ``color``, ``status``,
+        and ``title`` attributes.
+    """
+    added_ids: set[int] = {int(n.tool_id) for n in result.added_nodes}
+    removed_ids: set[int] = {int(n.tool_id) for n in result.removed_nodes}
+    modified_ids: set[int] = {int(nd.tool_id) for nd in result.modified_nodes}
+    conn_changed_ids: set[int] = {int(ed.src_tool) for ed in result.edge_diffs} | {
+        int(ed.dst_tool) for ed in result.edge_diffs
+    }
+
+    G: nx.DiGraph[int] = nx.DiGraph()
+
+    for node in all_nodes:
+        tool_id = int(node.tool_id)
+        # Priority: added > removed > modified > connection > unchanged
+        if tool_id in added_ids:
+            status = "added"
+        elif tool_id in removed_ids:
+            status = "removed"
+        elif tool_id in modified_ids:
+            status = "modified"
+        elif tool_id in conn_changed_ids:
+            status = "connection"
+        else:
+            status = "unchanged"
+
+        G.add_node(
+            tool_id,
+            label=node.tool_type,
+            color=COLOR_MAP[status],
+            status=status,
+            title=f"{node.tool_type} | {status}",
+        )
+
+    for conn in all_connections:
+        G.add_edge(int(conn.src_tool), int(conn.dst_tool))
+
+    return G
+
+
+def hierarchical_positions(G: nx.DiGraph[int]) -> dict[int, tuple[float, float]]:
+    """Compute multipartite (hierarchical) layout positions for a directed graph.
+
+    Cycles are handled by iteratively removing back-edges until the graph is a DAG.
+    Layer 0 nodes appear at smaller x than layer 1 nodes.
+
+    Args:
+        G: The directed graph produced by build_digraph().
+
+    Returns:
+        Mapping of integer tool_id -> (x, y) pixel coordinates scaled by
+        LAYOUT_SCALE.
+    """
+    dag: nx.DiGraph[int] = G.copy()
+
+    # Remove back-edges until the graph is a DAG
+    while not nx.is_directed_acyclic_graph(dag):
+        cycle = nx.find_cycle(dag)
+        # cycle is a list of (u, v, ...) edge tuples; remove the last back-edge
+        back_edge = cycle[-1][:2]
+        dag.remove_edge(back_edge[0], back_edge[1])
+
+    # Assign topological layer to each node
+    for layer, nodes in enumerate(nx.topological_generations(dag)):
+        for node in nodes:
+            dag.nodes[node]["layer"] = layer
+
+    # Compute multipartite layout (returns numpy arrays)
+    raw_pos: dict[Any, Any] = nx.multipartite_layout(
+        dag, subset_key="layer", align="vertical"
+    )
+
+    return {
+        int(node): (float(coords[0]) * LAYOUT_SCALE, float(coords[1]) * LAYOUT_SCALE)
+        for node, coords in raw_pos.items()
+    }
+
+
+def canvas_positions(
+    nodes_old: tuple[AlteryxNode, ...],
+    nodes_new: tuple[AlteryxNode, ...],
+) -> dict[int, tuple[float, float]]:
+    """Return raw Alteryx X/Y canvas coordinates keyed by integer tool_id.
+
+    Old node positions are populated first; new node positions override them.
+    This correctly handles added nodes (new only) and modified nodes (use new position).
+
+    Args:
+        nodes_old: Nodes from the baseline (old) workflow.
+        nodes_new: Nodes from the changed (new) workflow.
+
+    Returns:
+        Mapping of integer tool_id -> (x, y) Alteryx canvas coordinates.
+    """
+    pos: dict[int, tuple[float, float]] = {}
+    for node in nodes_old:
+        pos[int(node.tool_id)] = (node.x, node.y)
+    for node in nodes_new:
+        pos[int(node.tool_id)] = (node.x, node.y)
+    return pos
+
+
+def load_vis_js() -> str:
+    """Load the vendored vis-network UMD bundle as a string.
+
+    Attempts importlib.resources first (works in installed/editable packages).
+    Falls back to a filesystem read relative to this file's location for
+    development environments where the package data is not yet on the path.
+
+    Returns:
+        The full vis-network.min.js source as a UTF-8 string.
+
+    Raises:
+        FileNotFoundError: If neither the package resource nor the filesystem
+            fallback path can locate the file.
+    """
+    try:
+        return (
+            pkg_resources.files("alteryx_diff")
+            .joinpath("static/vis-network.min.js")
+            .read_text(encoding="utf-8")
+        )
+    except (FileNotFoundError, TypeError):
+        # Fallback: read from filesystem during development
+        import pathlib
+
+        p = pathlib.Path(__file__).parent.parent / "static" / "vis-network.min.js"
+        return p.read_text(encoding="utf-8")
