@@ -29,3 +29,5 @@ repos:
           - scipy>=1.13
           - scipy-stubs>=1.13
           - deepdiff>=8.0
+          - jinja2>=3.1
+          - markupsafe>=2.0
