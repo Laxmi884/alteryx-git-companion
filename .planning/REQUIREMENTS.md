@@ -30,10 +30,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### HTML Report
 
-- [ ] **REPT-01**: Report includes a color-coded summary panel showing counts for added (green), removed (red), modified (yellow), and connection changes (blue)
-- [ ] **REPT-02**: Report includes expandable per-tool detail sections showing before/after field-level values for each modified tool
-- [ ] **REPT-03**: Report header displays report title, generation timestamp, and both compared file names
-- [ ] **REPT-04**: Report is fully self-contained HTML — all JavaScript and CSS embedded inline, no CDN references, functional on air-gapped networks
+- [x] **REPT-01**: Report includes a color-coded summary panel showing counts for added (green), removed (red), modified (yellow), and connection changes (blue)
+- [x] **REPT-02**: Report includes expandable per-tool detail sections showing before/after field-level values for each modified tool
+- [x] **REPT-03**: Report header displays report title, generation timestamp, and both compared file names
+- [x] **REPT-04**: Report is fully self-contained HTML — all JavaScript and CSS embedded inline, no CDN references, functional on air-gapped networks
 
 ### Visual Graph
 
@@ -106,10 +106,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIFF-02 | Phase 5 | Complete |
 | DIFF-03 | Phase 5 | Complete |
 | DIFF-04 | Phase 4 | Complete |
-| REPT-01 | Phase 7 | Pending |
-| REPT-02 | Phase 7 | Pending |
-| REPT-03 | Phase 7 | Pending |
-| REPT-04 | Phase 7 | Pending |
+| REPT-01 | Phase 7 | Complete |
+| REPT-02 | Phase 7 | Complete |
+| REPT-03 | Phase 7 | Complete |
+| REPT-04 | Phase 7 | Complete |
 | GRPH-01 | Phase 8 | Pending |
 | GRPH-02 | Phase 8 | Pending |
 | GRPH-03 | Phase 8 | Pending |
