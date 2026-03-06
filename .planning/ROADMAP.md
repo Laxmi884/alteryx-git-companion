@@ -132,13 +132,11 @@ Plans:
   3. Each modified tool has an expandable detail section showing before and after values for each changed field — unchanged fields are not shown
   4. The report header displays the generation timestamp and both compared file names
   5. A 500-tool workflow produces a report that opens in under 3 seconds — lazy-loading per-tool detail via JSON-in-script-tag pattern
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 07-01: Design Jinja2 HTML template with color-coded summary panel, report header (title, timestamp, filenames), and JavaScript expand/collapse for per-tool detail sections
-- [ ] 07-02: Implement HTMLRenderer embedding DiffResult as `const DIFF_DATA = {...}` JSON in a script tag; implement lazy per-tool expand logic in vanilla JavaScript
-- [ ] 07-03: Implement inline embedding of all CSS and JavaScript at render time; verify output file passes offline rendering test (disable network, open in browser)
-- [ ] 07-04: Write HTML renderer tests validating self-contained output, summary counts, detail section content, and header fields against fixture DiffResults
+- [ ] 07-01-PLAN.md — Add jinja2 dependency; implement HTMLRenderer class with full _TEMPLATE (inline CSS, inline JS, DIFF_DATA script tag); re-export from renderers/__init__.py
+- [ ] 07-02-PLAN.md — Create tests/fixtures/html_report.py (5 DiffResult fixtures, ToolIDs 701+) and tests/test_html_renderer.py (7 tests covering REPT-01 through REPT-04)
 
 ### Phase 8: Visual Graph
 **Goal**: A reviewer can see the workflow topology in the report — color-coded by change type — and click any changed node to see its configuration diff without leaving the browser tab.
@@ -192,6 +190,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Node Matcher | 3/3 | Complete   | 2026-03-02 |
 | 5. Diff Engine | 3/3 | Complete   | 2026-03-06 |
 | 6. Pipeline Orchestration and JSON Renderer | 3/3 | Complete   | 2026-03-06 |
-| 7. HTML Report | 0/4 | Not started | - |
+| 7. HTML Report | 0/2 | Not started | - |
 | 8. Visual Graph | 0/6 | Not started | - |
 | 9. CLI Entry Point | 0/5 | Not started | - |
