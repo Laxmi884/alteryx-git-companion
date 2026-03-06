@@ -38,8 +38,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Visual Graph
 
 - [ ] **GRPH-01**: Report embeds an interactive graph rendering tools as nodes and connections as directed edges
-- [ ] **GRPH-02**: Graph uses hierarchical left-to-right auto-layout (topological sort following data flow direction) by default; user can opt in to Alteryx canvas X/Y coordinate positioning via `--canvas-layout` flag
-- [ ] **GRPH-03**: Graph nodes are color-coded by change type: green=added, red=removed, yellow=modified, blue=connection change; unchanged tools rendered in neutral color
+- [x] **GRPH-02**: Graph uses hierarchical left-to-right auto-layout (topological sort following data flow direction) by default; user can opt in to Alteryx canvas X/Y coordinate positioning via `--canvas-layout` flag
+- [x] **GRPH-03**: Graph nodes are color-coded by change type: green=added, red=removed, yellow=modified, blue=connection change; unchanged tools rendered in neutral color
 - [ ] **GRPH-04**: User can hover or click on a graph node to display an inline configuration diff for that tool
 
 ### CLI
@@ -111,8 +111,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPT-03 | Phase 7 | Complete |
 | REPT-04 | Phase 7 | Complete |
 | GRPH-01 | Phase 8 | Pending |
-| GRPH-02 | Phase 8 | Pending |
-| GRPH-03 | Phase 8 | Pending |
+| GRPH-02 | Phase 8 | Complete |
+| GRPH-03 | Phase 8 | Complete |
 | GRPH-04 | Phase 8 | Pending |
 | CLI-01 | Phase 9 | Pending |
 | CLI-02 | Phase 9 | Pending |

@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-06T19:11:00.250Z"
+last_updated: "2026-03-06T20:08:08Z"
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 7
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 27
+  completed_plans: 21
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
-**Current focus:** Phase 7 — HTML Report (Phase 6 complete)
+**Current focus:** Phase 8 — Visual Graph (Phase 7 complete)
 
 ## Current Position
 
-Phase: 7 of 9 (HTML Report) — IN PROGRESS
-Current Plan: 07-02 COMPLETE
-Status: Plan 07-02 complete — HTML fixture library and test suite; 85 passed, 1 xfailed; ruff + mypy clean
-Last activity: 2026-03-06 — Plan 07-02 complete: html_report.py, test_html_renderer.py; 2 files, 2 tasks
+Phase: 8 of 9 (Visual Graph) — IN PROGRESS
+Current Plan: 08-01 COMPLETE
+Status: Plan 08-01 complete — vis-network 9.1.4 bundled, _graph_builder.py implemented; ruff + mypy clean
+Last activity: 2026-03-06 — Plan 08-01 complete: vis-network.min.js, _graph_builder.py; 3 files, 2 tasks
 
-Progress: [███████░░░] 74% (20/27 plans)
+Progress: [████████░░] 78% (21/27 plans)
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [███████░░░] 74% (20/27 plans)
 | Phase 06-pipeline-orchestration-and-json-renderer P03 | 4 | 2 tasks | 3 files |
 | Phase 07-html-report P01 | 5 | 2 tasks | 5 files |
 | Phase 07-html-report P02 | 3 | 2 tasks | 2 files |
+| Phase 08-visual-graph P01 | 4 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,10 @@ Recent decisions affecting current work:
 - [Phase 07-01]: Used Environment(autoescape=True) per ruff B701 requirement; ruff noqa: E501 for template file; DIFF_DATA via application/json script tag with tojson filter; Connection toggle uses loop.index as tool_id key
 - [Phase 07-02]: pytest import and SINGLE_REMOVED removed from test_html_renderer.py (ruff F401 auto-fixed) — no parametrize or marks used
 - [Phase 07-02]: DIFF_DATA extraction pattern established for HTML tests: locate id=diff-data> tag, slice to </script>, json.loads()
+- [08-01]: vis-network 9.1.4 vendored as standalone UMD bundle (702KB) — no npm/CDN dependency, single-file HTML output remains self-contained
+- [08-01]: networkx.* mypy override added to pyproject.toml — networkx has no type stubs; follows same pattern as deepdiff override (ignore_missing_imports)
+- [08-01]: load_vis_js() uses importlib.resources with filesystem fallback — editable installs and built packages both work without code change
+- [08-01]: COLOR_MAP is a module-level constant in _graph_builder.py — single source of truth for diff status colors shared by Python builder and JS template
 
 ### Pending Todos
 
@@ -148,10 +153,10 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 3]: Alteryx XML format assumptions (TempFile element structure, GUID field names, position XPath) need validation against real .yxmd files in Phase 3 fixture tests — inferred from community sources, not Alteryx official docs
-- [Phase 8]: pyvis Bootstrap CDN leak confirmed (issue #228) but post-processing workaround implementation details unverified — spike required before committing graph approach
+- [Phase 8 - RESOLVED]: pyvis spike not needed — switched to vis-network standalone UMD bundle (no CDN dependency). Plan 08-01 vendored the bundle directly.
 
 ## Session Continuity
 
 Last session: 2026-03-06
-Stopped at: Completed 07-02-PLAN.md — HTML fixture library and test suite; 85 passed, 1 xfailed; ruff + mypy clean
+Stopped at: Completed 08-01-PLAN.md — vis-network 9.1.4 bundled, _graph_builder.py implemented; ruff + mypy clean
 Resume file: None
