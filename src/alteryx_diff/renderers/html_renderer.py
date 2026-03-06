@@ -127,6 +127,7 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
   {% endfor %}
 </section>
 <script type="application/json" id="diff-data">{{ diff_data | tojson }}</script>
+{{ graph_html | safe }}
 <script>
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
@@ -266,8 +267,22 @@ class HTMLRenderer:
         result: DiffResult,
         file_a: str = "workflow_a.yxmd",
         file_b: str = "workflow_b.yxmd",
+        *,
+        graph_html: str = "",
     ) -> str:
-        """Render result to a self-contained HTML string."""
+        """Render result to a self-contained HTML string.
+
+        Args:
+            result: The diff output to render.
+            file_a: Display name for the baseline workflow file.
+            file_b: Display name for the changed workflow file.
+            graph_html: Optional HTML fragment from GraphRenderer to embed in the
+                report. When non-empty, the interactive vis-network graph section
+                is inserted before the closing container div. Defaults to "".
+
+        Returns:
+            A self-contained HTML string with all CSS and JavaScript inline.
+        """
         # autoescape=True required — avoids ruff B701
         env = Environment(autoescape=True)
         env.policies["json.dumps_kwargs"] = {"ensure_ascii": False, "sort_keys": True}
@@ -283,6 +298,7 @@ class HTMLRenderer:
                 "connections": len(result.edge_diffs),
             },
             diff_data=self._build_diff_data(result),
+            graph_html=graph_html,
         )
 
     def _build_diff_data(self, result: DiffResult) -> dict[str, Any]:
