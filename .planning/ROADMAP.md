@@ -115,12 +115,12 @@ Plans:
   2. The JSON renderer serializes `DiffResult` to a valid JSON structure with counts for added, removed, modified, and connection changes, plus per-tool detail records
   3. `--json` flag produces a `.json` file alongside or instead of the HTML report with the same diff data in machine-readable form
   4. A unit test imports and calls `pipeline.run()` without any CLI import — confirms pipeline is entry-point-agnostic
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: Implement pipeline.py with DiffRequest/DiffResponse dataclasses; wire Parser → Normalizer → NodeMatcher → Differ stages; enforce no sys.exit/print/file-I/O in pipeline
-- [ ] 06-02: Implement JSONRenderer serializing DiffResult to structured JSON; validate schema covers counts and per-tool records
-- [ ] 06-03: Write pipeline integration tests calling pipeline.run() without CLI; write JSON renderer tests validating output schema and content against fixture DiffResults
+- [ ] 06-01-PLAN.md — Create pipeline/ package with DiffRequest/DiffResponse frozen dataclasses and run() facade chaining parse → normalize → match → diff; zero sys/print/CLI imports
+- [ ] 06-02-PLAN.md — Create renderers/ package with JSONRenderer class; render(DiffResult) -> str producing locked JSON schema; schema documented in class docstring
+- [ ] 06-03-PLAN.md — Write tests/fixtures/pipeline.py (minimal .yxmd byte constants, ToolIDs 601+) and test suites: test_pipeline.py (4 integration tests, no CLI import) and test_json_renderer.py (5 unit tests, schema validation)
 
 ### Phase 7: HTML Report
 **Goal**: A governance reviewer can open the HTML report in a browser — on an air-gapped network — and see a color-coded summary and expandable per-tool configuration diffs without installing any software.
