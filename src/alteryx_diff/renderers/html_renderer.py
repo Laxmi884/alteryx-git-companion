@@ -17,32 +17,80 @@ _TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alteryx Workflow Diff Report</title>
 <style>
-body { margin: 0; padding: 16px; background: #fff; color: #212529; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+:root {
+  --bg: #fff;
+  --text: #212529;
+  --text-muted: #666;
+  --border: #dee2e6;
+  --row-bg: #f8f9fa;
+  --row-hover: #e9ecef;
+  --detail-bg: #fff;
+  --field-label: #555;
+  --before-bg: #fff5f5;
+  --after-bg: #f5fff5;
+  --btn-bg: #fff;
+  --btn-text: #475569;
+  --btn-border: #cbd5e1;
+  --btn-hover-bg: #f1f5f9;
+  --btn-hover-border: #94a3b8;
+  --section-border: #eee;
+  --empty-color: #888;
+  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
+  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
+  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
+  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --row-bg: #1e293b;
+    --row-hover: #273449;
+    --detail-bg: #131f31;
+    --field-label: #94a3b8;
+    --before-bg: #2d1518;
+    --after-bg: #132318;
+    --btn-bg: #1e293b;
+    --btn-text: #94a3b8;
+    --btn-border: #475569;
+    --btn-hover-bg: #273449;
+    --btn-hover-border: #64748b;
+    --section-border: #334155;
+    --empty-color: #64748b;
+    --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
+    --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
+    --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
+    --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
+  }
+}
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .container { max-width: 960px; margin: 0 auto; }
 .badge { display: inline-block; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 1.1em; text-decoration: none; cursor: pointer; margin: 4px; }
-.badge-added { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.badge-removed { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-.badge-modified { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.badge-connections { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
-h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px solid #eee; padding-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.tool-row { display: flex; align-items: center; padding: 8px 12px; border: 1px solid #e9ecef; border-radius: 4px; margin: 4px 0; cursor: pointer; background: #f8f9fa; user-select: none; }
-.tool-row:hover { background: #e9ecef; }
+.badge-added { background: var(--badge-added-bg); color: var(--badge-added-text); border: 1px solid var(--badge-added-border); }
+.badge-removed { background: var(--badge-removed-bg); color: var(--badge-removed-text); border: 1px solid var(--badge-removed-border); }
+.badge-modified { background: var(--badge-modified-bg); color: var(--badge-modified-text); border: 1px solid var(--badge-modified-border); }
+.badge-connections { background: var(--badge-conn-bg); color: var(--badge-conn-text); border: 1px solid var(--badge-conn-border); }
+h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px solid var(--section-border); padding-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.tool-row { display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; margin: 4px 0; cursor: pointer; background: var(--row-bg); user-select: none; }
+.tool-row:hover { background: var(--row-hover); }
 .chevron { display: inline-block; transition: transform 0.15s; margin-right: 8px; font-style: normal; }
 .tool-row.expanded .chevron { transform: rotate(90deg); }
-.tool-detail { padding: 8px 12px 8px 36px; border: 1px solid #e9ecef; border-top: none; border-radius: 0 0 4px 4px; background: #fff; }
+.tool-detail { padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 4px 4px; background: var(--detail-bg); }
 .field-row { margin: 6px 0; }
-.field-name { font-weight: 600; font-size: 0.85em; color: #555; margin-bottom: 2px; }
-.before-row { background: #fff5f5; border-left: 3px solid #dc3545; padding: 4px 8px; margin: 2px 0; }
-.after-row { background: #f5fff5; border-left: 3px solid #28a745; padding: 4px 8px; margin: 2px 0; }
+.field-name { font-weight: 600; font-size: 0.85em; color: var(--field-label); margin-bottom: 2px; }
+.before-row { background: var(--before-bg); border-left: 3px solid #dc3545; padding: 4px 8px; margin: 2px 0; }
+.after-row { background: var(--after-bg); border-left: 3px solid #28a745; padding: 4px 8px; margin: 2px 0; }
 .before-label { font-weight: 600; color: #dc3545; }
 .after-label { font-weight: 600; color: #28a745; }
 .value-block { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; }
-.ctrl-btn { font-size: 0.8em; padding: 4px 10px; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; font-weight: 500; transition: background 0.15s, border-color 0.15s; }
-.ctrl-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-.empty { color: #888; font-style: italic; }
-header { border-bottom: 1px solid #dee2e6; margin-bottom: 20px; padding-bottom: 12px; }
+.ctrl-btn { font-size: 0.8em; padding: 4px 10px; cursor: pointer; border: 1px solid var(--btn-border); border-radius: 6px; background: var(--btn-bg); color: var(--btn-text); font-weight: 500; transition: background 0.15s, border-color 0.15s; }
+.ctrl-btn:hover { background: var(--btn-hover-bg); border-color: var(--btn-hover-border); }
+.empty { color: var(--empty-color); font-style: italic; }
+header { border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 12px; }
 header h1 { font-size: 1.5em; margin: 0 0 4px; }
-header p { margin: 2px 0; color: #666; font-size: 0.9em; }
+header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
 @media print { .ctrl-btn { display: none; } .tool-detail { display: block !important; } }
 </style>
 </head>
@@ -130,11 +178,11 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
 <script type="application/json" id="diff-data">{{ diff_data | tojson }}</script>
 {{ graph_html | safe }}
 {% if metadata %}
-<details id="governance" style="margin-top:32px;border-top:1px solid #dee2e6;padding-top:12px;">
-  <summary style="cursor:pointer;color:#888;font-size:0.85em;padding:4px 0;user-select:none;">
+<details id="governance" style="margin-top:32px;border-top:1px solid var(--border);padding-top:12px;">
+  <summary style="cursor:pointer;color:var(--text-muted);font-size:0.85em;padding:4px 0;user-select:none;">
     Governance Metadata (ALCOA+)
   </summary>
-  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:#555;line-height:1.8;">
+  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:var(--field-label);line-height:1.8;">
     <div><strong>File A:</strong> {{ metadata.file_a }}</div>
     <div><strong>SHA-256 A:</strong> {{ metadata.sha256_a }}</div>
     <div><strong>File B:</strong> {{ metadata.file_b }}</div>
