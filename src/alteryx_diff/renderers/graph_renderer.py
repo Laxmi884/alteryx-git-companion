@@ -29,6 +29,7 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 <h2>Workflow Graph</h2>
 <div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:8px 0;">
   <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
+  <button id="fullscreen-btn" class="ctrl-btn">Fullscreen</button>
   <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
   <span style="font-size:0.8em;color:#64748b;">
     <span style="display:inline-block;width:12px;height:12px;background:#059669;border-radius:50%;margin-right:3px;"></span>Added
@@ -52,6 +53,18 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 .panel-before-label { font-weight:600; color:#dc3545; }
 .panel-after-label  { font-weight:600; color:#28a745; }
 .value-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; font-size:0.88em; }
+#graph-section:fullscreen { background: #f8fafc; padding: 12px; }
+#graph-section:fullscreen #graph-container { height: calc(100vh - 80px); }
+@media (prefers-color-scheme: dark) {
+  #graph-section:fullscreen { background: #0f172a; }
+  #graph-container { background: #0f172a !important; border-color: #334155 !important; }
+  #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+  .panel-title { border-color: #334155 !important; color: #e2e8f0; }
+  .panel-field-name { color: #94a3b8 !important; }
+  .panel-before { background: #2d1518 !important; }
+  .panel-after { background: #132318 !important; }
+  .value-mono { color: #e2e8f0; }
+}
 </style>
 <script>
 (function() {
@@ -119,6 +132,25 @@ document.getElementById('toggle-changes').addEventListener('click', function() {
 // Fit-to-screen
 document.getElementById('fit-btn').addEventListener('click', function() {
   network.fit({animation: true});
+});
+
+// Fullscreen toggle
+document.getElementById('fullscreen-btn').addEventListener('click', function() {
+  var section = document.getElementById('graph-section');
+  if (!document.fullscreenElement) {
+    section.requestFullscreen().catch(function() {});
+    this.textContent = 'Exit Fullscreen';
+  } else {
+    document.exitFullscreen();
+    this.textContent = 'Fullscreen';
+  }
+});
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement) {
+    var btn = document.getElementById('fullscreen-btn');
+    if (btn) btn.textContent = 'Fullscreen';
+    network.fit({animation: false});
+  }
 });
 
 // Click handler
@@ -295,7 +327,7 @@ class GraphRenderer:
                 "title": title,
                 "x": px,
                 "y": py,
-                "fixed": True,
+                "fixed": False,
             }
             nodes_json.append(entry)
 
