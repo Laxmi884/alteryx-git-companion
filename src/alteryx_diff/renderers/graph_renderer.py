@@ -65,6 +65,16 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
   .panel-after { background: #132318 !important; }
   .value-mono { color: #e2e8f0; }
 }
+[data-theme=dark] #graph-section:fullscreen { background: #0f172a; }
+[data-theme=dark] #graph-container { background: #0f172a !important; border-color: #334155 !important; }
+[data-theme=dark] #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+[data-theme=dark] .panel-title { border-color: #334155 !important; color: #e2e8f0; }
+[data-theme=dark] .panel-field-name { color: #94a3b8 !important; }
+[data-theme=dark] .panel-before { background: #2d1518 !important; }
+[data-theme=dark] .panel-after { background: #132318 !important; }
+[data-theme=dark] .value-mono { color: #e2e8f0; }
+[data-theme=light] #graph-container { background: #f8fafc !important; border-color: #dee2e6 !important; }
+[data-theme=light] #diff-panel { background: #fff !important; border-color: #dee2e6 !important; color: inherit !important; }
 </style>
 <script>
 (function() {
