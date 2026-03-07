@@ -137,6 +137,25 @@ h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px 
 header { border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 12px; }
 header h1 { font-size: 1.5em; margin: 0 0 4px; }
 header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
+.theme-toggle { display:flex; width:64px; height:32px; padding:4px; border-radius:9999px; cursor:pointer; box-sizing:border-box; transition:background 0.3s,border-color 0.3s; margin-top:8px; outline:none; }
+.theme-toggle:focus-visible { box-shadow:0 0 0 2px var(--btn-border); }
+.toggle-inner { display:flex; justify-content:space-between; align-items:center; width:100%; }
+.toggle-thumb,.toggle-passive { display:flex; justify-content:center; align-items:center; width:24px; height:24px; border-radius:9999px; transition:transform 0.3s,background 0.3s; flex-shrink:0; }
+.theme-toggle[data-mode=dark] { background:#09090b; border:1px solid #27272a; }
+.theme-toggle[data-mode=dark] .toggle-thumb { transform:translateX(0); background:#3f3f46; color:#fff; }
+.theme-toggle[data-mode=dark] .toggle-passive { background:transparent; color:#6b7280; transform:translateX(0); }
+.theme-toggle[data-mode=light] { background:#fff; border:1px solid #e4e4e7; }
+.theme-toggle[data-mode=light] .toggle-thumb { transform:translateX(32px); background:#e5e7eb; color:#374151; }
+.theme-toggle[data-mode=light] .toggle-passive { transform:translateX(-32px); background:transparent; color:#000; }
+.moon-icon,.sun-icon { display:none; }
+.theme-toggle[data-mode=dark] .toggle-thumb .moon-icon { display:block; }
+.theme-toggle[data-mode=dark] .toggle-thumb .sun-icon { display:none; }
+.theme-toggle[data-mode=dark] .toggle-passive .sun-icon { display:block; }
+.theme-toggle[data-mode=dark] .toggle-passive .moon-icon { display:none; }
+.theme-toggle[data-mode=light] .toggle-thumb .sun-icon { display:block; }
+.theme-toggle[data-mode=light] .toggle-thumb .moon-icon { display:none; }
+.theme-toggle[data-mode=light] .toggle-passive .moon-icon { display:block; }
+.theme-toggle[data-mode=light] .toggle-passive .sun-icon { display:none; }
 @media print { .ctrl-btn { display: none; } .tool-detail { display: block !important; } }
 </style>
 </head>
@@ -146,7 +165,18 @@ header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
   <h1>Alteryx Workflow Diff Report</h1>
   <p>Generated: {{ timestamp }}</p>
   <p>{{ file_a }} vs {{ file_b }}</p>
-  <button id="theme-toggle" class="ctrl-btn" style="margin-top:8px;" onclick="toggleTheme()">&#9790; Dark</button>
+  <div id="theme-toggle" class="theme-toggle" data-mode="light" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Toggle dark/light mode">
+    <div class="toggle-inner">
+      <div class="toggle-thumb">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+      </div>
+      <div class="toggle-passive">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </div>
+    </div>
+  </div>
 </header>
 <section id="summary">
   <a href="#added" onclick="expandSection('added'); return true;" class="badge badge-added">Added: {{ summary.added }}</a>
@@ -242,9 +272,9 @@ header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('alteryx-diff-theme', theme);
-    var btn = document.getElementById('theme-toggle');
-    if (btn) {
-        btn.textContent = theme === 'dark' ? '\u2600 Light' : '\u263e Dark';
+    var toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+        toggle.setAttribute('data-mode', theme);
     }
 }
 
@@ -256,12 +286,8 @@ function toggleTheme() {
 // On load: restore from localStorage, else detect OS preference
 (function() {
     var saved = localStorage.getItem('alteryx-diff-theme');
-    if (saved) {
-        setTheme(saved);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        setTheme('dark');
-    }
-    // No else: leave data-theme unset so @media query applies naturally
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(saved || (prefersDark ? 'dark' : 'light'));
 })();
 
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
