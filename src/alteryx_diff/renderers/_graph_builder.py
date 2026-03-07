@@ -30,7 +30,11 @@ COLOR_MAP: dict[str, str] = {
     "unchanged": "#adb5bd",
 }
 
-LAYOUT_SCALE = 800  # pixel scale factor for vis-network viewport
+LAYOUT_SCALE = 2000  # pixel scale factor for vis-network viewport
+
+# ToolContainer is a visual-only grouping in Alteryx Designer — it has no data
+# connections and adds noise to the diff graph.
+CONTAINER_TYPE = "AlteryxGuiToolkit.ToolContainer.ToolContainer"
 
 
 def build_digraph(
@@ -59,6 +63,8 @@ def build_digraph(
     G: nx.DiGraph[int] = nx.DiGraph()
 
     for node in all_nodes:
+        if node.tool_type == CONTAINER_TYPE:
+            continue
         tool_id = int(node.tool_id)
         # Priority: added > removed > modified > connection > unchanged
         if tool_id in added_ids:
@@ -72,16 +78,19 @@ def build_digraph(
         else:
             status = "unchanged"
 
+        short_label = node.tool_type.split(".")[-1]
         G.add_node(
             tool_id,
-            label=node.tool_type,
+            label=f"{short_label}\n({tool_id})",
             color=COLOR_MAP[status],
             status=status,
             title=f"{node.tool_type} | {status}",
         )
 
     for conn in all_connections:
-        G.add_edge(int(conn.src_tool), int(conn.dst_tool))
+        src, dst = int(conn.src_tool), int(conn.dst_tool)
+        if src in G and dst in G:
+            G.add_edge(src, dst)
 
     return G
 
