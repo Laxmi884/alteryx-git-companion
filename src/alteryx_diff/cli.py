@@ -115,6 +115,7 @@ def diff(  # noqa: B008
             file_a=str(workflow_a.resolve()),
             file_b=str(workflow_b.resolve()),
             graph_html=graph_html,
+            metadata=metadata,  # CLI-04: governance footer in HTML report
         )
         output.write_text(html, encoding="utf-8")
         if not quiet:

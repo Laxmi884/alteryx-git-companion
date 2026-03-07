@@ -128,6 +128,20 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
 </section>
 <script type="application/json" id="diff-data">{{ diff_data | tojson }}</script>
 {{ graph_html | safe }}
+{% if metadata %}
+<details id="governance" style="margin-top:32px;border-top:1px solid #dee2e6;padding-top:12px;">
+  <summary style="cursor:pointer;color:#888;font-size:0.85em;padding:4px 0;user-select:none;">
+    Governance Metadata (ALCOA+)
+  </summary>
+  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:#555;line-height:1.8;">
+    <div><strong>File A:</strong> {{ metadata.file_a }}</div>
+    <div><strong>SHA-256 A:</strong> {{ metadata.sha256_a }}</div>
+    <div><strong>File B:</strong> {{ metadata.file_b }}</div>
+    <div><strong>SHA-256 B:</strong> {{ metadata.sha256_b }}</div>
+    <div><strong>Generated:</strong> {{ metadata.generated_at }}</div>
+  </div>
+</details>
+{% endif %}
 <script>
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
@@ -269,6 +283,7 @@ class HTMLRenderer:
         file_b: str = "workflow_b.yxmd",
         *,
         graph_html: str = "",
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """Render result to a self-contained HTML string.
 
@@ -279,6 +294,11 @@ class HTMLRenderer:
             graph_html: Optional HTML fragment from GraphRenderer to embed in the
                 report. When non-empty, the interactive vis-network graph section
                 is inserted before the closing container div. Defaults to "".
+            metadata: Optional governance metadata dict for ALCOA+ compliance footer.
+                When provided, a collapsible ``<details id="governance">`` section is
+                appended with file paths, SHA-256 digests, and generation timestamp.
+                When ``None`` (default), the footer is omitted — zero regression risk
+                for existing callers.
 
         Returns:
             A self-contained HTML string with all CSS and JavaScript inline.
@@ -299,6 +319,7 @@ class HTMLRenderer:
             },
             diff_data=self._build_diff_data(result),
             graph_html=graph_html,
+            metadata=metadata,
         )
 
     def _build_diff_data(self, result: DiffResult) -> dict[str, Any]:
