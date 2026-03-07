@@ -165,14 +165,12 @@ Plans:
   3. The report includes a governance metadata section with source file paths, SHA-256 file hashes, and generation timestamp (ALCOA+ audit compliance)
   4. End-to-end execution on a 500-tool synthetic workflow completes in under 5 seconds on developer hardware
   5. `acd --help` documents all flags including `--include-positions` (controls diff detection, excludes positions by default) and `--canvas-layout` (controls graph rendering, switches from hierarchical auto-layout to canvas X/Y coordinates) with a clear explanation of each flag's distinct purpose
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: Implement Typer CLI app in cli.py as a thin adapter over pipeline.run(); add --output, --include-positions, --canvas-layout, --json flags; register pyproject.toml entry point `acd = "alteryx_diff.cli:app"`
-- [ ] 09-02: Implement standardized exit codes (0/1/2) and ANSI-safe TTY output; verify CLI contains zero business logic (all logic in pipeline and stages)
-- [ ] 09-03: Add governance metadata section to HTML and JSON output: source file paths, SHA-256 file hashes, generation timestamp
-- [ ] 09-04: Build 500-tool synthetic fixture; run end-to-end performance benchmark; instrument stage timings; validate <5 second SLA
-- [ ] 09-05: Write end-to-end CLI smoke tests covering success path, diff-found path, error paths, exit codes, --output flag, --canvas-layout flag, and --include-positions flag behavior
+- [ ] 09-01-PLAN.md — Create cli.py (Typer app, all flags, exit code protocol, spinner, SHA-256 helpers); extend DiffResponse with doc_a/doc_b; extend differ.diff() with include_positions; update pyproject.toml entry point; create __main__.py shim
+- [ ] 09-02-PLAN.md — Add collapsible governance metadata footer to HTMLRenderer._TEMPLATE; extend render() to accept metadata dict for ALCOA+ compliance
+- [ ] 09-03-PLAN.md — Create tests/fixtures/cli.py (ToolIDs 901+) and tests/test_cli.py (10 smoke tests covering exit codes, --output, --json, --quiet, --include-positions via CliRunner)
 
 ## Progress
 
@@ -189,4 +187,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Pipeline Orchestration and JSON Renderer | 3/3 | Complete   | 2026-03-06 |
 | 7. HTML Report | 2/2 | Complete   | 2026-03-06 |
 | 8. Visual Graph | 3/3 | Complete   | 2026-03-07 |
-| 9. CLI Entry Point | 0/5 | Not started | - |
+| 9. CLI Entry Point | 0/3 | Not started | - |
