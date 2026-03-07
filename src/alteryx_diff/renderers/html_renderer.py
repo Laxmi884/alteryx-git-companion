@@ -65,7 +65,7 @@ _TEMPLATE = """<!DOCTYPE html>
     --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
   }
 }
-[data-theme=dark] :root {
+[data-theme=dark] {
   --bg: #0f172a;
   --text: #e2e8f0;
   --text-muted: #94a3b8;
@@ -88,7 +88,7 @@ _TEMPLATE = """<!DOCTYPE html>
   --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
   --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
 }
-[data-theme=light] :root {
+[data-theme=light] {
   --bg: #fff;
   --text: #212529;
   --text-muted: #666;
