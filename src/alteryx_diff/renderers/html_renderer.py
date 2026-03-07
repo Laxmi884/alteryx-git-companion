@@ -65,6 +65,52 @@ _TEMPLATE = """<!DOCTYPE html>
     --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
   }
 }
+[data-theme=dark] :root {
+  --bg: #0f172a;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --row-bg: #1e293b;
+  --row-hover: #273449;
+  --detail-bg: #131f31;
+  --field-label: #94a3b8;
+  --before-bg: #2d1518;
+  --after-bg: #132318;
+  --btn-bg: #1e293b;
+  --btn-text: #94a3b8;
+  --btn-border: #475569;
+  --btn-hover-bg: #273449;
+  --btn-hover-border: #64748b;
+  --section-border: #334155;
+  --empty-color: #64748b;
+  --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
+  --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
+  --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
+  --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
+}
+[data-theme=light] :root {
+  --bg: #fff;
+  --text: #212529;
+  --text-muted: #666;
+  --border: #dee2e6;
+  --row-bg: #f8f9fa;
+  --row-hover: #e9ecef;
+  --detail-bg: #fff;
+  --field-label: #555;
+  --before-bg: #fff5f5;
+  --after-bg: #f5fff5;
+  --btn-bg: #fff;
+  --btn-text: #475569;
+  --btn-border: #cbd5e1;
+  --btn-hover-bg: #f1f5f9;
+  --btn-hover-border: #94a3b8;
+  --section-border: #eee;
+  --empty-color: #888;
+  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
+  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
+  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
+  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+}
 body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .container { max-width: 960px; margin: 0 auto; }
 .badge { display: inline-block; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 1.1em; text-decoration: none; cursor: pointer; margin: 4px; }
@@ -100,6 +146,7 @@ header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
   <h1>Alteryx Workflow Diff Report</h1>
   <p>Generated: {{ timestamp }}</p>
   <p>{{ file_a }} vs {{ file_b }}</p>
+  <button id="theme-toggle" class="ctrl-btn" style="margin-top:8px;" onclick="toggleTheme()">&#9790; Dark</button>
 </header>
 <section id="summary">
   <a href="#added" onclick="expandSection('added'); return true;" class="badge badge-added">Added: {{ summary.added }}</a>
@@ -192,6 +239,31 @@ header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
 </details>
 {% endif %}
 <script>
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('alteryx-diff-theme', theme);
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = theme === 'dark' ? '\u2600 Light' : '\u263e Dark';
+    }
+}
+
+function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// On load: restore from localStorage, else detect OS preference
+(function() {
+    var saved = localStorage.getItem('alteryx-diff-theme');
+    if (saved) {
+        setTheme(saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
+    }
+    // No else: leave data-theme unset so @media query applies naturally
+})();
+
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
 function expandSection(sectionId) {
