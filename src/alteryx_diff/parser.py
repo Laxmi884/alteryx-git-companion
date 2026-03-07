@@ -139,7 +139,7 @@ def _tree_to_workflow(
 
     # --- Nodes ---
     nodes_list: list[AlteryxNode] = []
-    for node_elem in root.findall("Nodes/Node"):
+    for node_elem in root.findall("Nodes//Node"):
         tool_id_str = node_elem.get("ToolID")
         if tool_id_str is None:
             continue
