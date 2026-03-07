@@ -23,11 +23,19 @@ from alteryx_diff.models.workflow import AlteryxConnection, AlteryxNode
 
 # Color constants — single source of truth for both Python (graph builder) and JS (template)
 COLOR_MAP: dict[str, str] = {
-    "added": "#28a745",
-    "removed": "#dc3545",
-    "modified": "#ffc107",
-    "connection": "#007bff",
-    "unchanged": "#adb5bd",
+    "added": "#d1fae5",
+    "removed": "#fee2e2",
+    "modified": "#fef3c7",
+    "connection": "#dbeafe",
+    "unchanged": "#f1f5f9",
+}
+
+BORDER_COLOR_MAP: dict[str, str] = {
+    "added": "#059669",
+    "removed": "#dc2626",
+    "modified": "#d97706",
+    "connection": "#2563eb",
+    "unchanged": "#cbd5e1",
 }
 
 LAYOUT_SCALE = 2000  # pixel scale factor for vis-network viewport
@@ -82,7 +90,14 @@ def build_digraph(
         G.add_node(
             tool_id,
             label=f"{short_label}\n({tool_id})",
-            color=COLOR_MAP[status],
+            color={
+                "background": COLOR_MAP[status],
+                "border": BORDER_COLOR_MAP[status],
+                "highlight": {
+                    "background": COLOR_MAP[status],
+                    "border": BORDER_COLOR_MAP[status],
+                },
+            },
             status=status,
             title=f"{node.tool_type} | {status}",
         )
