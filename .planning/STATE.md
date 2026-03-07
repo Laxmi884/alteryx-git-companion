@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 Milestone: v1.0 MVP — SHIPPED 2026-03-07
 Status: All 9 phases complete; 27/27 plans; 105 tests passing; milestone archived
-Last activity: 2026-03-07 — v1.0 milestone complete
+Last activity: 2026-03-07 - Completed quick task 1: fix parser to find nodes inside containers in yxmd workflows
 
 Progress: [██████████] 100% (27/27 plans)
 
@@ -176,6 +176,12 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | fix parser to find nodes inside containers in yxmd workflows | 2026-03-07 | b30bb25 | [1-fix-parser-to-find-nodes-inside-containe](./quick/1-fix-parser-to-find-nodes-inside-containe/) |
 
 ## Session Continuity
 
