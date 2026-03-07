@@ -37,7 +37,8 @@ h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px 
 .before-label { font-weight: 600; color: #dc3545; }
 .after-label { font-weight: 600; color: #28a745; }
 .value-block { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; }
-.ctrl-btn { font-size: 0.8em; padding: 2px 8px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; background: #fff; margin-left: 4px; }
+.ctrl-btn { font-size: 0.8em; padding: 4px 10px; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #475569; font-weight: 500; transition: background 0.15s, border-color 0.15s; }
+.ctrl-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
 .empty { color: #888; font-style: italic; }
 header { border-bottom: 1px solid #dee2e6; margin-bottom: 20px; padding-bottom: 12px; }
 header h1 { font-size: 1.5em; margin: 0 0 4px; }
