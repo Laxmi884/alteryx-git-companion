@@ -27,19 +27,19 @@ from alteryx_diff.renderers._graph_builder import (
 
 _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 <h2>Workflow Graph</h2>
-<div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">
+<div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:8px 0;">
   <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
   <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
-  <span style="font-size:0.8em;color:#555;">
-    <span style="display:inline-block;width:12px;height:12px;background:#28a745;border-radius:2px;margin-right:3px;"></span>Added
-    <span style="display:inline-block;width:12px;height:12px;background:#dc3545;border-radius:2px;margin:0 3px;"></span>Removed
-    <span style="display:inline-block;width:12px;height:12px;background:#ffc107;border-radius:2px;margin:0 3px;"></span>Modified
-    <span style="display:inline-block;width:12px;height:12px;background:#007bff;border-radius:2px;margin:0 3px;"></span>Connection change
-    <span style="display:inline-block;width:12px;height:12px;background:#adb5bd;border-radius:2px;margin:0 3px;"></span>Unchanged
+  <span style="font-size:0.8em;color:#64748b;">
+    <span style="display:inline-block;width:12px;height:12px;background:#059669;border-radius:50%;margin-right:3px;"></span>Added
+    <span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:50%;margin:0 3px;"></span>Removed
+    <span style="display:inline-block;width:12px;height:12px;background:#d97706;border-radius:50%;margin:0 3px;"></span>Modified
+    <span style="display:inline-block;width:12px;height:12px;background:#2563eb;border-radius:50%;margin:0 3px;"></span>Connection change
+    <span style="display:inline-block;width:12px;height:12px;background:#cbd5e1;border-radius:50%;margin:0 3px;"></span>Unchanged
   </span>
 </div>
-<div id="graph-container" style="width:100%;height:500px;border:1px solid #dee2e6;border-radius:4px;background:#fafafa;position:relative;"></div>
-<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;"></div>
+<div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
+<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;border-radius:8px 0 0 8px;"></div>
 <div id="graph-overlay" style="display:none;position:fixed;inset:0;z-index:999;"></div>
 <style>
 #diff-panel.open { right: 0 !important; }
@@ -74,9 +74,24 @@ var edgesDataset = new vis.DataSet(GRAPH_EDGES);
 
 var options = {
   physics: {enabled: false},
-  nodes: {shape: 'box', font: {size: 12}, borderWidth: 1, margin: 6},
-  edges: {arrows: {to: {enabled: true, scaleFactor: 0.6}}, smooth: {enabled: false}},
-  interaction: {zoomView: true, dragView: true, hover: true, tooltipDelay: 150}
+  nodes: {
+    shape: 'box',
+    borderWidth: 1,
+    borderWidthSelected: 3,
+    margin: {top: 8, right: 12, bottom: 8, left: 12},
+    font: {size: 13, face: 'system-ui, -apple-system, sans-serif', color: '#1e293b'},
+    shapeProperties: {borderRadius: 6},
+    shadow: {enabled: false}
+  },
+  edges: {
+    arrows: {to: {enabled: true, scaleFactor: 0.7, type: 'arrow'}},
+    smooth: {enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.4},
+    color: {color: '#94a3b8', highlight: '#475569', hover: '#475569'},
+    width: 1.5,
+    hoverWidth: 2.5,
+    selectionWidth: 2.5
+  },
+  interaction: {zoomView: true, dragView: true, hover: true, tooltipDelay: 200, hideEdgesOnDrag: false}
 };
 
 var container = document.getElementById('graph-container');
