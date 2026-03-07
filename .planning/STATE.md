@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 Milestone: v1.0 MVP — SHIPPED 2026-03-07
 Status: All 9 phases complete; 27/27 plans; 105 tests passing; milestone archived
-Last activity: 2026-03-07 - Completed quick task 2: fix graph node overlap — filter containers, shorten labels, increase scale
+Last activity: 2026-03-07 - Completed quick task 3: improve graph visualization for modern UI — soft tint palette, curved edges, polished controls
 
 Progress: [██████████] 100% (27/27 plans)
 
@@ -183,6 +183,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 1 | fix parser to find nodes inside containers in yxmd workflows | 2026-03-07 | b30bb25 | [1-fix-parser-to-find-nodes-inside-containe](./quick/1-fix-parser-to-find-nodes-inside-containe/) |
 | 2 | fix graph node overlap — filter containers, shorten labels, increase scale | 2026-03-07 | b9667e2 | [2-fix-graph-layout-overlap](./quick/2-fix-graph-layout-overlap/) |
+| 3 | improve graph visualization for modern UI — soft tint palette, curved edges, polished controls | 2026-03-07 | efd47cc | [3-improve-graph-visualization-for-modern-u](./quick/3-improve-graph-visualization-for-modern-u/) |
 
 ## Session Continuity
 
