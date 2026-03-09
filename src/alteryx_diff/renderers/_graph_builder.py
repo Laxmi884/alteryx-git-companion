@@ -23,19 +23,19 @@ from alteryx_diff.models.workflow import AlteryxConnection, AlteryxNode
 
 # Color constants — single source of truth for both Python (graph builder) and JS (template)
 COLOR_MAP: dict[str, str] = {
-    "added": "#d1fae5",
-    "removed": "#fee2e2",
-    "modified": "#fef3c7",
-    "connection": "#dbeafe",
-    "unchanged": "#f1f5f9",
+    "added": "#6ee7b7",
+    "removed": "#fca5a5",
+    "modified": "#fcd34d",
+    "connection": "#93c5fd",
+    "unchanged": "#e2e8f0",
 }
 
 BORDER_COLOR_MAP: dict[str, str] = {
     "added": "#059669",
     "removed": "#dc2626",
-    "modified": "#d97706",
-    "connection": "#2563eb",
-    "unchanged": "#cbd5e1",
+    "modified": "#b45309",
+    "connection": "#1d4ed8",
+    "unchanged": "#94a3b8",
 }
 
 LAYOUT_SCALE = 2000  # pixel scale factor for vis-network viewport
