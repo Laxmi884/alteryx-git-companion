@@ -32,11 +32,11 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
   <button id="fullscreen-btn" class="ctrl-btn">Fullscreen</button>
   <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
   <span style="font-size:0.8em;color:#64748b;">
-    <span style="display:inline-block;width:12px;height:12px;background:#059669;border-radius:50%;margin-right:3px;"></span>Added
-    <span style="display:inline-block;width:12px;height:12px;background:#dc2626;border-radius:50%;margin:0 3px;"></span>Removed
-    <span style="display:inline-block;width:12px;height:12px;background:#d97706;border-radius:50%;margin:0 3px;"></span>Modified
-    <span style="display:inline-block;width:12px;height:12px;background:#2563eb;border-radius:50%;margin:0 3px;"></span>Connection change
-    <span style="display:inline-block;width:12px;height:12px;background:#cbd5e1;border-radius:50%;margin:0 3px;"></span>Unchanged
+    <span style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
+    <span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
+    <span style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
+    <span style="display:inline-block;width:12px;height:12px;background:#93c5fd;border:1px solid #1d4ed8;border-radius:50%;margin:0 3px;"></span>Connection change
+    <span style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
   </span>
 </div>
 <div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
