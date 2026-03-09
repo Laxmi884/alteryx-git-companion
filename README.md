@@ -1,6 +1,6 @@
 # Alteryx Canvas Diff (ACD)
 
-A CLI tool that compares two Alteryx workflow files (`.yxmd`) and generates a structured, self-contained HTML diff report — showing exactly what changed at the tool, configuration, and connection level, including an embedded interactive workflow graph.
+A CLI tool that compares two Alteryx workflow files (`.yxmd`) or app files (`.yxwz`) and generates a structured, self-contained HTML diff report — showing exactly what changed at the tool, configuration, and connection level, including an embedded interactive workflow graph.
 
 Built for analytics developers and governance teams who need to understand what changed between workflow versions without reading raw XML.
 
@@ -16,6 +16,7 @@ Built for analytics developers and governance teams who need to understand what 
 - **ALCOA+ governance footer** — source file paths, SHA-256 hashes, and generation timestamp embedded in every report for audit compliance
 - **CI/CD friendly** — `--json` flag writes machine-readable output to stdout; predictable exit codes (0/1/2)
 - **Position-aware** — canvas X/Y positions are excluded from diff detection by default (layout noise); opt in with `--include-positions`
+- **App file support** — `.yxwz` Alteryx App files are accepted as input; interface/UI-only tools (`AlteryxGuiToolkit.*` — tabs, text boxes, containers, actions) are filtered out by default to eliminate noise when comparing an app against a workflow; opt out with `--no-filter-ui-tools`
 
 ---
 
@@ -80,6 +81,11 @@ acd workflow_v1.yxmd workflow_v2.yxmd
 
 Produces `diff_report.html` in the current directory and exits with code `1` (differences found).
 
+> **Paths with spaces:** quote the arguments in your shell:
+> ```bash
+> acd "My Workflow v1.yxmd" "My Workflow v2.yxmd"
+> ```
+
 ### Custom output path
 
 ```bash
@@ -118,6 +124,20 @@ By default, the graph uses hierarchical left-to-right auto-layout (follows data 
 acd workflow_v1.yxmd workflow_v2.yxmd --canvas-layout
 ```
 
+### Compare an app (.yxwz) against a workflow (.yxmd)
+
+App files contain interface/UI-only tools (`AlteryxGuiToolkit.*` — tabs, text boxes, containers, actions) that have no counterpart in regular workflows. These are filtered out by default so only analytical tool changes are shown:
+
+```bash
+acd workflow.yxmd "My App.yxwz" --output review.html
+```
+
+To keep UI tools in the diff (e.g. comparing two apps where interface changes matter):
+
+```bash
+acd app_v1.yxwz app_v2.yxwz --no-filter-ui-tools --output review.html
+```
+
 ### Quiet mode (CI pipelines)
 
 Suppress all terminal output — only the exit code is returned:
@@ -147,11 +167,12 @@ acd [OPTIONS] WORKFLOW_A WORKFLOW_B
 
 | Argument / Option | Default | Description |
 |---|---|---|
-| `WORKFLOW_A` | required | Baseline `.yxmd` file |
-| `WORKFLOW_B` | required | Changed `.yxmd` file |
+| `WORKFLOW_A` | required | Baseline `.yxmd` or `.yxwz` file — quote paths that contain spaces |
+| `WORKFLOW_B` | required | Changed `.yxmd` or `.yxwz` file — quote paths that contain spaces |
 | `--output`, `-o` | `diff_report.html` | Output path for the HTML report (ignored when `--json` is set) |
 | `--include-positions` | off | Include canvas X/Y position changes in diff detection (excluded by default to avoid layout noise) |
 | `--canvas-layout` | off | Use Alteryx canvas X/Y coordinates for graph node positions (default: hierarchical auto-layout) |
+| `--no-filter-ui-tools` | off | Keep `AlteryxGuiToolkit.*` interface tools in the diff (by default they are filtered out to reduce noise when comparing apps against workflows) |
 | `--json` | off | Write JSON diff to stdout instead of HTML file (pipe-friendly) |
 | `--quiet`, `-q` | off | Suppress all terminal output; exit code only (for CI pipelines) |
 | `--help` | | Show help and exit |
@@ -359,7 +380,7 @@ uv run python -m alteryx_diff workflow_v1.yxmd workflow_v2.yxmd
 
 - **GUID stripping** — the GUID field name registry (`GUID_VALUE_KEYS`) is not yet populated with confirmed field names from real `.yxmd` files. If Alteryx embeds session GUIDs inside tool configuration fields, those may appear as false-positive config_hash differences. The stripping mechanism is in place; the field names need real-file validation.
 - **Browser-interactive behaviors** — the HTML graph's click-to-diff panel, show-only-changes toggle, and fit-to-screen animation are structurally correct but require manual browser testing to confirm rendering.
-- **`.yxmc` / `.yxapp` formats** — not supported in v1.0; only `.yxmd` workflow files.
+- **`.yxmc` / `.yxapp` formats** — not supported; only `.yxmd` and `.yxwz` files.
 - **Macro recursion** — tools that reference macros are diffed as opaque nodes; internal macro changes are not surfaced.
 
 ---
