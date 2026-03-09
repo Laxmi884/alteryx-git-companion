@@ -32,11 +32,11 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
   <button id="fullscreen-btn" class="ctrl-btn">Fullscreen</button>
   <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
   <span style="font-size:0.8em;color:#64748b;">
-    <span style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
-    <span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
-    <span style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
-    <span style="display:inline-block;width:12px;height:12px;background:#93c5fd;border:1px solid #1d4ed8;border-radius:50%;margin:0 3px;"></span>Connection change
-    <span style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
+    <span data-legend="added" style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
+    <span data-legend="removed" style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
+    <span data-legend="modified" style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
+    <span data-legend="connection" style="display:inline-block;width:12px;height:12px;background:#93c5fd;border:1px solid #1d4ed8;border-radius:50%;margin:0 3px;"></span>Connection change
+    <span data-legend="unchanged" style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
   </span>
 </div>
 <div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
@@ -120,6 +120,58 @@ var options = {
 var container = document.getElementById('graph-container');
 var network = new vis.Network(container, {nodes: nodesDataset, edges: edgesDataset}, options);
 network.fit();
+
+// ── Dark mode adaptive colors ─────────────────────────────────────────────
+var LIGHT_COLORS = {
+  added:      {background: '#6ee7b7', border: '#059669'},
+  removed:    {background: '#fca5a5', border: '#dc2626'},
+  modified:   {background: '#fcd34d', border: '#b45309'},
+  connection: {background: '#93c5fd', border: '#1d4ed8'},
+  unchanged:  {background: '#e2e8f0', border: '#94a3b8'}
+};
+var DARK_COLORS = {
+  added:      {background: '#059669', border: '#065f46'},
+  removed:    {background: '#dc2626', border: '#991b1b'},
+  modified:   {background: '#d97706', border: '#92400e'},
+  connection: {background: '#2563eb', border: '#1e40af'},
+  unchanged:  {background: '#334155', border: '#475569'}
+};
+
+function isDark() {
+  var t = document.documentElement.getAttribute('data-theme');
+  if (t === 'dark') return true;
+  if (t === 'light') return false;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function applyThemeColors() {
+  var dark = isDark();
+  var palette = dark ? DARK_COLORS : LIGHT_COLORS;
+  var fontLight = '#ffffff';
+  var fontDark  = '#1e293b';
+  var fontMuted = '#cbd5e1';
+  nodesDataset.update(GRAPH_NODES.map(function(n) {
+    var c = palette[n.status];
+    var fontColor = dark ? (n.status === 'unchanged' ? fontMuted : fontLight) : fontDark;
+    return {id: n.id, color: {background: c.background, border: c.border, highlight: {background: c.background, border: c.border}, hover: {background: c.background, border: c.border}}, font: {color: fontColor}};
+  }));
+  // Sync legend dots
+  document.querySelectorAll('[data-legend]').forEach(function(dot) {
+    var c = palette[dot.getAttribute('data-legend')];
+    if (c) { dot.style.background = c.background; dot.style.borderColor = c.border; }
+  });
+}
+
+applyThemeColors();
+new MutationObserver(function(ms) {
+  ms.forEach(function(m) { if (m.attributeName === 'data-theme') applyThemeColors(); });
+}).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+    if (!document.documentElement.hasAttribute('data-theme')) applyThemeColors();
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────
 
 // Show-only-changes toggle
 var showOnlyChanges = false;
