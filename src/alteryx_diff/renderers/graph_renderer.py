@@ -271,7 +271,7 @@ document.getElementById('toggle-changes').addEventListener('click', function() {
 
 // Fit-to-screen
 document.getElementById('fit-btn').addEventListener('click', function() {
-  network.fit({animation: true});
+  if (network) network.fit({animation: true});
 });
 
 // Fullscreen toggle (overlay view)
