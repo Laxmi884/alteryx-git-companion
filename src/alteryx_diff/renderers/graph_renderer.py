@@ -582,6 +582,7 @@ function switchView(view) {
   }
 }
 
+window.switchView = switchView;
 switchView(currentView);
 
 })();
