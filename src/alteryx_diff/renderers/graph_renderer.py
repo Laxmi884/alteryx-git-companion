@@ -37,7 +37,7 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 <div id="split-view" style="display:flex;height:600px;gap:0;border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">
   <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
     <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;border-right:1px solid #dee2e6;">Before</div>
-    <div id="split-view-left" style="flex:1;background:#f8fafc;"></div>
+    <div id="split-view-left" style="flex:1;height:100%;background:#f8fafc;"></div>
   </div>
   <div style="width:280px;display:flex;flex-direction:column;border-left:1px solid #dee2e6;border-right:1px solid #dee2e6;">
     <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;position:sticky;top:0;z-index:1;">Changes</div>
@@ -45,12 +45,13 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
   </div>
   <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
     <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;">After</div>
-    <div id="split-view-right" style="flex:1;background:#f8fafc;"></div>
+    <div id="split-view-right" style="flex:1;height:100%;background:#f8fafc;"></div>
   </div>
 </div>
 
 <div id="split-controls" style="display:flex;gap:8px;align-items:center;padding:8px 0;margin-top:4px;">
   <button id="fit-both-btn" class="ctrl-btn" onclick="if(networkLeft)networkLeft.fit();if(networkRight)networkRight.fit();">Fit Both</button>
+  <button id="split-fullscreen-btn" class="ctrl-btn">Fullscreen</button>
   <span style="font-size:0.8em;color:#64748b;">
     <span style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
     <span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
@@ -92,6 +93,8 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 .value-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; font-size:0.88em; }
 #graph-section:fullscreen { background: #f8fafc; padding: 12px; }
 #graph-section:fullscreen #graph-container { height: calc(100vh - 80px); }
+#graph-section:fullscreen #split-view { height: calc(100vh - 80px); }
+#graph-section:fullscreen #split-controls { display: flex !important; }
 .split-change-row { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.82em; }
 .split-change-row:hover { background:#f8fafc; }
 .split-change-badge { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
@@ -101,6 +104,7 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 }
 @media (prefers-color-scheme: dark) {
   #graph-section:fullscreen { background: #0f172a; }
+  #graph-section:fullscreen #split-view { border-color: #334155; }
   #graph-container { background: #0f172a !important; border-color: #334155 !important; }
   #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
   .panel-title { border-color: #334155 !important; color: #e2e8f0; }
@@ -257,7 +261,7 @@ document.getElementById('fit-btn').addEventListener('click', function() {
   network.fit({animation: true});
 });
 
-// Fullscreen toggle
+// Fullscreen toggle (overlay view)
 document.getElementById('fullscreen-btn').addEventListener('click', function() {
   var section = document.getElementById('graph-section');
   if (!document.fullscreenElement) {
@@ -268,11 +272,33 @@ document.getElementById('fullscreen-btn').addEventListener('click', function() {
     this.textContent = 'Fullscreen';
   }
 });
+
+// Fullscreen toggle (split view)
+document.getElementById('split-fullscreen-btn').addEventListener('click', function() {
+  var section = document.getElementById('graph-section');
+  if (!document.fullscreenElement) {
+    section.requestFullscreen().catch(function() {});
+    this.textContent = 'Exit Fullscreen';
+  } else {
+    document.exitFullscreen();
+    this.textContent = 'Fullscreen';
+  }
+});
+
 document.addEventListener('fullscreenchange', function() {
   if (!document.fullscreenElement) {
     var btn = document.getElementById('fullscreen-btn');
     if (btn) btn.textContent = 'Fullscreen';
+    var splitBtn = document.getElementById('split-fullscreen-btn');
+    if (splitBtn) splitBtn.textContent = 'Fullscreen';
     network.fit({animation: false});
+    if (networkLeft) networkLeft.fit({animation: false});
+    if (networkRight) networkRight.fit({animation: false});
+  } else {
+    setTimeout(function() {
+      if (networkLeft) networkLeft.fit({animation: false});
+      if (networkRight) networkRight.fit({animation: false});
+    }, 100);
   }
 });
 
@@ -523,11 +549,13 @@ function switchView(view) {
     overlayView.style.display = 'none';
     btnSplit.classList.add('active');
     btnOverlay.classList.remove('active');
-    initSplitNetworks();
-    setTimeout(function() {
-      if (networkLeft) networkLeft.redraw();
-      if (networkRight) networkRight.redraw();
-    }, 50);
+    requestAnimationFrame(function() {
+      initSplitNetworks();
+      requestAnimationFrame(function() {
+        if (networkLeft) { networkLeft.redraw(); networkLeft.fit({animation: false}); }
+        if (networkRight) { networkRight.redraw(); networkRight.fit({animation: false}); }
+      });
+    });
   } else {
     splitView.style.display = 'none';
     splitControls.style.display = 'none';
