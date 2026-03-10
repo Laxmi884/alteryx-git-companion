@@ -189,9 +189,10 @@ None.
 | 6 | integrate ThemeToggle sliding toggle component into HTML report | 2026-03-07 | af1ba87 | [6-integrate-themetoggle-sliding-toggle-com](./quick/6-integrate-themetoggle-sliding-toggle-com/) |
 | 7 | make graph colors darker and add color fidelity — saturated node backgrounds, synced legend dots | 2026-03-09 | 7b405bb | [7-make-graph-colors-darker-and-add-color-f](./quick/7-make-graph-colors-darker-and-add-color-f/) |
 | 8 | fix CLI spaces-in-filename error and add --no-filter-ui-tools flag for .yxwz vs .yxmd diffs | 2026-03-09 | ec3ba04 | [8-fix-cli-spaces-in-filename-error-and-add](./quick/8-fix-cli-spaces-in-filename-error-and-add/) |
+| 9 | add split view UI with synced before/after graphs — two vis-network instances, ghost nodes, center change panel, localStorage persistence | 2026-03-10 | 2f20f8e | [9-add-split-view-ui-with-synced-before-aft](./quick/9-add-split-view-ui-with-synced-before-aft/) |
 
 ## Session Continuity
 
-Last session: 2026-03-09
-Stopped at: Completed quick task 8: fix-cli-spaces-in-filename-error-and-add
+Last session: 2026-03-10
+Stopped at: Completed quick task 9: add-split-view-ui-with-synced-before-aft
 Resume file: None
