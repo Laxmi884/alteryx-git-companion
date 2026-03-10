@@ -184,8 +184,19 @@ var options = {
 };
 
 var container = document.getElementById('graph-container');
-var network = new vis.Network(container, {nodes: nodesDataset, edges: edgesDataset}, options);
-network.fit();
+var network = null;
+
+function initOverlayNetwork() {
+  if (network) return;
+  network = new vis.Network(container, {nodes: nodesDataset, edges: edgesDataset}, options);
+  network.on('click', function(params) {
+    if (params.nodes.length === 0) { closeSidePanel(); return; }
+    var nodeId = params.nodes[0];
+    var entry = TOOL_INDEX[nodeId];
+    if (!entry) return;
+    openSidePanel(nodeId, entry);
+  });
+}
 
 // ── Dark mode adaptive colors ─────────────────────────────────────────────
 var LIGHT_COLORS = {
@@ -293,7 +304,7 @@ document.addEventListener('fullscreenchange', function() {
     if (btn) btn.textContent = 'Fullscreen';
     var splitBtn = document.getElementById('split-fullscreen-btn');
     if (splitBtn) splitBtn.textContent = 'Fullscreen';
-    network.fit({animation: false});
+    if (network) network.fit({animation: false});
     if (networkLeft) networkLeft.fit({animation: false});
     if (networkRight) networkRight.fit({animation: false});
   } else {
@@ -302,18 +313,6 @@ document.addEventListener('fullscreenchange', function() {
       if (networkRight) networkRight.fit({animation: false});
     }, 100);
   }
-});
-
-// Click handler
-network.on('click', function(params) {
-  if (params.nodes.length === 0) {
-    closeSidePanel();
-    return;
-  }
-  var nodeId = params.nodes[0];  // integer
-  var entry = TOOL_INDEX[nodeId];
-  if (!entry) return;  // unchanged node — no panel
-  openSidePanel(nodeId, entry);
 });
 
 // Hover tooltip — vis-network handles via node.title attribute automatically
@@ -575,6 +574,7 @@ function switchView(view) {
     btnOverlay.classList.add('active');
     btnSplit.classList.remove('active');
     requestAnimationFrame(function() {
+      initOverlayNetwork();
       requestAnimationFrame(function() {
         if (network) { network.redraw(); network.fit({animation: false}); }
       });
