@@ -574,9 +574,11 @@ function switchView(view) {
     overlayView.style.display = 'block';
     btnOverlay.classList.add('active');
     btnSplit.classList.remove('active');
-    setTimeout(function() {
-      if (network) network.fit({animation: false});
-    }, 50);
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        if (network) { network.redraw(); network.fit({animation: false}); }
+      });
+    });
   }
 }
 
