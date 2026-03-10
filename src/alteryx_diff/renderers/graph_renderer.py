@@ -60,6 +60,9 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
   </span>
 </div>
 
+<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;border-radius:8px 0 0 8px;"></div>
+<div id="graph-overlay" style="display:none;position:fixed;inset:0;z-index:999;"></div>
+
 <div id="overlay-view" style="display:none;">
   <div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:8px 0;">
     <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
@@ -74,8 +77,6 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
     </span>
   </div>
   <div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
-  <div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;border-radius:8px 0 0 8px;"></div>
-  <div id="graph-overlay" style="display:none;position:fixed;inset:0;z-index:999;"></div>
 </div>
 
 <style>
@@ -431,6 +432,16 @@ function initSplitNetworks() {
   networkLeft.on('zoom', syncLeftToRight);
   networkRight.on('dragEnd', syncRightToLeft);
   networkRight.on('zoom', syncRightToLeft);
+
+  function onSplitNodeClick(params) {
+    if (params.nodes.length === 0) { closeSidePanel(); return; }
+    var nodeId = params.nodes[0];
+    var entry = TOOL_INDEX[nodeId];
+    if (!entry) return;
+    openSidePanel(nodeId, entry);
+  }
+  networkLeft.on('click', onSplitNodeClick);
+  networkRight.on('click', onSplitNodeClick);
 
   applyThemeColorsToSplit();
 }
