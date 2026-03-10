@@ -91,10 +91,12 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 .panel-before-label { font-weight:600; color:#dc3545; }
 .panel-after-label  { font-weight:600; color:#28a745; }
 .value-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; font-size:0.88em; }
-#graph-section:fullscreen { background: #f8fafc; padding: 12px; }
-#graph-section:fullscreen #graph-container { height: calc(100vh - 80px); }
-#graph-section:fullscreen #split-view { height: calc(100vh - 80px); }
-#graph-section:fullscreen #split-controls { display: flex !important; }
+#graph-section:fullscreen { background: #f8fafc; padding: 12px; box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; }
+#graph-section:fullscreen #graph-view-toggle { flex-shrink: 0; }
+#graph-section:fullscreen #split-view { flex: 1; height: auto !important; min-height: 0; }
+#graph-section:fullscreen #split-controls { flex-shrink: 0; display: flex !important; }
+#graph-section:fullscreen #graph-container { flex: 1; height: auto !important; }
+#graph-section:fullscreen #overlay-view { flex: 1; display: flex !important; flex-direction: column; min-height: 0; }
 .split-change-row { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.82em; }
 .split-change-row:hover { background:#f8fafc; }
 .split-change-badge { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
@@ -104,7 +106,7 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 }
 @media (prefers-color-scheme: dark) {
   #graph-section:fullscreen { background: #0f172a; }
-  #graph-section:fullscreen #split-view { border-color: #334155; }
+  #graph-section:fullscreen #split-view { border-color: #334155 !important; }
   #graph-container { background: #0f172a !important; border-color: #334155 !important; }
   #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
   .panel-title { border-color: #334155 !important; color: #e2e8f0; }
