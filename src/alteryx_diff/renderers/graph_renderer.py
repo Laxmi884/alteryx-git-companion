@@ -95,8 +95,7 @@ _GRAPH_FRAGMENT_TEMPLATE = """<section id="graph-section">
 #graph-section:fullscreen #graph-view-toggle { flex-shrink: 0; }
 #graph-section:fullscreen #split-view { flex: 1; height: auto !important; min-height: 0; }
 #graph-section:fullscreen #split-controls { flex-shrink: 0; display: flex !important; }
-#graph-section:fullscreen #graph-container { flex: 1; height: auto !important; }
-#graph-section:fullscreen #overlay-view { flex: 1; display: flex !important; flex-direction: column; min-height: 0; }
+#graph-section:fullscreen #graph-container { height: calc(100vh - 120px); }
 .split-change-row { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.82em; }
 .split-change-row:hover { background:#f8fafc; }
 .split-change-badge { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
