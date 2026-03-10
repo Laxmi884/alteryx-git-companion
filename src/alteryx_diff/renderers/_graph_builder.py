@@ -6,6 +6,7 @@ Public API:
     hierarchical_positions(G) -> dict[int, tuple[float, float]]
     canvas_positions(nodes_old, nodes_new) -> dict[int, tuple[float, float]]
     load_vis_js() -> str
+    build_split_node_list(result, nodes_old, nodes_new) -> tuple[list[dict], list[dict]]
 
 This module is internal (underscore prefix); it is consumed exclusively by
 graph_renderer.py in Plan 02. Unit tests import directly from here.
@@ -198,3 +199,147 @@ def load_vis_js() -> str:
 
         p = pathlib.Path(__file__).parent.parent / "static" / "vis-network.min.js"
         return p.read_text(encoding="utf-8")
+
+
+def build_split_node_list(
+    result: DiffResult,
+    nodes_old: tuple[AlteryxNode, ...],
+    nodes_new: tuple[AlteryxNode, ...],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build two separate vis-network node lists for split view.
+
+    Returns (old_vis_nodes, new_vis_nodes). Left graph contains real old nodes
+    plus ghost placeholders for added nodes. Right graph contains real new nodes
+    plus ghost placeholders for removed nodes. Ghost nodes use opacity:0.25 and
+    borderDashes:[4,4].
+
+    Args:
+        result: The diff output containing added/removed/modified nodes.
+        nodes_old: Nodes from the baseline (old) workflow.
+        nodes_new: Nodes from the changed (new) workflow.
+
+    Returns:
+        A tuple of (old_vis_nodes, new_vis_nodes) where each is a list of
+        vis-network node dicts ready for JSON serialization.
+    """
+    # Step 1 — Build ID sets
+    added_ids: set[int] = {int(n.tool_id) for n in result.added_nodes}
+    removed_ids: set[int] = {int(n.tool_id) for n in result.removed_nodes}
+    modified_ids: set[int] = {int(nd.tool_id) for nd in result.modified_nodes}
+    new_pos_lookup: dict[int, tuple[float, float]] = {
+        int(n.tool_id): (n.x, n.y) for n in nodes_new
+    }
+    old_pos_lookup: dict[int, tuple[float, float]] = {
+        int(n.tool_id): (n.x, n.y) for n in nodes_old
+    }
+
+    # Step 2 — Build left (old) node list
+    old_vis_nodes: list[dict[str, Any]] = []
+    for node in nodes_old:
+        if node.tool_type == CONTAINER_TYPE:
+            continue
+        tool_id = int(node.tool_id)
+        if tool_id in removed_ids:
+            status = "removed"
+        elif tool_id in modified_ids:
+            status = "modified"
+        else:
+            status = "unchanged"
+        short_label = node.tool_type.split(".")[-1]
+        old_vis_nodes.append(
+            {
+                "id": tool_id,
+                "label": short_label + "\n(" + str(tool_id) + ")",
+                "x": node.x,
+                "y": node.y,
+                "fixed": False,
+                "status": status,
+                "color": {
+                    "background": COLOR_MAP[status],
+                    "border": BORDER_COLOR_MAP[status],
+                    "highlight": {
+                        "background": COLOR_MAP[status],
+                        "border": BORDER_COLOR_MAP[status],
+                    },
+                },
+                "title": node.tool_type + " | " + status,
+            }
+        )
+    # Ghost nodes for added nodes (shown faintly on left/old graph)
+    for n in result.added_nodes:
+        if n.tool_type == CONTAINER_TYPE:
+            continue
+        tid = int(n.tool_id)
+        pos = new_pos_lookup.get(tid, (0.0, 0.0))
+        short_label = n.tool_type.split(".")[-1]
+        old_vis_nodes.append(
+            {
+                "id": tid,
+                "label": short_label + "\n(" + str(tid) + ")",
+                "x": pos[0],
+                "y": pos[1],
+                "fixed": False,
+                "status": "ghost_added",
+                "opacity": 0.25,
+                "borderDashes": [4, 4],
+                "color": {"background": "#d1fae5", "border": "#6ee7b7"},
+                "title": n.tool_type + " | added (in new workflow)",
+            }
+        )
+
+    # Step 3 — Build right (new) node list
+    new_vis_nodes: list[dict[str, Any]] = []
+    for node in nodes_new:
+        if node.tool_type == CONTAINER_TYPE:
+            continue
+        tool_id = int(node.tool_id)
+        if tool_id in added_ids:
+            status = "added"
+        elif tool_id in modified_ids:
+            status = "modified"
+        else:
+            status = "unchanged"
+        short_label = node.tool_type.split(".")[-1]
+        new_vis_nodes.append(
+            {
+                "id": tool_id,
+                "label": short_label + "\n(" + str(tool_id) + ")",
+                "x": node.x,
+                "y": node.y,
+                "fixed": False,
+                "status": status,
+                "color": {
+                    "background": COLOR_MAP[status],
+                    "border": BORDER_COLOR_MAP[status],
+                    "highlight": {
+                        "background": COLOR_MAP[status],
+                        "border": BORDER_COLOR_MAP[status],
+                    },
+                },
+                "title": node.tool_type + " | " + status,
+            }
+        )
+    # Ghost nodes for removed nodes (shown faintly on right/new graph)
+    for n in result.removed_nodes:
+        if n.tool_type == CONTAINER_TYPE:
+            continue
+        tid = int(n.tool_id)
+        pos = old_pos_lookup.get(tid, (0.0, 0.0))
+        short_label = n.tool_type.split(".")[-1]
+        new_vis_nodes.append(
+            {
+                "id": tid,
+                "label": short_label + "\n(" + str(tid) + ")",
+                "x": pos[0],
+                "y": pos[1],
+                "fixed": False,
+                "status": "ghost_removed",
+                "opacity": 0.25,
+                "borderDashes": [4, 4],
+                "color": {"background": "#fee2e2", "border": "#fca5a5"},
+                "title": n.tool_type + " | removed (was in old workflow)",
+            }
+        )
+
+    # Step 4 — Return (old_vis_nodes, new_vis_nodes)
+    return old_vis_nodes, new_vis_nodes
