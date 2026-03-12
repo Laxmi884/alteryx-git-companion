@@ -5,31 +5,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alteryx Workflow Diff Report</title>
 <style>
-body { margin: 0; padding: 16px; background: #fff; color: #212529; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+:root {
+  --bg: #fff;
+  --text: #212529;
+  --text-muted: #666;
+  --border: #dee2e6;
+  --row-bg: #f8f9fa;
+  --row-hover: #e9ecef;
+  --detail-bg: #fff;
+  --field-label: #555;
+  --before-bg: #fff5f5;
+  --after-bg: #f5fff5;
+  --btn-bg: #fff;
+  --btn-text: #475569;
+  --btn-border: #cbd5e1;
+  --btn-hover-bg: #f1f5f9;
+  --btn-hover-border: #94a3b8;
+  --section-border: #eee;
+  --empty-color: #888;
+  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
+  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
+  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
+  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --row-bg: #1e293b;
+    --row-hover: #273449;
+    --detail-bg: #131f31;
+    --field-label: #94a3b8;
+    --before-bg: #2d1518;
+    --after-bg: #132318;
+    --btn-bg: #1e293b;
+    --btn-text: #94a3b8;
+    --btn-border: #475569;
+    --btn-hover-bg: #273449;
+    --btn-hover-border: #64748b;
+    --section-border: #334155;
+    --empty-color: #64748b;
+    --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
+    --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
+    --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
+    --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
+  }
+}
+[data-theme=dark] {
+  --bg: #0f172a;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --row-bg: #1e293b;
+  --row-hover: #273449;
+  --detail-bg: #131f31;
+  --field-label: #94a3b8;
+  --before-bg: #2d1518;
+  --after-bg: #132318;
+  --btn-bg: #1e293b;
+  --btn-text: #94a3b8;
+  --btn-border: #475569;
+  --btn-hover-bg: #273449;
+  --btn-hover-border: #64748b;
+  --section-border: #334155;
+  --empty-color: #64748b;
+  --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
+  --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
+  --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
+  --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
+}
+[data-theme=light] {
+  --bg: #fff;
+  --text: #212529;
+  --text-muted: #666;
+  --border: #dee2e6;
+  --row-bg: #f8f9fa;
+  --row-hover: #e9ecef;
+  --detail-bg: #fff;
+  --field-label: #555;
+  --before-bg: #fff5f5;
+  --after-bg: #f5fff5;
+  --btn-bg: #fff;
+  --btn-text: #475569;
+  --btn-border: #cbd5e1;
+  --btn-hover-bg: #f1f5f9;
+  --btn-hover-border: #94a3b8;
+  --section-border: #eee;
+  --empty-color: #888;
+  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
+  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
+  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
+  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+}
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 .container { max-width: 960px; margin: 0 auto; }
 .badge { display: inline-block; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 1.1em; text-decoration: none; cursor: pointer; margin: 4px; }
-.badge-added { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.badge-removed { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-.badge-modified { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.badge-connections { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
-h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px solid #eee; padding-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.tool-row { display: flex; align-items: center; padding: 8px 12px; border: 1px solid #e9ecef; border-radius: 4px; margin: 4px 0; cursor: pointer; background: #f8f9fa; user-select: none; }
-.tool-row:hover { background: #e9ecef; }
+.badge-added { background: var(--badge-added-bg); color: var(--badge-added-text); border: 1px solid var(--badge-added-border); }
+.badge-removed { background: var(--badge-removed-bg); color: var(--badge-removed-text); border: 1px solid var(--badge-removed-border); }
+.badge-modified { background: var(--badge-modified-bg); color: var(--badge-modified-text); border: 1px solid var(--badge-modified-border); }
+.badge-connections { background: var(--badge-conn-bg); color: var(--badge-conn-text); border: 1px solid var(--badge-conn-border); }
+h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px solid var(--section-border); padding-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.tool-row { display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; margin: 4px 0; cursor: pointer; background: var(--row-bg); user-select: none; }
+.tool-row:hover { background: var(--row-hover); }
 .chevron { display: inline-block; transition: transform 0.15s; margin-right: 8px; font-style: normal; }
 .tool-row.expanded .chevron { transform: rotate(90deg); }
-.tool-detail { padding: 8px 12px 8px 36px; border: 1px solid #e9ecef; border-top: none; border-radius: 0 0 4px 4px; background: #fff; }
+.tool-detail { padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 4px 4px; background: var(--detail-bg); }
 .field-row { margin: 6px 0; }
-.field-name { font-weight: 600; font-size: 0.85em; color: #555; margin-bottom: 2px; }
-.before-row { background: #fff5f5; border-left: 3px solid #dc3545; padding: 4px 8px; margin: 2px 0; }
-.after-row { background: #f5fff5; border-left: 3px solid #28a745; padding: 4px 8px; margin: 2px 0; }
+.field-name { font-weight: 600; font-size: 0.85em; color: var(--field-label); margin-bottom: 2px; }
+.before-row { background: var(--before-bg); border-left: 3px solid #dc3545; padding: 4px 8px; margin: 2px 0; }
+.after-row { background: var(--after-bg); border-left: 3px solid #28a745; padding: 4px 8px; margin: 2px 0; }
 .before-label { font-weight: 600; color: #dc3545; }
 .after-label { font-weight: 600; color: #28a745; }
 .value-block { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; }
-.ctrl-btn { font-size: 0.8em; padding: 2px 8px; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; background: #fff; margin-left: 4px; }
-.empty { color: #888; font-style: italic; }
-header { border-bottom: 1px solid #dee2e6; margin-bottom: 20px; padding-bottom: 12px; }
+.ctrl-btn { font-size: 0.8em; padding: 4px 10px; cursor: pointer; border: 1px solid var(--btn-border); border-radius: 6px; background: var(--btn-bg); color: var(--btn-text); font-weight: 500; transition: background 0.15s, border-color 0.15s; }
+.ctrl-btn:hover { background: var(--btn-hover-bg); border-color: var(--btn-hover-border); }
+.empty { color: var(--empty-color); font-style: italic; }
+header { border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 12px; }
 header h1 { font-size: 1.5em; margin: 0 0 4px; }
-header p { margin: 2px 0; color: #666; font-size: 0.9em; }
+header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
+.theme-toggle { display:flex; width:64px; height:32px; padding:4px; border-radius:9999px; cursor:pointer; box-sizing:border-box; transition:background 0.3s,border-color 0.3s; margin-top:8px; outline:none; }
+.theme-toggle:focus-visible { box-shadow:0 0 0 2px var(--btn-border); }
+.toggle-inner { display:flex; justify-content:space-between; align-items:center; width:100%; }
+.toggle-thumb,.toggle-passive { display:flex; justify-content:center; align-items:center; width:24px; height:24px; border-radius:9999px; transition:transform 0.3s,background 0.3s; flex-shrink:0; }
+.theme-toggle[data-mode=dark] { background:#09090b; border:1px solid #27272a; }
+.theme-toggle[data-mode=dark] .toggle-thumb { transform:translateX(0); background:#3f3f46; color:#fff; }
+.theme-toggle[data-mode=dark] .toggle-passive { background:transparent; color:#6b7280; transform:translateX(0); }
+.theme-toggle[data-mode=light] { background:#fff; border:1px solid #e4e4e7; }
+.theme-toggle[data-mode=light] .toggle-thumb { transform:translateX(32px); background:#e5e7eb; color:#374151; }
+.theme-toggle[data-mode=light] .toggle-passive { transform:translateX(-32px); background:transparent; color:#000; }
+.moon-icon,.sun-icon { display:none; }
+.theme-toggle[data-mode=dark] .toggle-thumb .moon-icon { display:block; }
+.theme-toggle[data-mode=dark] .toggle-thumb .sun-icon { display:none; }
+.theme-toggle[data-mode=dark] .toggle-passive .sun-icon { display:block; }
+.theme-toggle[data-mode=dark] .toggle-passive .moon-icon { display:none; }
+.theme-toggle[data-mode=light] .toggle-thumb .sun-icon { display:block; }
+.theme-toggle[data-mode=light] .toggle-thumb .moon-icon { display:none; }
+.theme-toggle[data-mode=light] .toggle-passive .moon-icon { display:block; }
+.theme-toggle[data-mode=light] .toggle-passive .sun-icon { display:none; }
 @media print { .ctrl-btn { display: none; } .tool-detail { display: block !important; } }
 </style>
 </head>
@@ -37,14 +151,26 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
 <div class="container">
 <header>
   <h1>Alteryx Workflow Diff Report</h1>
-  <p>Generated: 2026-03-07T06:39:20.810042+00:00</p>
-  <p>/private/var/folders/9c/1mr24qp56ds1jxs6364lczbw0000gn/T/pytest-of-laxmikantmukkawar/pytest-76/test_diff_include_positions_de0/a.yxmd vs /private/var/folders/9c/1mr24qp56ds1jxs6364lczbw0000gn/T/pytest-of-laxmikantmukkawar/pytest-76/test_diff_include_positions_de0/b.yxmd</p>
+  <p>Generated: 2026-03-10T15:44:56.416624+00:00</p>
+  <p>/Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/workflow.yxmd vs /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/workflow2.yxmd</p>
+  <div id="theme-toggle" class="theme-toggle" data-mode="light" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Toggle dark/light mode">
+    <div class="toggle-inner">
+      <div class="toggle-thumb">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+      </div>
+      <div class="toggle-passive">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </div>
+    </div>
+  </div>
 </header>
 <section id="summary">
-  <a href="#added" onclick="expandSection('added'); return true;" class="badge badge-added">Added: 0</a>
+  <a href="#added" onclick="expandSection('added'); return true;" class="badge badge-added">Added: 1</a>
   <a href="#removed" onclick="expandSection('removed'); return true;" class="badge badge-removed">Removed: 0</a>
-  <a href="#modified" onclick="expandSection('modified'); return true;" class="badge badge-modified">Modified: 1</a>
-  <a href="#connections" onclick="expandSection('connections'); return true;" class="badge badge-connections">Connections: 0</a>
+  <a href="#modified" onclick="expandSection('modified'); return true;" class="badge badge-modified">Modified: 2</a>
+  <a href="#connections" onclick="expandSection('connections'); return true;" class="badge badge-connections">Connections: 1</a>
 </section>
 <section>
   <h2 id="added">
@@ -53,7 +179,12 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
     <button class="ctrl-btn" onclick="collapseAll('added')">Collapse All</button>
   </h2>
 
-  <p class="empty">No added tools.</p>
+  <div class="tool-row" id="row-added-29"
+       onclick="toggleTool(29, 'added')">
+    <span class="chevron">&#9654;</span>
+    AlteryxBasePluginsGui.Formula.Formula (ID: 29)
+  </div>
+  <div class="tool-detail" id="detail-added-29" hidden></div>
 
 </section>
 <section>
@@ -73,12 +204,19 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
     <button class="ctrl-btn" onclick="collapseAll('modified')">Collapse All</button>
   </h2>
 
-  <div class="tool-row" id="row-modified-902"
-       onclick="toggleTool(902, 'modified')">
+  <div class="tool-row" id="row-modified-2"
+       onclick="toggleTool(2, 'modified')">
     <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter (ID: 902)
+    AlteryxBasePluginsGui.DbFileInput.DbFileInput (ID: 2)
   </div>
-  <div class="tool-detail" id="detail-modified-902" hidden></div>
+  <div class="tool-detail" id="detail-modified-2" hidden></div>
+
+  <div class="tool-row" id="row-modified-18"
+       onclick="toggleTool(18, 'modified')">
+    <span class="chevron">&#9654;</span>
+    JupyterCode (ID: 18)
+  </div>
+  <div class="tool-detail" id="detail-modified-18" hidden></div>
 
 </section>
 <section>
@@ -88,27 +226,71 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
     <button class="ctrl-btn" onclick="collapseAll('connections')">Collapse All</button>
   </h2>
 
-  <p class="empty">No connection changes.</p>
+  <div class="tool-row" id="row-connections-1"
+       onclick="toggleTool(1, 'connections')">
+    <span class="chevron">&#9654;</span>
+    23:False to 29:Input
+  </div>
+  <div class="tool-detail" id="detail-connections-1" hidden></div>
 
 </section>
-<script type="application/json" id="diff-data">{"added": [], "connections": [], "modified": [{"field_diffs": [{"after": [50.0, 80.0], "before": [10.0, 20.0], "field": "position"}], "tool_id": 902, "tool_type": "AlteryxBasePluginsGui.Filter"}], "removed": []}</script>
+<script type="application/json" id="diff-data">{"added": [{"config": {"FormulaFields": {"FormulaField": {"@enabled": "true", "@expression": "\"Hello Testing\"", "@field": "test", "@size": "1073741823", "@type": "V_WString"}}}, "tool_id": 29, "tool_type": "AlteryxBasePluginsGui.Formula.Formula"}], "connections": [{"change_type": "added", "dst_anchor": "Input", "dst_tool": 29, "src_anchor": "False", "src_tool": 23, "tool_id": 23}], "modified": [{"field_diffs": [{"after": "aka:Snowflake_RiskAnalytics|||select CERTNUM ,DTPRINT,REMAINING_AMORT, \"D_ind\"\nfrom SPDW.RISKRND.DELQ_HISTORY\nwhere time_mth_sid = 202501", "before": "aka:Snowflake_RiskAnalytics|||select CERTNUM ,DTPRINT,REMAINING_AMORT, \"D_ind\"\nfrom SPDW.RISKRND.DELQ_HISTORY\nwhere time_mth_sid = 202512", "field": "File.#text"}], "tool_id": 2, "tool_type": "AlteryxBasePluginsGui.DbFileInput.DbFileInput"}, {"field_diffs": [{"after": "c:\\users\\650000337\\downloads\\workflow2.yxmd", "before": "x:\\lax_dev\\auto_seg_poc\\workflow.yxmd", "field": "WorkflowName.#text"}, {"after": "26e20a8f7647796a7a085e5420d394ac", "before": "1f8c8d94922fb0bd9a8fcee1d313a19c", "field": "JupyterGuidDir.#text"}], "tool_id": 18, "tool_type": "JupyterCode"}], "removed": []}</script>
 <section id="graph-section">
 <h2>Workflow Graph</h2>
-<div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">
-  <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
-  <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
-  <span style="font-size:0.8em;color:#555;">
-    <span style="display:inline-block;width:12px;height:12px;background:#28a745;border-radius:2px;margin-right:3px;"></span>Added
-    <span style="display:inline-block;width:12px;height:12px;background:#dc3545;border-radius:2px;margin:0 3px;"></span>Removed
-    <span style="display:inline-block;width:12px;height:12px;background:#ffc107;border-radius:2px;margin:0 3px;"></span>Modified
-    <span style="display:inline-block;width:12px;height:12px;background:#007bff;border-radius:2px;margin:0 3px;"></span>Connection change
-    <span style="display:inline-block;width:12px;height:12px;background:#adb5bd;border-radius:2px;margin:0 3px;"></span>Unchanged
+
+<div id="graph-view-toggle" style="display:flex;gap:8px;margin-bottom:10px;">
+  <button id="btn-split" class="view-toggle-btn" onclick="switchView('split')">Split View</button>
+  <button id="btn-overlay" class="view-toggle-btn" onclick="switchView('overlay')">Overlay View</button>
+</div>
+
+<div id="split-view" style="display:flex;height:600px;gap:0;border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;border-right:1px solid #dee2e6;">Before</div>
+    <div id="split-view-left" style="flex:1;height:100%;background:#f8fafc;"></div>
+  </div>
+  <div style="width:280px;display:flex;flex-direction:column;border-left:1px solid #dee2e6;border-right:1px solid #dee2e6;">
+    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;position:sticky;top:0;z-index:1;">Changes</div>
+    <div id="split-change-rows" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;">After</div>
+    <div id="split-view-right" style="flex:1;height:100%;background:#f8fafc;"></div>
+  </div>
+</div>
+
+<div id="split-controls" style="display:flex;gap:8px;align-items:center;padding:8px 0;margin-top:4px;">
+  <button id="fit-both-btn" class="ctrl-btn" onclick="if(networkLeft)networkLeft.fit();if(networkRight)networkRight.fit();">Fit Both</button>
+  <button id="split-fullscreen-btn" class="ctrl-btn">Fullscreen</button>
+  <span style="font-size:0.8em;color:#64748b;">
+    <span style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
+    <span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
+    <span style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
+    <span style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
   </span>
 </div>
-<div id="graph-container" style="width:100%;height:500px;border:1px solid #dee2e6;border-radius:4px;background:#fafafa;position:relative;"></div>
-<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;"></div>
+
+<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;border-radius:8px 0 0 8px;"></div>
 <div id="graph-overlay" style="display:none;position:fixed;inset:0;z-index:999;"></div>
+
+<div id="overlay-view" style="display:none;">
+  <div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:8px 0;">
+    <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
+    <button id="fullscreen-btn" class="ctrl-btn">Fullscreen</button>
+    <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
+    <span style="font-size:0.8em;color:#64748b;">
+      <span data-legend="added" style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
+      <span data-legend="removed" style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
+      <span data-legend="modified" style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
+      <span data-legend="connection" style="display:inline-block;width:12px;height:12px;background:#93c5fd;border:1px solid #1d4ed8;border-radius:50%;margin:0 3px;"></span>Connection change
+      <span data-legend="unchanged" style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
+    </span>
+  </div>
+  <div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
+</div>
+
 <style>
+.view-toggle-btn { padding:6px 16px; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:0.88em; background:transparent; }
+.view-toggle-btn.active { background:#3b82f6; color:#fff; border-color:#3b82f6; }
 #diff-panel.open { right: 0 !important; }
 #diff-panel.open ~ #graph-overlay { display: block !important; }
 .panel-title { font-size:1em; font-weight:600; margin:0 0 12px; border-bottom:2px solid #eee; padding-bottom:8px; }
@@ -119,6 +301,51 @@ header p { margin: 2px 0; color: #666; font-size: 0.9em; }
 .panel-before-label { font-weight:600; color:#dc3545; }
 .panel-after-label  { font-weight:600; color:#28a745; }
 .value-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; font-size:0.88em; }
+#graph-section:fullscreen { background: #f8fafc; padding: 12px; box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; }
+#graph-section:fullscreen #graph-view-toggle { flex-shrink: 0; }
+#graph-section:fullscreen #split-view { flex: 1; height: auto !important; min-height: 0; }
+#graph-section:fullscreen #split-controls { flex-shrink: 0; display: flex !important; }
+#graph-section:fullscreen #graph-container { height: calc(100vh - 120px); }
+.split-change-row { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.82em; }
+.split-change-row:hover { background:#f8fafc; }
+.split-change-badge { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+@media (max-width: 800px) {
+  #split-view { flex-direction: column; height: auto; }
+  #split-view > div { width: 100% !important; }
+}
+@media (prefers-color-scheme: dark) {
+  #graph-section:fullscreen { background: #0f172a; }
+  #graph-section:fullscreen #split-view { border-color: #334155 !important; }
+  #graph-container { background: #0f172a !important; border-color: #334155 !important; }
+  #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+  .panel-title { border-color: #334155 !important; color: #e2e8f0; }
+  .panel-field-name { color: #94a3b8 !important; }
+  .panel-before { background: #2d1518 !important; }
+  .panel-after { background: #132318 !important; }
+  .value-mono { color: #e2e8f0; }
+  #split-view-left { background: #0f172a !important; }
+  #split-view-right { background: #0f172a !important; }
+  #split-change-rows { background: #1e293b; color: #e2e8f0; }
+  .split-change-row { border-bottom-color: #334155; }
+  .split-change-row:hover { background: #334155; }
+}
+[data-theme=dark] #graph-section:fullscreen { background: #0f172a; }
+[data-theme=dark] #graph-container { background: #0f172a !important; border-color: #334155 !important; }
+[data-theme=dark] #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+[data-theme=dark] .panel-title { border-color: #334155 !important; color: #e2e8f0; }
+[data-theme=dark] .panel-field-name { color: #94a3b8 !important; }
+[data-theme=dark] .panel-before { background: #2d1518 !important; }
+[data-theme=dark] .panel-after { background: #132318 !important; }
+[data-theme=dark] .value-mono { color: #e2e8f0; }
+[data-theme=dark] #split-view-left { background: #0f172a !important; }
+[data-theme=dark] #split-view-right { background: #0f172a !important; }
+[data-theme=dark] #split-change-rows { background: #1e293b; color: #e2e8f0; }
+[data-theme=dark] .split-change-row { border-bottom-color: #334155; }
+[data-theme=dark] .split-change-row:hover { background: #334155; }
+[data-theme=light] #graph-container { background: #f8fafc !important; border-color: #dee2e6 !important; }
+[data-theme=light] #diff-panel { background: #fff !important; border-color: #dee2e6 !important; color: inherit !important; }
+[data-theme=light] #split-view-left { background: #f8fafc !important; }
+[data-theme=light] #split-view-right { background: #f8fafc !important; }
 </style>
 <script>
 (function() {
@@ -159,8 +386,11 @@ g.exports=a=function(){return d},g.exports.__esModule=!0,g.exports.default=g.exp
 //# sourceMappingURL=vis-network.min.js.map
 
 
-var GRAPH_NODES = [{"id": 902, "label": "AlteryxBasePluginsGui.Filter", "color": "#ffc107", "status": "modified", "title": "AlteryxBasePluginsGui.Filter | modified | 1 field(s) changed", "x": 0.0, "y": 0.0, "fixed": true}];
-var GRAPH_EDGES = [];
+// ── Section A: Shared data ────────────────────────────────────────────────
+var GRAPH_NODES = [{"id": 1, "label": "DbFileInput\n(1)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | unchanged", "x": -1845.0704225352113, "y": -147.88732394366198, "fixed": false}, {"id": 2, "label": "DbFileInput\n(2)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileInput\n(2) | modified | 1 field(s) changed", "x": -1845.0704225352113, "y": 147.88732394366198, "fixed": false}, {"id": 3, "label": "AlteryxSelect\n(3)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged", "x": -1549.2957746478874, "y": -147.88732394366198, "fixed": false}, {"id": 4, "label": "AlteryxSelect\n(4)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged", "x": -1549.2957746478874, "y": 147.88732394366198, "fixed": false}, {"id": 7, "label": "Join\n(7)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Join.Join | unchanged", "x": -1253.5211267605632, "y": 0.0, "fixed": false}, {"id": 23, "label": "Filter\n(23)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.Filter.Filter | connection", "x": -957.7464788732394, "y": 0.0, "fixed": false}, {"id": 8, "label": "Formula\n(8)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged", "x": -661.9718309859155, "y": -147.88732394366198, "fixed": false}, {"id": 29, "label": "Formula\n(29)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Formula.Formula | added", "x": -661.9718309859155, "y": 147.88732394366198, "fixed": false}, {"id": 10, "label": "Filter\n(10)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": -366.19718309859155, "y": 0.0, "fixed": false}, {"id": 12, "label": "Filter\n(12)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": -70.4225352112676, "y": -147.88732394366198, "fixed": false}, {"id": 22, "label": "Summarize\n(22)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged", "x": -70.4225352112676, "y": 147.88732394366198, "fixed": false}, {"id": 14, "label": "Filter\n(14)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": 225.35211267605632, "y": 0.0, "fixed": false}, {"id": 15, "label": "Filter\n(15)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": 521.1267605633802, "y": 0.0, "fixed": false}, {"id": 16, "label": "Filter\n(16)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": 816.9014084507043, "y": -295.77464788732397, "fixed": false}, {"id": 17, "label": "PlotlyCharting\n(17)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "PlotlyCharting | unchanged", "x": 816.9014084507043, "y": 0.0, "fixed": false}, {"id": 18, "label": "JupyterCode\n(18)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "JupyterCode\n(18) | modified | 2 field(s) changed", "x": 816.9014084507043, "y": 295.77464788732397, "fixed": false}, {"id": 13, "label": "Sort\n(13)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged", "x": 1112.6760563380283, "y": 0.0, "fixed": false}, {"id": 9, "label": "Summarize\n(9)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged", "x": 1408.450704225352, "y": -147.88732394366198, "fixed": false}, {"id": 20, "label": "Filter\n(20)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": 1408.450704225352, "y": 147.88732394366198, "fixed": false}, {"id": 21, "label": "Sort\n(21)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged", "x": 1704.225352112676, "y": 0.0, "fixed": false}, {"id": 26, "label": "BrowseV2\n(26)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.BrowseV2.BrowseV2 | unchanged", "x": 2000.0, "y": 0.0, "fixed": false}];
+var GRAPH_EDGES = [{"id": "2-4", "from": 2, "to": 4}, {"id": "1-3", "from": 1, "to": 3}, {"id": "3-7", "from": 3, "to": 7}, {"id": "4-7", "from": 4, "to": 7}, {"id": "7-23", "from": 7, "to": 23}, {"id": "8-10", "from": 8, "to": 10}, {"id": "10-12", "from": 10, "to": 12}, {"id": "10-22", "from": 10, "to": 22}, {"id": "12-14", "from": 12, "to": 14}, {"id": "13-9", "from": 13, "to": 9}, {"id": "13-20", "from": 13, "to": 20}, {"id": "14-15", "from": 14, "to": 15}, {"id": "15-16", "from": 15, "to": 16}, {"id": "15-17", "from": 15, "to": 17}, {"id": "15-18", "from": 15, "to": 18}, {"id": "16-13", "from": 16, "to": 13}, {"id": "20-21", "from": 20, "to": 21}, {"id": "21-26", "from": 21, "to": 26}, {"id": "23-8", "from": 23, "to": 8}, {"id": "23-29", "from": 23, "to": 29}];
+var NODES_OLD = [{"id": 2, "label": "DbFileInput\n(2)", "x": 79.0, "y": 247.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 1, "label": "DbFileInput\n(1)", "x": 91.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | unchanged"}, {"id": 26, "label": "BrowseV2\n(26)", "x": 1723.0, "y": 187.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.BrowseV2.BrowseV2 | unchanged"}, {"id": 3, "label": "AlteryxSelect\n(3)", "x": 317.0, "y": 114.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 4, "label": "AlteryxSelect\n(4)", "x": 342.0, "y": 234.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 7, "label": "Join\n(7)", "x": 463.0, "y": 101.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Join.Join | unchanged"}, {"id": 8, "label": "Formula\n(8)", "x": 667.0, "y": 101.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 9, "label": "Summarize\n(9)", "x": 1338.0, "y": 210.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged"}, {"id": 10, "label": "Filter\n(10)", "x": 775.0, "y": 102.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 12, "label": "Filter\n(12)", "x": 895.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 13, "label": "Sort\n(13)", "x": 1267.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged"}, {"id": 14, "label": "Filter\n(14)", "x": 978.0, "y": 90.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 15, "label": "Filter\n(15)", "x": 1075.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 16, "label": "Filter\n(16)", "x": 1171.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 17, "label": "PlotlyCharting\n(17)", "x": 1194.0, "y": 222.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "PlotlyCharting | unchanged"}, {"id": 20, "label": "Filter\n(20)", "x": 1435.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 21, "label": "Sort\n(21)", "x": 1531.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged"}, {"id": 22, "label": "Summarize\n(22)", "x": 882.0, "y": 198.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged"}, {"id": 23, "label": "Filter\n(23)", "x": 559.0, "y": 101.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 18, "label": "JupyterCode\n(18)", "x": 1483.0, "y": 487.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "JupyterCode | modified"}, {"id": 29, "label": "Formula\n(29)", "x": 714.0, "y": 390.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Formula.Formula | added (in new workflow)"}];
+var NODES_NEW = [{"id": 29, "label": "Formula\n(29)", "x": 714.0, "y": 390.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | added"}, {"id": 2, "label": "DbFileInput\n(2)", "x": 79.0, "y": 260.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 1, "label": "DbFileInput\n(1)", "x": 91.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | unchanged"}, {"id": 26, "label": "BrowseV2\n(26)", "x": 1723.0, "y": 200.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.BrowseV2.BrowseV2 | unchanged"}, {"id": 3, "label": "AlteryxSelect\n(3)", "x": 317.0, "y": 127.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 4, "label": "AlteryxSelect\n(4)", "x": 342.0, "y": 247.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 7, "label": "Join\n(7)", "x": 463.0, "y": 114.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Join.Join | unchanged"}, {"id": 8, "label": "Formula\n(8)", "x": 667.0, "y": 114.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 9, "label": "Summarize\n(9)", "x": 1338.0, "y": 223.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged"}, {"id": 10, "label": "Filter\n(10)", "x": 775.0, "y": 115.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 12, "label": "Filter\n(12)", "x": 895.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 13, "label": "Sort\n(13)", "x": 1267.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged"}, {"id": 14, "label": "Filter\n(14)", "x": 978.0, "y": 103.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 15, "label": "Filter\n(15)", "x": 1075.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 16, "label": "Filter\n(16)", "x": 1171.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 17, "label": "PlotlyCharting\n(17)", "x": 1194.0, "y": 235.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "PlotlyCharting | unchanged"}, {"id": 20, "label": "Filter\n(20)", "x": 1435.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 21, "label": "Sort\n(21)", "x": 1531.0, "y": 116.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Sort.Sort | unchanged"}, {"id": 22, "label": "Summarize\n(22)", "x": 882.0, "y": 211.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | unchanged"}, {"id": 23, "label": "Filter\n(23)", "x": 559.0, "y": 114.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 18, "label": "JupyterCode\n(18)", "x": 1483.0, "y": 500.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "JupyterCode | modified"}];
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
 // Build fast lookup: integer tool_id -> {category, data}
@@ -171,19 +401,99 @@ var TOOL_INDEX = {};
   });
 });
 
+// ── Section B: Overlay network (single merged graph) ──────────────────────
 var nodesDataset = new vis.DataSet(GRAPH_NODES);
 var edgesDataset = new vis.DataSet(GRAPH_EDGES);
 
 var options = {
   physics: {enabled: false},
-  nodes: {shape: 'box', font: {size: 12}, borderWidth: 1, margin: 6},
-  edges: {arrows: {to: {enabled: true, scaleFactor: 0.6}}, smooth: {enabled: false}},
-  interaction: {zoomView: true, dragView: true, hover: true, tooltipDelay: 150}
+  nodes: {
+    shape: 'box',
+    borderWidth: 1,
+    borderWidthSelected: 3,
+    margin: {top: 8, right: 12, bottom: 8, left: 12},
+    font: {size: 13, face: 'system-ui, -apple-system, sans-serif', color: '#1e293b'},
+    shapeProperties: {borderRadius: 6},
+    shadow: {enabled: false}
+  },
+  edges: {
+    arrows: {to: {enabled: true, scaleFactor: 0.7, type: 'arrow'}},
+    smooth: {enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.4},
+    color: {color: '#94a3b8', highlight: '#475569', hover: '#475569'},
+    width: 1.5,
+    hoverWidth: 2.5,
+    selectionWidth: 2.5
+  },
+  interaction: {zoomView: true, dragView: true, hover: true, tooltipDelay: 200, hideEdgesOnDrag: false}
 };
 
 var container = document.getElementById('graph-container');
-var network = new vis.Network(container, {nodes: nodesDataset, edges: edgesDataset}, options);
-network.fit();
+var network = null;
+
+function initOverlayNetwork() {
+  if (network) return;
+  network = new vis.Network(container, {nodes: nodesDataset, edges: edgesDataset}, options);
+  network.on('click', function(params) {
+    if (params.nodes.length === 0) { closeSidePanel(); return; }
+    var nodeId = params.nodes[0];
+    var entry = TOOL_INDEX[nodeId];
+    if (!entry) return;
+    openSidePanel(nodeId, entry);
+  });
+}
+
+// ── Dark mode adaptive colors ─────────────────────────────────────────────
+var LIGHT_COLORS = {
+  added:      {background: '#6ee7b7', border: '#059669'},
+  removed:    {background: '#fca5a5', border: '#dc2626'},
+  modified:   {background: '#fcd34d', border: '#b45309'},
+  connection: {background: '#93c5fd', border: '#1d4ed8'},
+  unchanged:  {background: '#e2e8f0', border: '#94a3b8'}
+};
+var DARK_COLORS = {
+  added:      {background: '#059669', border: '#065f46'},
+  removed:    {background: '#dc2626', border: '#991b1b'},
+  modified:   {background: '#d97706', border: '#92400e'},
+  connection: {background: '#2563eb', border: '#1e40af'},
+  unchanged:  {background: '#334155', border: '#475569'}
+};
+
+function isDark() {
+  var t = document.documentElement.getAttribute('data-theme');
+  if (t === 'dark') return true;
+  if (t === 'light') return false;
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function applyThemeColors() {
+  var dark = isDark();
+  var palette = dark ? DARK_COLORS : LIGHT_COLORS;
+  var fontLight = '#ffffff';
+  var fontDark  = '#1e293b';
+  var fontMuted = '#cbd5e1';
+  nodesDataset.update(GRAPH_NODES.map(function(n) {
+    var c = palette[n.status];
+    var fontColor = dark ? (n.status === 'unchanged' ? fontMuted : fontLight) : fontDark;
+    return {id: n.id, color: {background: c.background, border: c.border, highlight: {background: c.background, border: c.border}, hover: {background: c.background, border: c.border}}, font: {color: fontColor}};
+  }));
+  // Sync legend dots
+  document.querySelectorAll('[data-legend]').forEach(function(dot) {
+    var c = palette[dot.getAttribute('data-legend')];
+    if (c) { dot.style.background = c.background; dot.style.borderColor = c.border; }
+  });
+  applyThemeColorsToSplit();
+}
+
+applyThemeColors();
+new MutationObserver(function(ms) {
+  ms.forEach(function(m) { if (m.attributeName === 'data-theme') applyThemeColors(); });
+}).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+    if (!document.documentElement.hasAttribute('data-theme')) applyThemeColors();
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────
 
 // Show-only-changes toggle
 var showOnlyChanges = false;
@@ -205,19 +515,48 @@ document.getElementById('toggle-changes').addEventListener('click', function() {
 
 // Fit-to-screen
 document.getElementById('fit-btn').addEventListener('click', function() {
-  network.fit({animation: true});
+  if (network) network.fit({animation: true});
 });
 
-// Click handler
-network.on('click', function(params) {
-  if (params.nodes.length === 0) {
-    closeSidePanel();
-    return;
+// Fullscreen toggle (overlay view)
+document.getElementById('fullscreen-btn').addEventListener('click', function() {
+  var section = document.getElementById('graph-section');
+  if (!document.fullscreenElement) {
+    section.requestFullscreen().catch(function() {});
+    this.textContent = 'Exit Fullscreen';
+  } else {
+    document.exitFullscreen();
+    this.textContent = 'Fullscreen';
   }
-  var nodeId = params.nodes[0];  // integer
-  var entry = TOOL_INDEX[nodeId];
-  if (!entry) return;  // unchanged node — no panel
-  openSidePanel(nodeId, entry);
+});
+
+// Fullscreen toggle (split view)
+document.getElementById('split-fullscreen-btn').addEventListener('click', function() {
+  var section = document.getElementById('graph-section');
+  if (!document.fullscreenElement) {
+    section.requestFullscreen().catch(function() {});
+    this.textContent = 'Exit Fullscreen';
+  } else {
+    document.exitFullscreen();
+    this.textContent = 'Fullscreen';
+  }
+});
+
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement) {
+    var btn = document.getElementById('fullscreen-btn');
+    if (btn) btn.textContent = 'Fullscreen';
+    var splitBtn = document.getElementById('split-fullscreen-btn');
+    if (splitBtn) splitBtn.textContent = 'Fullscreen';
+    if (network) network.fit({animation: false});
+    if (networkLeft) networkLeft.fit({animation: false});
+    if (networkRight) networkRight.fit({animation: false});
+  } else {
+    setTimeout(function() {
+      if (networkLeft) networkLeft.fit({animation: false});
+      if (networkRight) networkRight.fit({animation: false});
+    }, 100);
+  }
 });
 
 // Hover tooltip — vis-network handles via node.title attribute automatically
@@ -303,24 +642,232 @@ document.getElementById('graph-overlay').addEventListener('click', function() {
   closeSidePanel();
 });
 
+// ── Section C: Split network + view switcher ──────────────────────────────
+var networkLeft = null, networkRight = null;
+var syncingViewport = false;
+
+var SPLIT_OPTIONS = {
+  physics: {enabled: false},
+  nodes: {shape: 'box', borderWidth: 1, margin: {top: 6, right: 10, bottom: 6, left: 10}, font: {size: 12, face: 'system-ui,-apple-system,sans-serif'}, shapeProperties: {borderRadius: 6}},
+  edges: {arrows: {to: {enabled: true, scaleFactor: 0.6}}, smooth: {enabled: true, type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.4}, color: {color: '#94a3b8'}, width: 1.2},
+  interaction: {zoomView: true, dragView: true, hover: true}
+};
+
+function initSplitNetworks() {
+  if (networkLeft) return;
+  var leftContainer = document.getElementById('split-view-left');
+  var rightContainer = document.getElementById('split-view-right');
+
+  // Build ID sets for filtering edges
+  var leftNodeIds = new Set(NODES_OLD.filter(function(n) { return n.status !== 'ghost_added'; }).map(function(n) { return n.id; }));
+  var rightNodeIds = new Set(NODES_NEW.filter(function(n) { return n.status !== 'ghost_removed'; }).map(function(n) { return n.id; }));
+
+  var leftEdges = GRAPH_EDGES.filter(function(e) { return leftNodeIds.has(e.from) && leftNodeIds.has(e.to); });
+  var rightEdges = GRAPH_EDGES.filter(function(e) { return rightNodeIds.has(e.from) && rightNodeIds.has(e.to); });
+
+  networkLeft = new vis.Network(leftContainer, {nodes: new vis.DataSet(NODES_OLD), edges: new vis.DataSet(leftEdges)}, SPLIT_OPTIONS);
+  networkRight = new vis.Network(rightContainer, {nodes: new vis.DataSet(NODES_NEW), edges: new vis.DataSet(rightEdges)}, SPLIT_OPTIONS);
+
+  networkLeft.fit();
+  networkRight.fit();
+
+  networkLeft.on('dragEnd', syncLeftToRight);
+  networkLeft.on('zoom', syncLeftToRight);
+  networkRight.on('dragEnd', syncRightToLeft);
+  networkRight.on('zoom', syncRightToLeft);
+
+  function onSplitNodeClick(params) {
+    if (params.nodes.length === 0) { closeSidePanel(); return; }
+    var nodeId = params.nodes[0];
+    var entry = TOOL_INDEX[nodeId];
+    if (!entry) return;
+    openSidePanel(nodeId, entry);
+  }
+  networkLeft.on('click', onSplitNodeClick);
+  networkRight.on('click', onSplitNodeClick);
+
+  applyThemeColorsToSplit();
+}
+
+function syncLeftToRight() {
+  if (syncingViewport) return;
+  syncingViewport = true;
+  networkRight.moveTo({position: networkLeft.getViewPosition(), scale: networkLeft.getScale(), animation: false});
+  syncingViewport = false;
+}
+
+function syncRightToLeft() {
+  if (syncingViewport) return;
+  syncingViewport = true;
+  networkLeft.moveTo({position: networkRight.getViewPosition(), scale: networkRight.getScale(), animation: false});
+  syncingViewport = false;
+}
+
+function applyThemeColorsToSplit() {
+  if (!networkLeft) return;
+  var palette = isDark() ? DARK_COLORS : LIGHT_COLORS;
+  var ghostStatuses = {'ghost_added': true, 'ghost_removed': true};
+  [
+    {net: networkLeft, nodes: NODES_OLD},
+    {net: networkRight, nodes: NODES_NEW}
+  ].forEach(function(pair) {
+    var updates = [];
+    pair.nodes.forEach(function(n) {
+      if (ghostStatuses[n.status]) return;
+      var c = palette[n.status];
+      if (c) {
+        updates.push({id: n.id, color: {background: c.background, border: c.border, highlight: {background: c.background, border: c.border}}});
+      }
+    });
+    if (updates.length > 0) {
+      pair.net.body.data.nodes.update(updates);
+    }
+  });
+}
+
+function focusNode(toolId) {
+  var pos = null;
+  try { pos = networkLeft.getPosition(toolId); } catch(e) { pos = null; }
+  if (!pos) {
+    try { pos = networkRight.getPosition(toolId); } catch(e) { pos = null; }
+  }
+  if (pos) {
+    var moveOpts = {position: pos, scale: 1.2, animation: {duration: 300, easingFunction: 'easeInOutQuad'}};
+    networkLeft.moveTo(moveOpts);
+    networkRight.moveTo(moveOpts);
+  }
+}
+
+function buildCenterPanel() {
+  var container = document.getElementById('split-change-rows');
+  var BADGE_COLORS = {added: '#6ee7b7', removed: '#fca5a5', modified: '#fcd34d'};
+  var entries = [];
+  ['added', 'removed', 'modified'].forEach(function(cat) {
+    (DIFF_DATA[cat] || []).forEach(function(item) {
+      entries.push({cat: cat, item: item});
+    });
+  });
+  if (entries.length === 0) {
+    var empty = document.createElement('div');
+    empty.style.padding = '12px 10px';
+    empty.style.color = '#64748b';
+    empty.style.fontSize = '0.85em';
+    empty.textContent = 'No changes.';
+    container.appendChild(empty);
+    return;
+  }
+  entries.forEach(function(e) {
+    var item = e.item;
+    var cat = e.cat;
+    var row = document.createElement('div');
+    row.className = 'split-change-row';
+    row.setAttribute('data-tool-id', item.tool_id);
+
+    var badge = document.createElement('span');
+    badge.className = 'split-change-badge';
+    badge.style.background = BADGE_COLORS[cat] || '#e2e8f0';
+
+    var shortType = (item.tool_type || '').split('.').pop();
+    var label = document.createElement('span');
+    label.style.flex = '1';
+    label.textContent = shortType + ' (' + item.tool_id + ')';
+
+    var catTag = document.createElement('span');
+    catTag.style.fontSize = '0.78em';
+    catTag.style.color = '#64748b';
+    catTag.textContent = cat;
+
+    row.appendChild(badge);
+    row.appendChild(label);
+    row.appendChild(catTag);
+    row.addEventListener('click', function() { focusNode(item.tool_id); });
+    container.appendChild(row);
+  });
+}
+
+buildCenterPanel();
+
+// View switcher
+var currentView = localStorage.getItem('alteryx-diff-view') || 'split';
+
+function switchView(view) {
+  currentView = view;
+  localStorage.setItem('alteryx-diff-view', view);
+  var splitView = document.getElementById('split-view');
+  var splitControls = document.getElementById('split-controls');
+  var overlayView = document.getElementById('overlay-view');
+  var btnSplit = document.getElementById('btn-split');
+  var btnOverlay = document.getElementById('btn-overlay');
+  if (view === 'split') {
+    splitView.style.display = 'flex';
+    splitControls.style.display = 'flex';
+    overlayView.style.display = 'none';
+    btnSplit.classList.add('active');
+    btnOverlay.classList.remove('active');
+    requestAnimationFrame(function() {
+      initSplitNetworks();
+      requestAnimationFrame(function() {
+        if (networkLeft) { networkLeft.redraw(); networkLeft.fit({animation: false}); }
+        if (networkRight) { networkRight.redraw(); networkRight.fit({animation: false}); }
+      });
+    });
+  } else {
+    splitView.style.display = 'none';
+    splitControls.style.display = 'none';
+    overlayView.style.display = 'block';
+    btnOverlay.classList.add('active');
+    btnSplit.classList.remove('active');
+    requestAnimationFrame(function() {
+      initOverlayNetwork();
+      requestAnimationFrame(function() {
+        if (network) { network.redraw(); network.fit({animation: false}); }
+      });
+    });
+  }
+}
+
+window.switchView = switchView;
+switchView(currentView);
+
 })();
 </script>
 </section>
 
-<details id="governance" style="margin-top:32px;border-top:1px solid #dee2e6;padding-top:12px;">
-  <summary style="cursor:pointer;color:#888;font-size:0.85em;padding:4px 0;user-select:none;">
+<details id="governance" style="margin-top:32px;border-top:1px solid var(--border);padding-top:12px;">
+  <summary style="cursor:pointer;color:var(--text-muted);font-size:0.85em;padding:4px 0;user-select:none;">
     Governance Metadata (ALCOA+)
   </summary>
-  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:#555;line-height:1.8;">
-    <div><strong>File A:</strong> /private/var/folders/9c/1mr24qp56ds1jxs6364lczbw0000gn/T/pytest-of-laxmikantmukkawar/pytest-76/test_diff_include_positions_de0/a.yxmd</div>
-    <div><strong>SHA-256 A:</strong> c81165d8e2b842f5bd8e9b5f9c27c174c82a82141233217ab9f2a91ec30a3c01</div>
-    <div><strong>File B:</strong> /private/var/folders/9c/1mr24qp56ds1jxs6364lczbw0000gn/T/pytest-of-laxmikantmukkawar/pytest-76/test_diff_include_positions_de0/b.yxmd</div>
-    <div><strong>SHA-256 B:</strong> fe50bae01478849709b0393abd71752b843bf9e2aac4444d1e3a4ab1d87217dc</div>
-    <div><strong>Generated:</strong> 2026-03-07T06:39:20.804620+00:00</div>
+  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:var(--field-label);line-height:1.8;">
+    <div><strong>File A:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/workflow.yxmd</div>
+    <div><strong>SHA-256 A:</strong> 91a921b27a33551f207882ab790c164209fae30097e9f8cfcd308ec1827640bf</div>
+    <div><strong>File B:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/workflow2.yxmd</div>
+    <div><strong>SHA-256 B:</strong> e11ac2d874a1fd460267c0d126ae672b8408d547450038cd32e7cff386fc3a1e</div>
+    <div><strong>Generated:</strong> 2026-03-10T15:44:56.403055+00:00</div>
   </div>
 </details>
 
 <script>
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('alteryx-diff-theme', theme);
+    var toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+        toggle.setAttribute('data-mode', theme);
+    }
+}
+
+function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// On load: restore from localStorage, else detect OS preference
+(function() {
+    var saved = localStorage.getItem('alteryx-diff-theme');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(saved || (prefersDark ? 'dark' : 'light'));
+})();
+
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
 function expandSection(sectionId) {

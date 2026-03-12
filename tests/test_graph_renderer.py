@@ -74,11 +74,11 @@ def test_node_colors_match_diff_status() -> None:
     nodes = _extract_graph_nodes(html)
     by_status = {n["status"]: n["color"] for n in nodes}
 
-    assert by_status["added"] == COLOR_MAP["added"]  # #28a745
-    assert by_status["removed"] == COLOR_MAP["removed"]  # #dc3545
-    assert by_status["modified"] == COLOR_MAP["modified"]  # #ffc107
-    assert by_status["connection"] == COLOR_MAP["connection"]  # #007bff
-    assert by_status["unchanged"] == COLOR_MAP["unchanged"]  # #adb5bd
+    assert by_status["added"]["background"] == COLOR_MAP["added"]  # #d1fae5
+    assert by_status["removed"]["background"] == COLOR_MAP["removed"]  # #fee2e2
+    assert by_status["modified"]["background"] == COLOR_MAP["modified"]  # #fef3c7
+    assert by_status["connection"]["background"] == COLOR_MAP["connection"]  # #dbeafe
+    assert by_status["unchanged"]["background"] == COLOR_MAP["unchanged"]  # #f1f5f9
 
 
 def test_node_count_matches_all_unique_tool_ids() -> None:
