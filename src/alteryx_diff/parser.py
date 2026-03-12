@@ -47,7 +47,10 @@ __all__ = ["parse"]
 
 
 def parse(
-    path_a: pathlib.Path, path_b: pathlib.Path
+    path_a: pathlib.Path,
+    path_b: pathlib.Path,
+    *,
+    filter_ui_tools: bool = True,
 ) -> tuple[WorkflowDoc, WorkflowDoc]:
     """Parse two .yxmd files and return their WorkflowDoc representations.
 
@@ -57,6 +60,10 @@ def parse(
         Path to the first Alteryx workflow file.
     path_b:
         Path to the second Alteryx workflow file.
+    filter_ui_tools:
+        When True (default), AlteryxGuiToolkit.* nodes (app interface tools
+        such as Tab, TextBox, Action) are omitted from the parsed result.
+        Pass False to include all nodes.
 
     Returns
     -------
@@ -72,8 +79,8 @@ def parse(
     MalformedXMLError
         If either file contains invalid XML.
     """
-    doc_a = _parse_one(path_a)
-    doc_b = _parse_one(path_b)
+    doc_a = _parse_one(path_a, filter_ui_tools=filter_ui_tools)
+    doc_b = _parse_one(path_b, filter_ui_tools=filter_ui_tools)
     return doc_a, doc_b
 
 
@@ -82,7 +89,7 @@ def parse(
 # ---------------------------------------------------------------------------
 
 
-def _parse_one(path: pathlib.Path) -> WorkflowDoc:
+def _parse_one(path: pathlib.Path, *, filter_ui_tools: bool = True) -> WorkflowDoc:
     """Parse a single .yxmd file into a WorkflowDoc.
 
     Stage 1 — pre-flight:  Validates the path exists and is a regular file.
@@ -119,12 +126,14 @@ def _parse_one(path: pathlib.Path) -> WorkflowDoc:
         ) from exc
 
     # Stage 3: convert
-    return _tree_to_workflow(tree, filepath=str(path))
+    return _tree_to_workflow(tree, filepath=str(path), filter_ui_tools=filter_ui_tools)
 
 
 def _tree_to_workflow(
     tree: etree._ElementTree[etree._Element],  # type: ignore[type-arg]
     filepath: str,
+    *,
+    filter_ui_tools: bool = True,
 ) -> WorkflowDoc:
     """Convert an lxml ElementTree to a WorkflowDoc.
 
@@ -134,6 +143,9 @@ def _tree_to_workflow(
         A fully-parsed lxml ElementTree.
     filepath:
         The original file path string, stored verbatim on WorkflowDoc.
+    filter_ui_tools:
+        When True (default), AlteryxGuiToolkit.* nodes are skipped so that
+        app interface elements do not appear as spurious diffs.
     """
     root: etree._Element = tree.getroot()
 
@@ -147,6 +159,9 @@ def _tree_to_workflow(
 
         gui: etree._Element | None = node_elem.find("GuiSettings")
         plugin: str = gui.get("Plugin", "") if gui is not None else ""
+
+        if filter_ui_tools and plugin.startswith("AlteryxGuiToolkit."):
+            continue
 
         pos: etree._Element | None = gui.find("Position") if gui is not None else None
         x: float = float(pos.get("x", "0")) if pos is not None else 0.0

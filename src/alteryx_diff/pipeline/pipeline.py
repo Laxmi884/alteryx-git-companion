@@ -16,6 +16,7 @@ class DiffRequest:
 
     path_a: pathlib.Path
     path_b: pathlib.Path
+    filter_ui_tools: bool = True
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -32,6 +33,8 @@ def run(request: DiffRequest, *, include_positions: bool = False) -> DiffRespons
 
     Args:
         request: DiffRequest carrying paths to both .yxmd files.
+            Set ``request.filter_ui_tools=False`` to include AlteryxGuiToolkit.*
+            nodes that are filtered by default.
         include_positions: When True, canvas X/Y position changes are included
             in diff detection. Default False to avoid layout noise.
 
@@ -43,7 +46,9 @@ def run(request: DiffRequest, *, include_positions: bool = False) -> DiffRespons
     Does NOT call sys.exit(), print(), or perform any file I/O beyond
     reading the two input .yxmd files via parser.parse().
     """
-    doc_a, doc_b = parse(request.path_a, request.path_b)
+    doc_a, doc_b = parse(
+        request.path_a, request.path_b, filter_ui_tools=request.filter_ui_tools
+    )
     norm_a = normalize(doc_a)
     norm_b = normalize(doc_b)
     match_result = match(list(norm_a.nodes), list(norm_b.nodes))

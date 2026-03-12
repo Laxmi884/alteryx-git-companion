@@ -21,10 +21,10 @@ _err_console = Console(stderr=True)
 @app.command()
 def diff(  # noqa: B008
     workflow_a: pathlib.Path = typer.Argument(  # noqa: B008
-        ..., help="Baseline .yxmd file"
+        ..., help="Baseline .yxmd or .yxwz file (quote paths that contain spaces)"
     ),
     workflow_b: pathlib.Path = typer.Argument(  # noqa: B008
-        ..., help="Changed .yxmd file"
+        ..., help="Changed .yxmd or .yxwz file (quote paths that contain spaces)"
     ),
     output: pathlib.Path = typer.Option(  # noqa: B008
         pathlib.Path("diff_report.html"),
@@ -48,6 +48,15 @@ def diff(  # noqa: B008
             " (default: hierarchical auto-layout following data flow)"
         ),
     ),
+    filter_ui_tools: bool = typer.Option(  # noqa: B008
+        True,
+        "--no-filter-ui-tools",
+        help=(
+            "Include AlteryxGuiToolkit.* app interface nodes"
+            " (Tab, TextBox, Action, etc.) filtered by default"
+            " when comparing .yxwz apps against .yxmd workflows"
+        ),
+    ),
     quiet: bool = typer.Option(  # noqa: B008
         False,
         "--quiet",
@@ -60,7 +69,12 @@ def diff(  # noqa: B008
         help="Write JSON diff to stdout instead of HTML file (pipe-friendly)",
     ),
 ) -> None:
-    """Compare two Alteryx .yxmd workflow files and report differences."""
+    """Compare two Alteryx .yxmd or .yxwz workflow/app files and report differences.
+
+    Paths that contain spaces must be quoted in the shell, e.g.:
+
+      alteryx-diff "My Workflow A.yxmd" "My Workflow B.yxmd"
+    """
     # Compute governance metadata upfront — single timestamp for audit consistency
     # Guard here: missing file raises FileNotFoundError before pipeline even starts
     try:
@@ -75,13 +89,21 @@ def diff(  # noqa: B008
     try:
         if quiet or json_output:
             response = run(
-                DiffRequest(path_a=workflow_a, path_b=workflow_b),
+                DiffRequest(
+                    path_a=workflow_a,
+                    path_b=workflow_b,
+                    filter_ui_tools=filter_ui_tools,
+                ),
                 include_positions=include_positions,
             )
         else:
             with _err_console.status("Running diff...", spinner="dots"):
                 response = run(
-                    DiffRequest(path_a=workflow_a, path_b=workflow_b),
+                    DiffRequest(
+                        path_a=workflow_a,
+                        path_b=workflow_b,
+                        filter_ui_tools=filter_ui_tools,
+                    ),
                     include_positions=include_positions,
                 )
     except MalformedXMLError as e:
