@@ -92,40 +92,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APP-01 | — | Pending |
-| APP-02 | — | Pending |
-| APP-03 | — | Pending |
-| APP-04 | — | Pending |
-| APP-05 | — | Pending |
-| ONBOARD-01 | — | Pending |
-| ONBOARD-02 | — | Pending |
-| ONBOARD-03 | — | Pending |
-| ONBOARD-04 | — | Pending |
-| WATCH-01 | — | Pending |
-| WATCH-02 | — | Pending |
-| WATCH-03 | — | Pending |
-| SAVE-01 | — | Pending |
-| SAVE-02 | — | Pending |
-| SAVE-03 | — | Pending |
-| HIST-01 | — | Pending |
-| HIST-02 | — | Pending |
-| REMOTE-01 | — | Pending |
-| REMOTE-02 | — | Pending |
-| REMOTE-03 | — | Pending |
-| REMOTE-04 | — | Pending |
-| BRANCH-01 | — | Pending |
-| BRANCH-02 | — | Pending |
-| BRANCH-03 | — | Pending |
-| CI-01 | — | Pending |
-| CI-02 | — | Pending |
-| CI-03 | — | Pending |
-| CI-04 | — | Pending |
+| APP-01 | Phase 10 | Pending |
+| APP-02 | Phase 15 | Pending |
+| APP-03 | Phase 10 | Pending |
+| APP-04 | Phase 10 | Pending |
+| APP-05 | Phase 15 | Pending |
+| ONBOARD-01 | Phase 11 | Pending |
+| ONBOARD-02 | Phase 11 | Pending |
+| ONBOARD-03 | Phase 11 | Pending |
+| ONBOARD-04 | Phase 11 | Pending |
+| WATCH-01 | Phase 12 | Pending |
+| WATCH-02 | Phase 12 | Pending |
+| WATCH-03 | Phase 12 | Pending |
+| SAVE-01 | Phase 13 | Pending |
+| SAVE-02 | Phase 13 | Pending |
+| SAVE-03 | Phase 13 | Pending |
+| HIST-01 | Phase 14 | Pending |
+| HIST-02 | Phase 14 | Pending |
+| REMOTE-01 | Phase 16 | Pending |
+| REMOTE-02 | Phase 16 | Pending |
+| REMOTE-03 | Phase 16 | Pending |
+| REMOTE-04 | Phase 16 | Pending |
+| BRANCH-01 | Phase 17 | Pending |
+| BRANCH-02 | Phase 17 | Pending |
+| BRANCH-03 | Phase 17 | Pending |
+| CI-01 | Phase 18 | Pending |
+| CI-02 | Phase 18 | Pending |
+| CI-03 | Phase 18 | Pending |
+| CI-04 | Phase 18 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 ⚠️
+- Mapped to phases: 28
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after initial definition*
+*Last updated: 2026-03-13 after roadmap creation*
