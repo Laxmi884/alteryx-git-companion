@@ -7,10 +7,10 @@
 
 ### APP — Application Infrastructure
 
-- [ ] **APP-01**: User can install the app on Windows without installing Python (.exe installer, PyInstaller bundle)
+- [x] **APP-01**: User can install the app on Windows without installing Python (.exe installer, PyInstaller bundle)
 - [ ] **APP-02**: App starts automatically when Windows boots, running silently in the background
-- [ ] **APP-03**: App runs on port 7433 with automatic fallback to ports 7434–7443 if already in use
-- [ ] **APP-04a**: Browser opens automatically at localhost:PORT when the exe starts (webbrowser.open on startup)
+- [x] **APP-03**: App runs on port 7433 with automatic fallback to ports 7434–7443 if already in use
+- [x] **APP-04a**: Browser opens automatically at localhost:PORT when the exe starts (webbrowser.open on startup)
 - [ ] **APP-04b**: User can open the app UI by clicking the system tray icon (opens browser at localhost:PORT)
 - [ ] **APP-05**: System tray icon shows app status (watching / changes detected / idle)
 
@@ -93,10 +93,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| APP-01 | Phase 10 | Pending |
+| APP-01 | Phase 10 | Complete |
 | APP-02 | Phase 15 | Pending |
-| APP-03 | Phase 10 | Pending |
-| APP-04a | Phase 10 | Pending |
+| APP-03 | Phase 10 | Complete |
+| APP-04a | Phase 10 | Complete |
 | APP-04b | Phase 15 | Pending |
 | APP-05 | Phase 15 | Pending |
 | ONBOARD-01 | Phase 11 | Pending |
