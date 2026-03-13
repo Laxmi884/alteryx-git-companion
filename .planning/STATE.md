@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 10-app-scaffold 10-01-PLAN.md
-last_updated: "2026-03-13T23:21:22.315Z"
+stopped_at: Completed 10-app-scaffold 10-02-PLAN.md
+last_updated: "2026-03-13T23:27:07.734Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 
 *Updated after each plan completion*
 | Phase 10-app-scaffold P01 | 11 | 2 tasks | 8 files |
+| Phase 10-app-scaffold P02 | 4 | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Roadmap v1.1]: Branch features (Phase 17) depend on Remote (Phase 16) — need a remote to push branches to
 - [Phase 10-app-scaffold]: SPAStaticFiles subclass required for SPA routing — Starlette StaticFiles(html=True) doesn't fall back to index.html for unknown paths
 - [Phase 10-app-scaffold]: pytest pythonpath=['.'] added so app/ package at repo root is importable alongside src/ layout
+- [Phase 10-app-scaffold]: shadcn@latest init --defaults incompatible with Vite 8 — manual setup of components.json, lib/utils.ts, and CSS required
+- [Phase 10-app-scaffold]: Tailwind v4 uses @theme CSS block instead of tailwind.config.js — color tokens defined as --color-* for shadcn compatibility
 
 ### Pending Todos
 
@@ -79,6 +82,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-13T23:21:22.313Z
-Stopped at: Completed 10-app-scaffold 10-01-PLAN.md
+Last session: 2026-03-13T23:27:07.732Z
+Stopped at: Completed 10-app-scaffold 10-02-PLAN.md
 Resume file: None
