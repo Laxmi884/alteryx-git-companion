@@ -39,7 +39,12 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
   2. App starts a local web server on port 7433 and automatically tries 7434–7443 if that port is already in use
   3. Opening the app launches a browser tab at the correct localhost:PORT URL
   4. acd diff CLI is bundled inside the .exe and accessible to the FastAPI backend at runtime
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — FastAPI backend + port probe + entry point + unit tests
+- [ ] 10-02-PLAN.md — React + Vite + shadcn/ui frontend scaffold + Makefile
+- [ ] 10-03-PLAN.md — PyInstaller spec + version_info + icon + GitHub Actions release CI
 
 ### Phase 11: Onboarding and Project Management
 **Goal**: New users are guided through first-run setup and can register and switch between multiple workflow project folders
@@ -48,7 +53,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 **Success Criteria** (what must be TRUE):
   1. First-time user sees a welcome screen explaining what the app does before any setup step is required
   2. User can add a workflows folder — app auto-runs git init if the folder has no git history
-  3. App detects missing git user.name / user.email and prompts the user to enter their name and email before the first save
+  3. App detects missing git user.name / git user.email and prompts the user to enter their name and email before the first save
   4. User can register multiple project folders and switch between them from a left-panel project list
 **Plans**: TBD
 
@@ -137,7 +142,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 | 7. HTML Report | v1.0 | 2/2 | Complete | 2026-03-06 |
 | 8. Visual Graph | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 9. CLI Entry Point | v1.0 | 3/3 | Complete | 2026-03-07 |
-| 10. App Scaffold | v1.1 | 0/TBD | Not started | - |
+| 10. App Scaffold | v1.1 | 0/3 | In progress | - |
 | 11. Onboarding and Project Management | v1.1 | 0/TBD | Not started | - |
 | 12. File Watcher | v1.1 | 0/TBD | Not started | - |
 | 13. Save Version | v1.1 | 0/TBD | Not started | - |
