@@ -10,7 +10,8 @@
 - [ ] **APP-01**: User can install the app on Windows without installing Python (.exe installer, PyInstaller bundle)
 - [ ] **APP-02**: App starts automatically when Windows boots, running silently in the background
 - [ ] **APP-03**: App runs on port 7433 with automatic fallback to ports 7434–7443 if already in use
-- [ ] **APP-04**: User can open the app UI by clicking the system tray icon (opens browser at localhost:PORT)
+- [ ] **APP-04a**: Browser opens automatically at localhost:PORT when the exe starts (webbrowser.open on startup)
+- [ ] **APP-04b**: User can open the app UI by clicking the system tray icon (opens browser at localhost:PORT)
 - [ ] **APP-05**: System tray icon shows app status (watching / changes detected / idle)
 
 ### ONBOARD — Onboarding
@@ -95,7 +96,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APP-01 | Phase 10 | Pending |
 | APP-02 | Phase 15 | Pending |
 | APP-03 | Phase 10 | Pending |
-| APP-04 | Phase 10 | Pending |
+| APP-04a | Phase 10 | Pending |
+| APP-04b | Phase 15 | Pending |
 | APP-05 | Phase 15 | Pending |
 | ONBOARD-01 | Phase 11 | Pending |
 | ONBOARD-02 | Phase 11 | Pending |
@@ -122,10 +124,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-04 | Phase 18 | Pending |
 
 **Coverage:**
-- v1.1 requirements: 28 total
-- Mapped to phases: 28
+- v1.1 requirements: 29 total
+- Mapped to phases: 29
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-13 after roadmap creation*
+*Last updated: 2026-03-13 — APP-04 split into APP-04a (Phase 10, browser auto-open on startup) and APP-04b (Phase 15, tray icon click opens browser)*
