@@ -37,34 +37,31 @@ def test_health_status_ok(patched_client):
     assert "version" in data
 
 
-def test_spa_fallback(tmp_path, monkeypatch):
-    """GET /nonexistent-route returns 200 with index.html content (SPA fallback)."""
+def test_spa_fallback(tmp_path):
+    """GET /nonexistent-route returns 200 with index.html content (SPA fallback).
+
+    Validates the SPAStaticFiles fallback behavior that enables SPA client-side
+    routing. Builds a minimal fresh FastAPI app with SPAStaticFiles mounted to a
+    temp dist dir containing a real index.html.
+    """
+    from fastapi import FastAPI
+
+    from app.server import SPAStaticFiles
+
     dist = tmp_path / "frontend" / "dist"
     dist.mkdir(parents=True)
     index_content = "<!DOCTYPE html><html><body>SPA</body></html>"
     (dist / "index.html").write_text(index_content)
 
-    import app.server as server_module
-
-    monkeypatch.setattr(server_module, "_static_dir", lambda: dist)
-
-    # Re-import app after patching so StaticFiles uses the new dir
-    # We rebuild the app with a fresh StaticFiles mount
-    from app.server import app as original_app
-    from fastapi import FastAPI
-    from fastapi.staticfiles import StaticFiles
-
-    fresh_app = FastAPI()
-    for route in original_app.routes:
-        if hasattr(route, "methods"):
-            fresh_app.routes.append(route)
-    fresh_app.mount(
+    # Build a minimal app that mirrors the production static mount
+    spa_app = FastAPI()
+    spa_app.mount(
         "/",
-        StaticFiles(directory=str(dist), html=True),
+        SPAStaticFiles(directory=str(dist), html=True),
         name="frontend",
     )
 
-    with TestClient(fresh_app, raise_server_exceptions=False) as client:
+    with TestClient(spa_app, raise_server_exceptions=False) as client:
         response = client.get("/nonexistent-route")
         assert response.status_code == 200
         assert "SPA" in response.text
