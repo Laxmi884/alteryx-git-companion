@@ -55,7 +55,14 @@ Plans:
   2. User can add a workflows folder — app auto-runs git init if the folder has no git history
   3. App detects missing git user.name / git user.email and prompts the user to enter their name and email before the first save
   4. User can register multiple project folders and switch between them from a left-panel project list
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Install deps + backend/test scaffolding + frontend shadcn/zustand setup (Wave 1)
+- [ ] 11-02-PLAN.md — Backend: config_store, git_ops, all 3 routers implemented + tests GREEN (Wave 2)
+- [ ] 11-03-PLAN.md — Frontend: Zustand store, AppShell, Sidebar, WelcomeScreen, EmptyState (Wave 2, parallel)
+- [ ] 11-04-PLAN.md — Wiring: register routers in server.py, GitIdentityCard, folder picker flow (Wave 3)
+- [ ] 11-05-PLAN.md — Human verification checkpoint: full onboarding flow end-to-end (Wave 4)
 
 ### Phase 12: File Watcher
 **Goal**: The app continuously monitors registered folders and surfaces detected changes with appropriate warnings
@@ -142,8 +149,8 @@ Plans:
 | 7. HTML Report | v1.0 | 2/2 | Complete | 2026-03-06 |
 | 8. Visual Graph | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 9. CLI Entry Point | v1.0 | 3/3 | Complete | 2026-03-07 |
-| 10. App Scaffold | 3/3 | Complete    | 2026-03-13 | - |
-| 11. Onboarding and Project Management | v1.1 | 0/TBD | Not started | - |
+| 10. App Scaffold | v1.1 | 3/3 | Complete    | 2026-03-13 |
+| 11. Onboarding and Project Management | v1.1 | 0/5 | Not started | - |
 | 12. File Watcher | v1.1 | 0/TBD | Not started | - |
 | 13. Save Version | v1.1 | 0/TBD | Not started | - |
 | 14. History and Diff Viewer | v1.1 | 0/TBD | Not started | - |
