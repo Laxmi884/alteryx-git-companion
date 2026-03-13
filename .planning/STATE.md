@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 10-app-scaffold 10-02-PLAN.md
-last_updated: "2026-03-13T23:27:07.734Z"
+stopped_at: Completed 10-app-scaffold 10-03-PLAN.md
+last_updated: "2026-03-13T23:31:18.643Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 *Updated after each plan completion*
 | Phase 10-app-scaffold P01 | 11 | 2 tasks | 8 files |
 | Phase 10-app-scaffold P02 | 4 | 2 tasks | 14 files |
+| Phase 10-app-scaffold P03 | 1 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 10-app-scaffold]: pytest pythonpath=['.'] added so app/ package at repo root is importable alongside src/ layout
 - [Phase 10-app-scaffold]: shadcn@latest init --defaults incompatible with Vite 8 — manual setup of components.json, lib/utils.ts, and CSS required
 - [Phase 10-app-scaffold]: Tailwind v4 uses @theme CSS block instead of tailwind.config.js — color tokens defined as --color-* for shadcn compatibility
+- [Phase 10-app-scaffold]: upx=False in app.spec — UPX not pre-installed on windows-latest runners; avoids silent skip or CI failure
+- [Phase 10-app-scaffold]: console=True in Phase 10 spec — debug visibility; Phase 15 will flip to False when system tray/background mode is added
+- [Phase 10-app-scaffold]: Quoted 'on': key in release.yml — PyYAML 1.1 parses bare 'on' as boolean True; quoting makes it string-key for programmatic validation while GitHub Actions handles both forms
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-13T23:27:07.732Z
-Stopped at: Completed 10-app-scaffold 10-02-PLAN.md
+Last session: 2026-03-13T23:31:18.641Z
+Stopped at: Completed 10-app-scaffold 10-03-PLAN.md
 Resume file: None
