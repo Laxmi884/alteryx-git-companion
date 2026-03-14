@@ -28,6 +28,15 @@ async def watch_events(request: Request):
 
     async def event_generator():
         q = watcher_manager.subscribe()
+        # Seed with current state so new subscribers see existing changes immediately
+        for project_id, info in watcher_manager.get_status().items():
+            q.put_nowait(
+                {
+                    "type": "badge_update",
+                    "project_id": project_id,
+                    "changed_count": info["changed_count"],
+                }
+            )
         try:
             while True:
                 if await request.is_disconnected():

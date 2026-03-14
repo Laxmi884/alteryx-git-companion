@@ -79,7 +79,7 @@ def test_git_changed_workflows(tmp_path):
 
 
 def test_count_workflows(tmp_path):
-    """count_workflows counts all Alteryx workflow file types (non-recursive)."""
+    """count_workflows counts all Alteryx workflow file types recursively."""
     (tmp_path / "a.yxmd").write_text("<root/>")
     (tmp_path / "b.yxmd").write_text("<root/>")
     (tmp_path / "c.yxwz").write_text("<root/>")
@@ -87,12 +87,12 @@ def test_count_workflows(tmp_path):
     (tmp_path / "e.yxzp").write_text("<root/>")
     (tmp_path / "f.yxapp").write_text("<root/>")
     (tmp_path / "readme.txt").write_text("ignore me")
-    # Subdirectory file must NOT be counted (non-recursive)
+    # Subdirectory files ARE counted (recursive)
     sub = tmp_path / "sub"
     sub.mkdir()
     (sub / "g.yxmd").write_text("<root/>")
 
-    assert count_workflows(str(tmp_path)) == 6
+    assert count_workflows(str(tmp_path)) == 7
 
 
 # ---------------------------------------------------------------------------

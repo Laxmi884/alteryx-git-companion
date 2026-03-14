@@ -75,11 +75,11 @@ def git_changed_workflows(folder: str) -> list[str]:
 
 
 def count_workflows(folder: str) -> int:
-    """Count all Alteryx workflow files in folder (non-recursive, top-level only)."""
+    """Count all Alteryx workflow files in folder (recursive)."""
     from pathlib import Path
 
     p = Path(folder)
-    return sum(1 for f in p.iterdir() if f.is_file() and f.suffix in WORKFLOW_SUFFIXES)
+    return sum(1 for f in p.rglob("*") if f.is_file() and f.suffix in WORKFLOW_SUFFIXES)
 
 
 def git_has_commits(folder: str) -> bool:

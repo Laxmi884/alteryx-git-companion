@@ -116,7 +116,7 @@ class WatcherManager:
         else:
             observer = Observer()
 
-        observer.schedule(handler, path, recursive=False)
+        observer.schedule(handler, path, recursive=True)
         observer.start()
         self._observers[project_id] = observer
 
