@@ -13,8 +13,6 @@ import asyncio
 import subprocess
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from app.services.git_ops import count_workflows, git_changed_workflows, git_has_commits
 from app.services.watcher_utils import is_network_path
 
@@ -205,19 +203,74 @@ def test_polling_observer_for_network():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="requires running server — Plan 03")
 def test_sse_endpoint_headers():
-    """GET /api/watch/events returns Content-Type: text/event-stream."""
-    pass
+    """GET /api/watch/events must return 200 with text/event-stream content-type.
+
+    Calls the route handler directly (no HTTP transport) to check the
+    EventSourceResponse object's status_code and media_type. This avoids the
+    known issue where TestClient.stream() blocks until the SSE stream ends
+    (which is never for an infinite generator).
+    """
+    import asyncio
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from app.routers.watch import watch_events
+
+    # is_disconnected returns True on the first check to make the generator exit
+    mock_request = MagicMock()
+    mock_request.is_disconnected = AsyncMock(return_value=True)
+
+    async def _test():
+        with (
+            patch(
+                "app.routers.watch.watcher_manager.subscribe",
+                return_value=asyncio.Queue(),
+            ),
+            patch("app.routers.watch.watcher_manager.unsubscribe"),
+        ):
+            response = await watch_events(request=mock_request)
+        assert response.status_code == 200
+        assert "text/event-stream" in (response.media_type or "")
+
+    asyncio.run(_test())
 
 
-@pytest.mark.skip(reason="requires running server — Plan 03")
 def test_watch_status_no_commits():
-    """GET /api/watch/status returns has_commits: false for repo with no commits."""
-    pass
+    """GET /api/watch/status returns has_any_commits: False for repo with no commits."""
+    from unittest.mock import patch
+
+    from fastapi.testclient import TestClient
+
+    from app.server import app
+
+    client = TestClient(app)
+    mock_status = {
+        "proj-1": {"changed_count": 0, "total_workflows": 3, "has_any_commits": False}
+    }
+    with patch(
+        "app.routers.watch.watcher_manager.get_status", return_value=mock_status
+    ):
+        r = client.get("/api/watch/status")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["proj-1"]["has_any_commits"] is False
 
 
-@pytest.mark.skip(reason="requires running server — Plan 03")
 def test_watch_status_total_workflows():
     """GET /api/watch/status returns total_workflows matching filesystem count."""
-    pass
+    from unittest.mock import patch
+
+    from fastapi.testclient import TestClient
+
+    from app.server import app
+
+    client = TestClient(app)
+    mock_status = {
+        "proj-1": {"changed_count": 2, "total_workflows": 5, "has_any_commits": True}
+    }
+    with patch(
+        "app.routers.watch.watcher_manager.get_status", return_value=mock_status
+    ):
+        r = client.get("/api/watch/status")
+    assert r.status_code == 200
+    assert r.json()["proj-1"]["total_workflows"] == 5
