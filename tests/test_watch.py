@@ -9,12 +9,14 @@ Imports are intentionally bare (no try/except) — the ImportError is the RED
 state for all non-skipped tests until Task 2 creates the modules.
 """
 
+import asyncio
 import subprocess
+from unittest.mock import MagicMock, patch
 
 import pytest
-from app.services.watcher_utils import is_network_path
 
 from app.services.git_ops import count_workflows, git_changed_workflows, git_has_commits
+from app.services.watcher_utils import is_network_path
 
 # ---------------------------------------------------------------------------
 # WATCH-01: git_changed_workflows
@@ -151,16 +153,51 @@ def test_is_network_path_local_unix():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="requires WatcherManager — Plan 02")
 def test_badge_push_on_rescan():
     """WatcherManager emits SSE badge event after _rescan completes."""
-    pass
+    from app.services.watcher_manager import WatcherManager
+
+    mgr = WatcherManager()
+    loop = asyncio.new_event_loop()
+    mgr.set_event_loop(loop)
+    q = mgr.subscribe()
+    with (
+        patch(
+            "app.services.watcher_manager.git_changed_workflows",
+            return_value=["workflow.yxmd"],
+        ),
+        patch("app.services.watcher_manager.count_workflows", return_value=5),
+    ):
+        mgr._rescan("proj-1", "/tmp/proj")
+    # Drain the queue synchronously
+    event = loop.run_until_complete(q.get())
+    loop.close()
+    assert event["type"] == "badge_update"
+    assert event["project_id"] == "proj-1"
+    assert event["changed_count"] == 1
 
 
-@pytest.mark.skip(reason="requires WatcherManager — Plan 02")
 def test_polling_observer_for_network():
     """WatcherManager uses PollingObserver when is_network_path returns True."""
-    pass
+    from app.services.watcher_manager import WatcherManager
+
+    mgr = WatcherManager()
+    with (
+        patch("app.services.watcher_manager.is_network_path", return_value=True),
+        patch("app.services.watcher_manager.PollingObserver") as MockPoll,
+        patch("app.services.watcher_manager.Observer") as MockObs,
+        patch(
+            "app.services.watcher_manager.git_changed_workflows",
+            return_value=[],
+        ),
+        patch("app.services.watcher_manager.count_workflows", return_value=0),
+    ):
+        mock_obs_instance = MagicMock()
+        MockPoll.return_value = mock_obs_instance
+        mgr.set_event_loop(asyncio.new_event_loop())
+        mgr.start_watching("proj-1", "//server/share")
+        MockPoll.assert_called_once_with(timeout=5)
+        MockObs.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
