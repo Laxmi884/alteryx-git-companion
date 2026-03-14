@@ -104,7 +104,13 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User sees a flat timeline of saved versions per project showing date, commit message, and author — no branch DAG is shown
   2. Clicking any history entry embeds the ACD HTML diff report inline in the app (no separate browser tab or file download required)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Test scaffold (RED): test_history.py + history.py router stub + server.py registration (Wave 1)
+- [ ] 14-02-PLAN.md — Backend: git_log, git_show_file in git_ops.py + history router implementation → tests GREEN (Wave 2)
+- [ ] 14-03-PLAN.md — Frontend: HistoryPanel.tsx + DiffViewer.tsx components (Wave 2, parallel with 14-02)
+- [ ] 14-04-PLAN.md — Wire AppShell state machine + Zustand cleanup + remove SuccessCard + human verification (Wave 3)
 
 ### Phase 15: System Tray and Auto-start
 **Goal**: The app runs silently in the background on Windows boot and communicates its status through a system tray icon
@@ -168,7 +174,7 @@ Plans:
 | 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
 | 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
-| 14. History and Diff Viewer | v1.1 | 0/TBD | Not started | - |
+| 14. History and Diff Viewer | v1.1 | 0/4 | Not started | - |
 | 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
 | 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
