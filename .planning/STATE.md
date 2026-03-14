@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 13-save-version-03-PLAN.md
-last_updated: "2026-03-14T20:59:05.900Z"
+stopped_at: Completed 13-save-version-04-PLAN.md
+last_updated: "2026-03-14T21:43:52.708Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 0
 ---
 
@@ -66,6 +66,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 13-save-version P01 | 2 | 2 tasks | 3 files |
 | Phase 13-save-version P02 | 3 | 2 tasks | 4 files |
 | Phase 13-save-version P03 | 1 | 2 tasks | 3 files |
+| Phase 13-save-version P04 | 10 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,9 @@ Recent decisions affecting current work:
 - [Phase 13-save-version]: git_undo_last_commit uses --soft not --hard — file content preserved in working tree
 - [Phase 13-save-version]: save router uses module-level import of git_ops so unittest.mock.patch targets work correctly
 - [Phase 13-save-version]: ChangesPanel accepts changedFiles as prop — AppShell owns fetch in Plan 04
+- [Phase 13-save-version]: AppShell owns fetchWatchStatus — ChangesPanel receives changedFiles as prop (not self-fetching)
+- [Phase 13-save-version]: lastSave !== null (not hasCommits) is primary SuccessCard condition — only show after explicit save in this session
+- [Phase 13-save-version]: fetchWatchStatus called after undo and discard for immediate UI sync alongside SSE updates
 
 ### Pending Todos
 
@@ -128,6 +132,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T20:59:05.897Z
-Stopped at: Completed 13-save-version-03-PLAN.md
+Last session: 2026-03-14T21:43:52.705Z
+Stopped at: Completed 13-save-version-04-PLAN.md
 Resume file: None
