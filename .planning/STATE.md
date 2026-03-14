@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 12-file-watcher-01-PLAN.md
-last_updated: "2026-03-14T15:17:19.907Z"
+stopped_at: Completed 12-file-watcher-02-PLAN.md
+last_updated: "2026-03-14T15:22:57.594Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 13
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 11-onboarding-and-project-management P04 | 525722 | 2 tasks | 3 files |
 | Phase 11-onboarding-and-project-management P05 | 5 | 2 tasks | 0 files |
 | Phase 12-file-watcher P01 | 2 | 2 tasks | 3 files |
+| Phase 12-file-watcher P02 | 4 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 12-file-watcher]: git_changed_workflows uses git status --porcelain (not diff) to catch both staged and untracked new files
 - [Phase 12-file-watcher]: is_network_path normalizes backslashes to forward slashes before UNC check for platform-independent detection
 - [Phase 12-file-watcher]: WORKFLOW_SUFFIXES frozenset defined at module level in git_ops.py — shared constant for both git_changed_workflows and count_workflows
+- [Phase 12-file-watcher]: WatcherManager uses loop.call_soon_threadsafe for all asyncio queue pushes from watchdog daemon threads — asyncio.Queue is not thread-safe
+- [Phase 12-file-watcher]: _WorkflowEventHandler.on_any_event used instead of on_modified to catch Alteryx temp-file-rename save pattern
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:17:19.903Z
-Stopped at: Completed 12-file-watcher-01-PLAN.md
+Last session: 2026-03-14T15:22:57.592Z
+Stopped at: Completed 12-file-watcher-02-PLAN.md
 Resume file: None
