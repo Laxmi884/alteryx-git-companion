@@ -23,9 +23,9 @@
 
 ### WATCH — File Watching
 
-- [ ] **WATCH-01**: App auto-detects changed .yxmd and .yxwz files in registered folders and shows a change badge
-- [ ] **WATCH-02**: App auto-switches to polling observer (5-second interval) for network/SMB/UNC paths, native observer for local drives
-- [ ] **WATCH-03**: App warns user when first version save will capture all N existing workflows in a folder
+- [x] **WATCH-01**: App auto-detects changed .yxmd and .yxwz files in registered folders and shows a change badge
+- [x] **WATCH-02**: App auto-switches to polling observer (5-second interval) for network/SMB/UNC paths, native observer for local drives
+- [x] **WATCH-03**: App warns user when first version save will capture all N existing workflows in a folder
 
 ### SAVE — Save Version
 
@@ -103,9 +103,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBOARD-02 | Phase 11 | Complete |
 | ONBOARD-03 | Phase 11 | Complete |
 | ONBOARD-04 | Phase 11 | Complete |
-| WATCH-01 | Phase 12 | Pending |
-| WATCH-02 | Phase 12 | Pending |
-| WATCH-03 | Phase 12 | Pending |
+| WATCH-01 | Phase 12 | Complete |
+| WATCH-02 | Phase 12 | Complete |
+| WATCH-03 | Phase 12 | Complete |
 | SAVE-01 | Phase 13 | Pending |
 | SAVE-02 | Phase 13 | Pending |
 | SAVE-03 | Phase 13 | Pending |

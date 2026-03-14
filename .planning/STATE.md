@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-14T14:52:41.162Z"
+stopped_at: Completed 12-file-watcher-01-PLAN.md
+last_updated: "2026-03-14T15:17:19.907Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 13
+  completed_plans: 9
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 11-onboarding-and-project-management P03 | 2 | 2 tasks | 6 files |
 | Phase 11-onboarding-and-project-management P04 | 525722 | 2 tasks | 3 files |
 | Phase 11-onboarding-and-project-management P05 | 5 | 2 tasks | 0 files |
+| Phase 12-file-watcher P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 11-04]: Pre-confirmation pattern: GET /api/projects/check BEFORE any git operation; AlertDialog only shown when folder has no git history; Cancel aborts entirely
 - [Phase 11-04]: GitIdentityCard rendered inline in AppShell main content area (not modal) for UX consistency with EmptyState
 - [Phase 11-onboarding-and-project-management]: Plan 05 is verification-only — all implementation landed in 11-01 through 11-04; human confirmed all ONBOARD requirements working end-to-end
+- [Phase 12-file-watcher]: git_changed_workflows uses git status --porcelain (not diff) to catch both staged and untracked new files
+- [Phase 12-file-watcher]: is_network_path normalizes backslashes to forward slashes before UNC check for platform-independent detection
+- [Phase 12-file-watcher]: WORKFLOW_SUFFIXES frozenset defined at module level in git_ops.py — shared constant for both git_changed_workflows and count_workflows
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T14:52:41.159Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-file-watcher/12-CONTEXT.md
+Last session: 2026-03-14T15:17:19.903Z
+Stopped at: Completed 12-file-watcher-01-PLAN.md
+Resume file: None
