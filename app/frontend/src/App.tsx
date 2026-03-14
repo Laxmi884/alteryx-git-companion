@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useProjectStore } from '@/store/useProjectStore'
+import { useWatchEvents } from '@/hooks/useWatchEvents'
 import WelcomeScreen from '@/components/WelcomeScreen'
 import AppShell from '@/components/AppShell'
 import {
@@ -16,6 +17,8 @@ import './index.css'
 
 export default function App() {
   const { projects, isLoading, setProjects, addProject, setActiveProject } = useProjectStore()
+
+  useWatchEvents()
 
   const [showIdentityCard, setShowIdentityCard] = useState(false)
   const [showGitInitConfirm, setShowGitInitConfirm] = useState(false)

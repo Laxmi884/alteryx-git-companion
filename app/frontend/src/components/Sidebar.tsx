@@ -57,12 +57,17 @@ export default function Sidebar({ onAddFolder }: SidebarProps) {
             <ContextMenuTrigger asChild>
               <button
                 className={cn(
-                  'w-full text-left px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors',
+                  'w-full flex items-center px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors',
                   activeProjectId === project.id && 'bg-accent font-medium',
                 )}
                 onClick={() => setActiveProject(project.id)}
               >
-                {project.name}
+                <span className="truncate">{project.name}</span>
+                {project.changedCount != null && project.changedCount > 0 && (
+                  <span className="ml-auto shrink-0 text-xs font-semibold bg-amber-500 text-white rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center">
+                    {project.changedCount}
+                  </span>
+                )}
               </button>
             </ContextMenuTrigger>
             <ContextMenuContent>
