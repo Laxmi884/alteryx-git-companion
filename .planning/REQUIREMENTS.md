@@ -16,10 +16,10 @@
 
 ### ONBOARD — Onboarding
 
-- [ ] **ONBOARD-01**: User sees a first-run welcome screen explaining what the app does before any setup
-- [ ] **ONBOARD-02**: User can add a project folder — app auto-initializes git if folder is not already a repo
-- [ ] **ONBOARD-03**: App detects missing git user identity (name/email) and prompts for it on first use
-- [ ] **ONBOARD-04**: User can register and switch between multiple project folders from a left-panel project list
+- [x] **ONBOARD-01**: User sees a first-run welcome screen explaining what the app does before any setup
+- [x] **ONBOARD-02**: User can add a project folder — app auto-initializes git if folder is not already a repo
+- [x] **ONBOARD-03**: App detects missing git user identity (name/email) and prompts for it on first use
+- [x] **ONBOARD-04**: User can register and switch between multiple project folders from a left-panel project list
 
 ### WATCH — File Watching
 
@@ -99,10 +99,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APP-04a | Phase 10 | Complete |
 | APP-04b | Phase 15 | Pending |
 | APP-05 | Phase 15 | Pending |
-| ONBOARD-01 | Phase 11 | Pending |
-| ONBOARD-02 | Phase 11 | Pending |
-| ONBOARD-03 | Phase 11 | Pending |
-| ONBOARD-04 | Phase 11 | Pending |
+| ONBOARD-01 | Phase 11 | Complete |
+| ONBOARD-02 | Phase 11 | Complete |
+| ONBOARD-03 | Phase 11 | Complete |
+| ONBOARD-04 | Phase 11 | Complete |
 | WATCH-01 | Phase 12 | Pending |
 | WATCH-02 | Phase 12 | Pending |
 | WATCH-03 | Phase 12 | Pending |

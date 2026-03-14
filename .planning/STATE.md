@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-13T23:42:27.248Z"
+stopped_at: Completed 11-01 Plan — backend skeleton, RED test stubs, frontend deps installed
+last_updated: "2026-03-14T03:26:23.669Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 8
+  completed_plans: 4
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 10-app-scaffold P01 | 11 | 2 tasks | 8 files |
 | Phase 10-app-scaffold P02 | 4 | 2 tasks | 14 files |
 | Phase 10-app-scaffold P03 | 1 | 2 tasks | 5 files |
+| Phase 11-onboarding-and-project-management P01 | 5 | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 10-app-scaffold]: upx=False in app.spec — UPX not pre-installed on windows-latest runners; avoids silent skip or CI failure
 - [Phase 10-app-scaffold]: console=True in Phase 10 spec — debug visibility; Phase 15 will flip to False when system tray/background mode is added
 - [Phase 10-app-scaffold]: Quoted 'on': key in release.yml — PyYAML 1.1 parses bare 'on' as boolean True; quoting makes it string-key for programmatic validation while GitHub Actions handles both forms
+- [Phase 11-01]: Routers registered in server.py in Plan 01 (not Plan 04 as noted) — required for TestClient to reach endpoints in RED tests
+- [Phase 11-01]: shadcn CLI resolves @/ alias literally — components must be moved from @/components/ui/ to src/components/ui/ per vite.config.ts alias
+- [Phase 11-01]: npm legacy-peer-deps=true set globally to resolve vite@8 peer conflict with @tailwindcss/vite@4.2.1
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-13T23:42:27.245Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-onboarding-and-project-management/11-CONTEXT.md
+Last session: 2026-03-14T03:26:23.667Z
+Stopped at: Completed 11-01 Plan — backend skeleton, RED test stubs, frontend deps installed
+Resume file: None
