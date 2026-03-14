@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 14 context gathered
-last_updated: "2026-03-14T22:02:34.619Z"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-14T22:30:42.185Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 4
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 21
+  completed_plans: 18
   percent: 0
 ---
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 13-save-version P02 | 3 | 2 tasks | 4 files |
 | Phase 13-save-version P03 | 1 | 2 tasks | 3 files |
 | Phase 13-save-version P04 | 10 | 2 tasks | 2 files |
+| Phase 14-history-and-diff-viewer P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,7 @@ Recent decisions affecting current work:
 - [Phase 13-save-version]: AppShell owns fetchWatchStatus — ChangesPanel receives changedFiles as prop (not self-fetching)
 - [Phase 13-save-version]: lastSave !== null (not hasCommits) is primary SuccessCard condition — only show after explicit save in this session
 - [Phase 13-save-version]: fetchWatchStatus called after undo and discard for immediate UI sync alongside SSE updates
+- [Phase 14-01]: history router uses module-level git_ops import (noqa: F401) so mock.patch targeting app.routers.history.git_ops works correctly — matches save.py convention
 
 ### Pending Todos
 
@@ -132,6 +134,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T22:02:34.615Z
-Stopped at: Phase 14 context gathered
-Resume file: .planning/phases/14-history-and-diff-viewer/14-CONTEXT.md
+Last session: 2026-03-14T22:30:42.182Z
+Stopped at: Completed 14-01-PLAN.md
+Resume file: None

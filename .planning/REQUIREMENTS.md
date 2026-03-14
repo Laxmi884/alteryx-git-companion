@@ -35,8 +35,8 @@
 
 ### HIST — History
 
-- [ ] **HIST-01**: User can view a flat timeline of saved versions (date, message, author) per project — no branch DAG
-- [ ] **HIST-02**: User can click any history entry to view the ACD diff report for that version embedded inline
+- [x] **HIST-01**: User can view a flat timeline of saved versions (date, message, author) per project — no branch DAG
+- [x] **HIST-02**: User can click any history entry to view the ACD diff report for that version embedded inline
 
 ### REMOTE — Remote & Backup
 
@@ -111,8 +111,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAVE-01 | Phase 13 | Complete |
 | SAVE-02 | Phase 13 | Complete |
 | SAVE-03 | Phase 13 | Complete |
-| HIST-01 | Phase 14 | Pending |
-| HIST-02 | Phase 14 | Pending |
+| HIST-01 | Phase 14 | Complete |
+| HIST-02 | Phase 14 | Complete |
 | REMOTE-01 | Phase 16 | Pending |
 | REMOTE-02 | Phase 16 | Pending |
 | REMOTE-03 | Phase 16 | Pending |
