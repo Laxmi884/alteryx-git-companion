@@ -158,7 +158,7 @@ Plans:
 | 9. CLI Entry Point | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 10. App Scaffold | v1.1 | 3/3 | Complete    | 2026-03-13 |
 | 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
-| 12. File Watcher | 1/5 | In Progress|  | - |
+| 12. File Watcher | 2/5 | In Progress|  | - |
 | 13. Save Version | v1.1 | 0/TBD | Not started | - |
 | 14. History and Diff Viewer | v1.1 | 0/TBD | Not started | - |
 | 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
