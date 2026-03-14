@@ -1,14 +1,20 @@
+import { useEffect } from 'react'
+import { useProjectStore } from '@/store/useProjectStore'
+import WelcomeScreen from '@/components/WelcomeScreen'
+import AppShell from '@/components/AppShell'
 import './index.css'
 
-function App() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Alteryx Git Companion</h1>
-        <p className="mt-2 text-muted-foreground">App scaffold running</p>
-      </div>
-    </div>
-  )
-}
+export default function App() {
+  const { projects, isLoading, setProjects } = useProjectStore()
 
-export default App
+  useEffect(() => {
+    fetch('/api/projects')
+      .then((r) => r.json())
+      .then((data) => setProjects(data))
+      .catch(() => setProjects([]))  // on error, treat as empty → show welcome screen
+  }, [])
+
+  if (isLoading) return null  // prevents welcome screen flash on reload
+  if (projects.length === 0) return <WelcomeScreen onAddFolder={() => {/* TODO Plan 04 */}} />
+  return <AppShell onAddFolder={() => {/* TODO Plan 04 */}} />
+}
