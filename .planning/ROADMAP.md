@@ -89,7 +89,13 @@ Plans:
   1. User can select which changed workflows to include, write a commit message with placeholder guidance, and save a version with one button
   2. User can undo the last saved version with one click — a confirmation dialog explains that file contents are preserved and only the version record is removed
   3. Discarding uncommitted changes moves the affected files to a .acd-backup folder rather than permanently deleting them
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Wave 0: test scaffold + shadcn Checkbox/Textarea install
+- [ ] 13-02-PLAN.md — Backend: git_commit_files, git_undo_last_commit, git_discard_files + save router
+- [ ] 13-03-PLAN.md — Frontend: ChangesPanel, SuccessCard, useProjectStore lastSave extension
+- [ ] 13-04-PLAN.md — Wire AppShell three-state machine + human verification checkpoint
 
 ### Phase 14: History and Diff Viewer
 **Goal**: Users can browse a flat timeline of saved versions and view the ACD diff report for any version inline
