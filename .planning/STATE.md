@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 13-save-version-02-PLAN.md
-last_updated: "2026-03-14T20:56:40.017Z"
+stopped_at: Completed 13-save-version-03-PLAN.md
+last_updated: "2026-03-14T20:59:05.900Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
   percent: 0
 ---
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 12-file-watcher P05 | 30 | 1 tasks | 4 files |
 | Phase 13-save-version P01 | 2 | 2 tasks | 3 files |
 | Phase 13-save-version P02 | 3 | 2 tasks | 4 files |
+| Phase 13-save-version P03 | 1 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Recent decisions affecting current work:
 - [Phase 13-save-version]: git_discard_files copies to .acd-backup BEFORE removing — backup-first safety guarantee for v1
 - [Phase 13-save-version]: git_undo_last_commit uses --soft not --hard — file content preserved in working tree
 - [Phase 13-save-version]: save router uses module-level import of git_ops so unittest.mock.patch targets work correctly
+- [Phase 13-save-version]: ChangesPanel accepts changedFiles as prop — AppShell owns fetch in Plan 04
 
 ### Pending Todos
 
@@ -126,6 +128,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T20:56:40.014Z
-Stopped at: Completed 13-save-version-02-PLAN.md
+Last session: 2026-03-14T20:59:05.897Z
+Stopped at: Completed 13-save-version-03-PLAN.md
 Resume file: None
