@@ -1,7 +1,8 @@
-"""Config store service — skeleton (Plan 02 implements save_config)."""
+"""Config store service — load/save app configuration using platformdirs + JSON."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import platformdirs
@@ -18,15 +19,14 @@ def _config_path() -> Path:
 
 def load_config() -> dict:
     """Load config from disk. Returns defaults if file doesn't exist yet."""
-    config_file = _config_path()
-    if config_file.exists():
-        import json
-
-        with config_file.open("r", encoding="utf-8") as f:
-            return json.load(f)  # type: ignore[no-any-return]
-    return {"version": 1, "projects": [], "active_project": None}
+    p = _config_path()
+    if not p.exists():
+        return {"version": 1, "projects": [], "active_project": None}
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def save_config(cfg: dict) -> None:
     """Persist config to disk."""
-    raise NotImplementedError("save_config implemented in Plan 02")
+    _config_path().write_text(
+        json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
