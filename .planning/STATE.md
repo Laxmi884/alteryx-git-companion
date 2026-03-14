@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 12-file-watcher-04-PLAN.md
-last_updated: "2026-03-14T15:53:02.378Z"
+stopped_at: Completed 12-file-watcher-05-PLAN.md
+last_updated: "2026-03-14T19:41:51.628Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 0
 ---
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 12-file-watcher P02 | 4 | 2 tasks | 2 files |
 | Phase 12-file-watcher P03 | 25 | 2 tasks | 4 files |
 | Phase 12-file-watcher P04 | 2 | 2 tasks | 4 files |
+| Phase 12-file-watcher P05 | 30 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 12-file-watcher]: test_sse_endpoint_headers calls route handler directly with AsyncMock for is_disconnected — TestClient.stream() hangs on infinite SSE generators
 - [Phase 12-file-watcher]: useWatchEvents called at App.tsx top level so badge updates arrive regardless of active view
 - [Phase 12-file-watcher]: Amber badge hidden entirely when changedCount is 0 or undefined — no '0' badge noise
+- [Phase 12-file-watcher]: WORKFLOW_SUFFIXES extended to .yxmc, .yxzp, .yxapp — all five Alteryx file types now watched and counted
+- [Phase 12-file-watcher]: watchdog recursive=True — subdirectory workflows trigger events; Alteryx projects nest workflows in subfolders
+- [Phase 12-file-watcher]: SSE seed on connect: new subscribers receive current badge state immediately — prevents stale UI on page reload
 
 ### Pending Todos
 
@@ -116,6 +120,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:53:02.376Z
-Stopped at: Completed 12-file-watcher-04-PLAN.md
+Last session: 2026-03-14T19:41:51.626Z
+Stopped at: Completed 12-file-watcher-05-PLAN.md
 Resume file: None
