@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 13 context gathered
-last_updated: "2026-03-14T20:31:06.991Z"
+stopped_at: Completed 13-save-version-01-PLAN.md
+last_updated: "2026-03-14T20:51:49.887Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 17
+  completed_plans: 14
   percent: 0
 ---
 
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 12-file-watcher P03 | 25 | 2 tasks | 4 files |
 | Phase 12-file-watcher P04 | 2 | 2 tasks | 4 files |
 | Phase 12-file-watcher P05 | 30 | 1 tasks | 4 files |
+| Phase 13-save-version P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,7 @@ Recent decisions affecting current work:
 - [Phase 12-file-watcher]: WORKFLOW_SUFFIXES extended to .yxmc, .yxzp, .yxapp — all five Alteryx file types now watched and counted
 - [Phase 12-file-watcher]: watchdog recursive=True — subdirectory workflows trigger events; Alteryx projects nest workflows in subfolders
 - [Phase 12-file-watcher]: SSE seed on connect: new subscribers receive current badge state immediately — prevents stale UI on page reload
+- [Phase 13-save-version]: shadcn CLI resolves @/ alias literally — checkbox.tsx and textarea.tsx moved from @/components/ui/ to src/components/ui/ per vite alias (same pattern as Phase 11)
 
 ### Pending Todos
 
@@ -120,6 +122,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T20:31:06.979Z
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-save-version/13-CONTEXT.md
+Last session: 2026-03-14T20:51:49.885Z
+Stopped at: Completed 13-save-version-01-PLAN.md
+Resume file: None

@@ -29,9 +29,9 @@
 
 ### SAVE — Save Version
 
-- [ ] **SAVE-01**: User can select changed workflows, write a commit message with placeholder guidance, and save a version
-- [ ] **SAVE-02**: User can undo the last saved version with one click, with confirmation copy explaining file changes are preserved
-- [ ] **SAVE-03**: Discarding uncommitted changes moves files to a `.acd-backup` folder rather than permanent deletion
+- [x] **SAVE-01**: User can select changed workflows, write a commit message with placeholder guidance, and save a version
+- [x] **SAVE-02**: User can undo the last saved version with one click, with confirmation copy explaining file changes are preserved
+- [x] **SAVE-03**: Discarding uncommitted changes moves files to a `.acd-backup` folder rather than permanent deletion
 
 ### HIST — History
 
@@ -106,9 +106,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WATCH-01 | Phase 12 | Complete |
 | WATCH-02 | Phase 12 | Complete |
 | WATCH-03 | Phase 12 | Complete |
-| SAVE-01 | Phase 13 | Pending |
-| SAVE-02 | Phase 13 | Pending |
-| SAVE-03 | Phase 13 | Pending |
+| SAVE-01 | Phase 13 | Complete |
+| SAVE-02 | Phase 13 | Complete |
+| SAVE-03 | Phase 13 | Complete |
 | HIST-01 | Phase 14 | Pending |
 | HIST-02 | Phase 14 | Pending |
 | REMOTE-01 | Phase 16 | Pending |
