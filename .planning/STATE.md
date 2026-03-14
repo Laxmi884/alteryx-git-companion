@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 11-01 Plan — backend skeleton, RED test stubs, frontend deps installed
-last_updated: "2026-03-14T03:26:23.669Z"
+stopped_at: Completed 11-02 Plan — backend routers fully implemented, 10 tests GREEN
+last_updated: "2026-03-14T03:31:11.490Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 10-app-scaffold P02 | 4 | 2 tasks | 14 files |
 | Phase 10-app-scaffold P03 | 1 | 2 tasks | 5 files |
 | Phase 11-onboarding-and-project-management P01 | 5 | 3 tasks | 14 files |
+| Phase 11-onboarding-and-project-management P02 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 11-01]: Routers registered in server.py in Plan 01 (not Plan 04 as noted) — required for TestClient to reach endpoints in RED tests
 - [Phase 11-01]: shadcn CLI resolves @/ alias literally — components must be moved from @/components/ui/ to src/components/ui/ per vite.config.ts alias
 - [Phase 11-01]: npm legacy-peer-deps=true set globally to resolve vite@8 peer conflict with @tailwindcss/vite@4.2.1
+- [Phase 11-02]: Routers use module-level imports (from app.services import svc) so unittest.mock.patch targets work correctly
+- [Phase 11-02]: Path not resolved via Path.resolve() in add_project — macOS /var symlinks to /private/var causing test assertion failures with tmp_path
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T03:26:23.667Z
-Stopped at: Completed 11-01 Plan — backend skeleton, RED test stubs, frontend deps installed
+Last session: 2026-03-14T03:31:11.488Z
+Stopped at: Completed 11-02 Plan — backend routers fully implemented, 10 tests GREEN
 Resume file: None
