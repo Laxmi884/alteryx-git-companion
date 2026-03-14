@@ -72,7 +72,14 @@ Plans:
   1. App detects when a .yxmd or .yxwz file in a registered folder is modified and shows a change badge in the UI
   2. App automatically uses polling (5-second interval) for network/SMB/UNC paths and native OS file events for local drives — no manual configuration required
   3. When a user is about to save their first version in a folder that already contains workflows, the app warns them how many files will be captured in the initial commit
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Test scaffold (Wave 0) + git_ops helpers (git_changed_workflows, count_workflows, git_has_commits) + watcher_utils (is_network_path) (Wave 1)
+- [ ] 12-02-PLAN.md — WatcherManager singleton: watchdog lifecycle, debounce, git rescan, SSE push (Wave 2)
+- [ ] 12-03-PLAN.md — watch router (/api/watch/events SSE, /api/watch/status) + server.py lifespan + projects.py wiring (Wave 3)
+- [ ] 12-04-PLAN.md — Frontend: Zustand setChangedCount, useWatchEvents hook, Sidebar amber badge (Wave 4)
+- [ ] 12-05-PLAN.md — Human verification checkpoint: live badge, /api/watch/status, observer selection (Wave 5)
 
 ### Phase 13: Save Version
 **Goal**: Users can intentionally save a named version of changed workflows, undo the last save, and safely discard uncommitted changes
@@ -151,7 +158,7 @@ Plans:
 | 9. CLI Entry Point | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 10. App Scaffold | v1.1 | 3/3 | Complete    | 2026-03-13 |
 | 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
-| 12. File Watcher | v1.1 | 0/TBD | Not started | - |
+| 12. File Watcher | v1.1 | 0/5 | Not started | - |
 | 13. Save Version | v1.1 | 0/TBD | Not started | - |
 | 14. History and Diff Viewer | v1.1 | 0/TBD | Not started | - |
 | 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
