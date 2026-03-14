@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import sys
+from contextlib import asynccontextmanager
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
@@ -13,10 +15,33 @@ from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
 from app.routers import folder_picker, git_identity, projects, watch
+from app.services import config_store
+from app.services.watcher_manager import watcher_manager
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Alteryx Git Companion")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # type: ignore[type-arg]
+    """Start file watchers for all registered projects on server startup.
+
+    Captures the running event loop FIRST (before start_watching) so that
+    watchdog daemon threads can push events via loop.call_soon_threadsafe.
+    Stops all observers cleanly on shutdown.
+    """
+    # Startup: capture event loop before start_watching (Pitfall 3 in RESEARCH.md)
+    loop = asyncio.get_running_loop()
+    watcher_manager.set_event_loop(loop)
+    cfg = config_store.load_config()
+    for proj in cfg.get("projects", []):
+        watcher_manager.start_watching(proj["id"], proj["path"])
+    yield
+    # Shutdown: stop all observers cleanly (stop_watching uses join(timeout=2))
+    for project_id in list(watcher_manager._observers.keys()):
+        watcher_manager.stop_watching(project_id)
+
+
+app = FastAPI(title="Alteryx Git Companion", lifespan=lifespan)
 
 app.include_router(projects.router)
 app.include_router(git_identity.router)
