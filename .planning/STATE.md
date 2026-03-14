@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 12-file-watcher-03-PLAN.md
-last_updated: "2026-03-14T15:49:17.006Z"
+stopped_at: Completed 12-file-watcher-04-PLAN.md
+last_updated: "2026-03-14T15:53:02.378Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 ---
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 12-file-watcher P01 | 2 | 2 tasks | 3 files |
 | Phase 12-file-watcher P02 | 4 | 2 tasks | 2 files |
 | Phase 12-file-watcher P03 | 25 | 2 tasks | 4 files |
+| Phase 12-file-watcher P04 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,8 @@ Recent decisions affecting current work:
 - [Phase 12-file-watcher]: _WorkflowEventHandler.on_any_event used instead of on_modified to catch Alteryx temp-file-rename save pattern
 - [Phase 12-file-watcher]: SSE generator uses asyncio.wait_for + request.is_disconnected() instead of bare await q.get() — allows clean disconnect detection and makes generator testable
 - [Phase 12-file-watcher]: test_sse_endpoint_headers calls route handler directly with AsyncMock for is_disconnected — TestClient.stream() hangs on infinite SSE generators
+- [Phase 12-file-watcher]: useWatchEvents called at App.tsx top level so badge updates arrive regardless of active view
+- [Phase 12-file-watcher]: Amber badge hidden entirely when changedCount is 0 or undefined — no '0' badge noise
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T15:49:17.003Z
-Stopped at: Completed 12-file-watcher-03-PLAN.md
+Last session: 2026-03-14T15:53:02.376Z
+Stopped at: Completed 12-file-watcher-04-PLAN.md
 Resume file: None
