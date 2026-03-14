@@ -1,0 +1,186 @@
+"""Wave 0 test scaffold for Phase 12 file-watcher helpers.
+
+Tests cover:
+  WATCH-01: git_changed_workflows, count_workflows (badge refresh triggers)
+  WATCH-02: is_network_path (PollingObserver selection)
+  WATCH-03: git_has_commits (no-commits guard on first watch)
+
+Imports are intentionally bare (no try/except) — the ImportError is the RED
+state for all non-skipped tests until Task 2 creates the modules.
+"""
+
+import subprocess
+
+import pytest
+from app.services.watcher_utils import is_network_path
+
+from app.services.git_ops import count_workflows, git_changed_workflows, git_has_commits
+
+# ---------------------------------------------------------------------------
+# WATCH-01: git_changed_workflows
+# ---------------------------------------------------------------------------
+
+
+def test_git_changed_workflows(tmp_path):
+    """git_changed_workflows returns .yxmd/.yxwz filenames and excludes others."""
+    # Set up a real git repo with one committed .yxmd file
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+
+    # Create and commit a .yxmd file so it's in git history
+    committed_yxmd = tmp_path / "analysis.yxmd"
+    committed_yxmd.write_text("<root/>")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+
+    # Modify the committed .yxmd (unstaged modification)
+    committed_yxmd.write_text("<root updated/>")
+
+    # Add an untracked new .yxwz file
+    new_yxwz = tmp_path / "pipeline.yxwz"
+    new_yxwz.write_text("<root/>")
+
+    # Add files that should NOT appear in results
+    (tmp_path / "notes.txt").write_text("irrelevant")
+    (tmp_path / "data.yxmc").write_text("<cache/>")
+
+    result = git_changed_workflows(str(tmp_path))
+
+    assert isinstance(result, list)
+    filenames = [r.split("/")[-1] if "/" in r else r for r in result]
+    assert "analysis.yxmd" in filenames
+    assert "pipeline.yxwz" in filenames
+    assert not any(f.endswith(".txt") for f in result)
+    assert not any(f.endswith(".yxmc") for f in result)
+
+
+# ---------------------------------------------------------------------------
+# WATCH-01: count_workflows
+# ---------------------------------------------------------------------------
+
+
+def test_count_workflows(tmp_path):
+    """count_workflows counts .yxmd and .yxwz files only (non-recursive)."""
+    (tmp_path / "a.yxmd").write_text("<root/>")
+    (tmp_path / "b.yxmd").write_text("<root/>")
+    (tmp_path / "c.yxwz").write_text("<root/>")
+    (tmp_path / "readme.txt").write_text("ignore me")
+    # Subdirectory file must NOT be counted (non-recursive)
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    (sub / "d.yxmd").write_text("<root/>")
+
+    assert count_workflows(str(tmp_path)) == 3
+
+
+# ---------------------------------------------------------------------------
+# WATCH-03: git_has_commits
+# ---------------------------------------------------------------------------
+
+
+def test_git_has_commits_false(tmp_path):
+    """git_has_commits returns False for a freshly git-init-ed repo with no commits."""
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    assert git_has_commits(str(tmp_path)) is False
+
+
+def test_git_has_commits_true(tmp_path):
+    """git_has_commits returns True when at least one commit exists."""
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    (tmp_path / "file.txt").write_text("content")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    assert git_has_commits(str(tmp_path)) is True
+
+
+# ---------------------------------------------------------------------------
+# WATCH-02: is_network_path
+# ---------------------------------------------------------------------------
+
+
+def test_is_network_path_unc_backslash():
+    """is_network_path returns True for UNC backslash paths."""
+    assert is_network_path("\\\\server\\share\\workflows") is True
+
+
+def test_is_network_path_unc_forward():
+    """is_network_path returns True for UNC forward-slash paths."""
+    assert is_network_path("//server/share/workflows") is True
+
+
+def test_is_network_path_local_unix():
+    """is_network_path returns False for standard Unix absolute paths."""
+    assert is_network_path("/home/user/workflows") is False
+
+
+# ---------------------------------------------------------------------------
+# WATCH-01/02: WatcherManager stubs (Plan 02)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skip(reason="requires WatcherManager — Plan 02")
+def test_badge_push_on_rescan():
+    """WatcherManager emits SSE badge event after _rescan completes."""
+    pass
+
+
+@pytest.mark.skip(reason="requires WatcherManager — Plan 02")
+def test_polling_observer_for_network():
+    """WatcherManager uses PollingObserver when is_network_path returns True."""
+    pass
+
+
+# ---------------------------------------------------------------------------
+# WATCH-01/03: Integration stubs (Plan 03 — requires running server)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skip(reason="requires running server — Plan 03")
+def test_sse_endpoint_headers():
+    """GET /api/watch/events returns Content-Type: text/event-stream."""
+    pass
+
+
+@pytest.mark.skip(reason="requires running server — Plan 03")
+def test_watch_status_no_commits():
+    """GET /api/watch/status returns has_commits: false for repo with no commits."""
+    pass
+
+
+@pytest.mark.skip(reason="requires running server — Plan 03")
+def test_watch_status_total_workflows():
+    """GET /api/watch/status returns total_workflows matching filesystem count."""
+    pass
