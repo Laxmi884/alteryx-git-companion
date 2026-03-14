@@ -7,6 +7,7 @@ and /api/save endpoints.
 from __future__ import annotations
 
 import subprocess
+from unittest.mock import patch
 
 import pytest
 
@@ -49,31 +50,60 @@ def _make_git_repo(path):
 
 def test_git_commit_files(tmp_path):
     """SAVE-01: git_commit_files stages specific files and creates a commit."""
-    try:
-        from app.services.git_ops import git_commit_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_commit_files not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_commit_files and update this test")
+    from app.services.git_ops import git_commit_files
+
+    repo = _make_git_repo(tmp_path)
+    workflow = repo / "workflow.yxmd"
+    workflow.write_text("v2")
+
+    git_commit_files(str(repo), ["workflow.yxmd"], "Second commit")
+
+    log = subprocess.run(
+        ["git", "-C", str(repo), "log", "--oneline"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert len(log.stdout.strip().splitlines()) == 2
+
+    show = subprocess.run(
+        ["git", "-C", str(repo), "show", "--name-only", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "workflow.yxmd" in show.stdout
 
 
 def test_commit_only_selected_files(tmp_path):
     """SAVE-01: when two files changed, only the selected one appears in the commit."""
-    try:
-        from app.services.git_ops import git_commit_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_commit_files not yet implemented in git_ops.py")
-    pytest.fail(
-        "Stub — implement git_commit_files (selected-files) and update this test"
+    from app.services.git_ops import git_commit_files
+
+    repo = _make_git_repo(tmp_path)
+    # Modify first file and create a second new file
+    (repo / "workflow.yxmd").write_text("v2")
+    (repo / "other.yxmd").write_text("other-v1")
+
+    # Only commit workflow.yxmd
+    git_commit_files(str(repo), ["workflow.yxmd"], "Selective commit")
+
+    # other.yxmd should still be untracked (in porcelain output)
+    status = subprocess.run(
+        ["git", "-C", str(repo), "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+        check=True,
     )
+    assert "other.yxmd" in status.stdout
 
 
 def test_git_commit_files_empty_files_list(tmp_path):
-    """SAVE-01: empty files list raises CalledProcessError or returns gracefully."""
-    try:
-        from app.services.git_ops import git_commit_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_commit_files not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_commit_files (empty list) and update this test")
+    """SAVE-01: empty files list raises ValueError."""
+    from app.services.git_ops import git_commit_files
+
+    repo = _make_git_repo(tmp_path)
+    with pytest.raises(ValueError):
+        git_commit_files(str(repo), [], "Empty commit")
 
 
 # ---------------------------------------------------------------------------
@@ -83,22 +113,45 @@ def test_git_commit_files_empty_files_list(tmp_path):
 
 def test_git_undo_last_commit(tmp_path):
     """SAVE-02: after soft reset, commit count decreases by 1."""
-    try:
-        from app.services.git_ops import git_undo_last_commit  # noqa: F401
-    except ImportError:
-        pytest.fail("git_undo_last_commit not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_undo_last_commit and update this test")
+    from app.services.git_ops import git_commit_files, git_undo_last_commit
+
+    repo = _make_git_repo(tmp_path)
+    (repo / "workflow.yxmd").write_text("v2")
+    git_commit_files(str(repo), ["workflow.yxmd"], "Second commit")
+
+    log_before = subprocess.run(
+        ["git", "-C", str(repo), "log", "--oneline"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert len(log_before.stdout.strip().splitlines()) == 2
+
+    git_undo_last_commit(str(repo))
+
+    log_after = subprocess.run(
+        ["git", "-C", str(repo), "log", "--oneline"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert len(log_after.stdout.strip().splitlines()) == 1
 
 
 def test_git_undo_preserves_file_content(tmp_path):
     """SAVE-02: file bytes before undo == file bytes after undo."""
-    try:
-        from app.services.git_ops import git_undo_last_commit  # noqa: F401
-    except ImportError:
-        pytest.fail("git_undo_last_commit not yet implemented in git_ops.py")
-    pytest.fail(
-        "Stub — implement git_undo_last_commit (file preservation) and update this test"
-    )
+    from app.services.git_ops import git_commit_files, git_undo_last_commit
+
+    repo = _make_git_repo(tmp_path)
+    workflow = repo / "workflow.yxmd"
+    workflow.write_text("v2-content")
+    git_commit_files(str(repo), ["workflow.yxmd"], "Second commit")
+
+    bytes_before = workflow.read_bytes()
+    git_undo_last_commit(str(repo))
+    bytes_after = workflow.read_bytes()
+
+    assert bytes_before == bytes_after
 
 
 # ---------------------------------------------------------------------------
@@ -108,29 +161,45 @@ def test_git_undo_preserves_file_content(tmp_path):
 
 def test_git_discard_files_backup(tmp_path):
     """SAVE-03: before checkout, file appears in .acd-backup/."""
-    try:
-        from app.services.git_ops import git_discard_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_discard_files not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_discard_files (backup) and update this test")
+    from app.services.git_ops import git_discard_files
+
+    repo = _make_git_repo(tmp_path)
+    workflow = repo / "workflow.yxmd"
+    workflow.write_text("modified-content")
+
+    git_discard_files(str(repo), ["workflow.yxmd"])
+
+    backup = repo / ".acd-backup" / "workflow.yxmd"
+    assert backup.exists()
 
 
 def test_git_discard_files_restore(tmp_path):
     """SAVE-03: tracked file restored to HEAD content."""
-    try:
-        from app.services.git_ops import git_discard_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_discard_files not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_discard_files (restore) and update this test")
+    from app.services.git_ops import git_discard_files
+
+    repo = _make_git_repo(tmp_path)
+    workflow = repo / "workflow.yxmd"
+    original_content = "v1"
+    workflow.write_text("modified-content")
+
+    git_discard_files(str(repo), ["workflow.yxmd"])
+
+    assert workflow.read_text() == original_content
 
 
 def test_git_discard_untracked(tmp_path):
     """SAVE-03: untracked file copied to .acd-backup/ then removed from working dir."""
-    try:
-        from app.services.git_ops import git_discard_files  # noqa: F401
-    except ImportError:
-        pytest.fail("git_discard_files not yet implemented in git_ops.py")
-    pytest.fail("Stub — implement git_discard_files (untracked) and update this test")
+    from app.services.git_ops import git_discard_files
+
+    repo = _make_git_repo(tmp_path)
+    new_file = repo / "new.yxmd"
+    new_file.write_text("brand-new")
+
+    git_discard_files(str(repo), ["new.yxmd"])
+
+    backup = repo / ".acd-backup" / "new.yxmd"
+    assert backup.exists()
+    assert not new_file.exists()
 
 
 # ---------------------------------------------------------------------------
@@ -140,37 +209,80 @@ def test_git_discard_untracked(tmp_path):
 
 def test_commit_endpoint(client, tmp_path):
     """SAVE-01: POST /api/save/commit returns 200 {"ok": true}."""
-    try:
-        import app.routers.save  # noqa: F401
-    except ImportError:
-        pytest.fail("app.routers.save not yet implemented")
-    pytest.fail("Stub — implement /api/save/commit endpoint and update this test")
+    repo = _make_git_repo(tmp_path)
+    (repo / "workflow.yxmd").write_text("v2")
+
+    with (
+        patch("app.routers.save.git_ops.git_commit_files") as mock_commit,
+        patch("app.routers.save.watcher_manager.clear_count") as mock_clear,
+    ):
+        mock_commit.return_value = None
+        resp = client.post(
+            "/api/save/commit",
+            json={
+                "project_id": "proj-1",
+                "folder": str(repo),
+                "files": ["workflow.yxmd"],
+                "message": "Save",
+            },
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"ok": True}
+    mock_clear.assert_called_once_with("proj-1")
 
 
 def test_commit_empty_files(client, tmp_path):
     """SAVE-01: POST /api/save/commit with files: [] returns 400."""
-    try:
-        import app.routers.save  # noqa: F401
-    except ImportError:
-        pytest.fail("app.routers.save not yet implemented")
-    pytest.fail(
-        "Stub — implement /api/save/commit empty-files validation and update this test"
+    repo = _make_git_repo(tmp_path)
+
+    resp = client.post(
+        "/api/save/commit",
+        json={
+            "project_id": "proj-1",
+            "folder": str(repo),
+            "files": [],
+            "message": "Empty",
+        },
     )
+    assert resp.status_code == 400
 
 
 def test_undo_endpoint(client, tmp_path):
     """SAVE-02: POST /api/save/undo returns 200 {"ok": true}."""
-    try:
-        import app.routers.save  # noqa: F401
-    except ImportError:
-        pytest.fail("app.routers.save not yet implemented")
-    pytest.fail("Stub — implement /api/save/undo endpoint and update this test")
+    repo = _make_git_repo(tmp_path)
+
+    with (
+        patch("app.routers.save.git_ops.git_undo_last_commit") as mock_undo,
+        patch("app.routers.save.git_ops.git_has_commits", return_value=False),
+    ):
+        mock_undo.return_value = None
+        resp = client.post(
+            "/api/save/undo",
+            json={"project_id": "proj-1", "folder": str(repo)},
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is True
+    assert "has_any_commits" in data
 
 
 def test_discard_endpoint(client, tmp_path):
     """SAVE-03: POST /api/save/discard returns 200 {"ok": true}."""
-    try:
-        import app.routers.save  # noqa: F401
-    except ImportError:
-        pytest.fail("app.routers.save not yet implemented")
-    pytest.fail("Stub — implement /api/save/discard endpoint and update this test")
+    repo = _make_git_repo(tmp_path)
+
+    with (
+        patch("app.routers.save.git_ops.git_discard_files") as mock_discard,
+        patch("app.routers.save.watcher_manager.clear_count") as mock_clear,
+    ):
+        mock_discard.return_value = None
+        resp = client.post(
+            "/api/save/discard",
+            json={
+                "project_id": "proj-1",
+                "folder": str(repo),
+                "files": ["workflow.yxmd"],
+            },
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"ok": True}
+    mock_clear.assert_called_once_with("proj-1")

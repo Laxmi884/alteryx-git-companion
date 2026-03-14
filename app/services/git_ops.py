@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
+from pathlib import Path
 
 
 def is_git_repo(folder: str) -> bool:
@@ -95,3 +97,88 @@ def git_has_commits(folder: str) -> bool:
         text=True,
     )
     return result.returncode == 0
+
+
+def git_commit_files(folder: str, files: list[str], message: str) -> None:
+    """Stage specific files and create a commit.
+
+    Only the explicitly passed files are staged — respects user checkbox selection.
+    Raises ValueError for empty files list.
+    Raises subprocess.CalledProcessError if git commit fails.
+    Empty message defaults to 'Save' to avoid git commit rejection.
+    """
+    if not files:
+        raise ValueError("files list must not be empty")
+    subprocess.run(
+        ["git", "-C", folder, "add", "--"] + files,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", folder, "commit", "-m", message or "Save"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+
+def git_undo_last_commit(folder: str) -> None:
+    """Remove the last commit, keep working tree changes (soft reset).
+
+    Raises subprocess.CalledProcessError if no parent commit exists.
+    """
+    subprocess.run(
+        ["git", "-C", folder, "reset", "--soft", "HEAD~1"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+
+def _is_tracked(folder: str, rel_path: str) -> bool:
+    """Return True if rel_path is tracked by git (not untracked/new)."""
+    r = subprocess.run(
+        ["git", "-C", folder, "ls-files", "--error-unmatch", rel_path],
+        capture_output=True,
+        text=True,
+    )
+    return r.returncode == 0
+
+
+def git_discard_files(folder: str, files: list[str]) -> None:
+    """Copy files to .acd-backup, then restore tracked files to HEAD.
+
+    For untracked files: copy to backup then delete from working dir.
+    For tracked files: copy to backup then git checkout -- to restore HEAD version.
+    .acd-backup is flat (files placed by basename). Name collision is acceptable
+    for v1 — users can recover manually from backup folder.
+    Always copies BEFORE removing — never destructive without backup.
+    """
+    backup_dir = Path(folder) / ".acd-backup"
+    backup_dir.mkdir(exist_ok=True)
+
+    tracked_files: list[str] = []
+    untracked_files: list[str] = []
+
+    for rel_path in files:
+        src = Path(folder) / rel_path
+        if src.exists():
+            shutil.copy2(src, backup_dir / src.name)
+        if _is_tracked(folder, rel_path):
+            tracked_files.append(rel_path)
+        else:
+            untracked_files.append(rel_path)
+
+    if tracked_files:
+        subprocess.run(
+            ["git", "-C", folder, "checkout", "--"] + tracked_files,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+    for rel_path in untracked_files:
+        src = Path(folder) / rel_path
+        if src.exists():
+            src.unlink()
