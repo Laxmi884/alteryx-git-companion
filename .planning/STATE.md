@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: "Completed 11-03 Plan — React frontend core: Zustand store, AppShell, Sidebar, WelcomeScreen, EmptyState"
-last_updated: "2026-03-14T03:35:03.713Z"
+stopped_at: "Completed 11-04 Plan — final wiring: GitIdentityCard, pre-confirmation git-init flow, full onboarding loop complete"
+last_updated: "2026-03-14T03:39:36.485Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 11-onboarding-and-project-management P01 | 5 | 3 tasks | 14 files |
 | Phase 11-onboarding-and-project-management P02 | 4 | 2 tasks | 5 files |
 | Phase 11-onboarding-and-project-management P03 | 2 | 2 tasks | 6 files |
+| Phase 11-onboarding-and-project-management P04 | 525722 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 - [Phase 11-03]: isLoading: true initial Zustand state prevents WelcomeScreen flash before first API response arrives
 - [Phase 11-03]: onAddFolder prop passed as no-op from App.tsx; wired to real folder-picker dialog in Plan 04
 - [Phase 11-03]: Sidebar DELETE /api/projects/{id} is best-effort — removeProject called regardless of network error
+- [Phase 11-04]: server.py router registration was completed in Plan 01 (not Plan 04); Task 1 verified all routes present with no changes needed
+- [Phase 11-04]: Pre-confirmation pattern: GET /api/projects/check BEFORE any git operation; AlertDialog only shown when folder has no git history; Cancel aborts entirely
+- [Phase 11-04]: GitIdentityCard rendered inline in AppShell main content area (not modal) for UX consistency with EmptyState
 
 ### Pending Todos
 
@@ -97,6 +101,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-14T03:35:03.711Z
-Stopped at: Completed 11-03 Plan — React frontend core: Zustand store, AppShell, Sidebar, WelcomeScreen, EmptyState
+Last session: 2026-03-14T03:39:36.483Z
+Stopped at: Completed 11-04 Plan — final wiring: GitIdentityCard, pre-confirmation git-init flow, full onboarding loop complete
 Resume file: None
