@@ -51,11 +51,21 @@ WORKFLOW_SUFFIXES = frozenset({".yxmd", ".yxwz", ".yxmc", ".yxzp", ".yxapp"})
 
 
 def git_changed_workflows(folder: str) -> list[str]:
-    """Return Alteryx workflow files modified vs git HEAD (git status --porcelain v1).
+    """Return Alteryx workflow files that need saving.
 
-    Includes staged modifications, unstaged modifications, and untracked new files.
-    Does NOT include files that are only in git's index with no changes.
+    For non-git folders: all workflow files (everything needs a first save).
+    For git repos: files modified vs HEAD (staged, unstaged, and untracked).
     """
+    from pathlib import Path
+
+    if not is_git_repo(folder):
+        # No git repo yet — every workflow file is pending a first save
+        return [
+            f.name
+            for f in Path(folder).iterdir()
+            if f.is_file() and f.suffix in WORKFLOW_SUFFIXES
+        ]
+
     result = subprocess.run(
         ["git", "-C", folder, "status", "--porcelain"],
         capture_output=True,
@@ -69,8 +79,6 @@ def git_changed_workflows(folder: str) -> list[str]:
         # Handle rename format: "ORIG_PATH -> NEW_PATH" — take the new path
         if " -> " in filename:
             filename = filename.split(" -> ")[-1].strip()
-        from pathlib import Path
-
         if Path(filename).suffix in WORKFLOW_SUFFIXES:
             changed.append(filename)
     return changed
@@ -126,14 +134,33 @@ def git_commit_files(folder: str, files: list[str], message: str) -> None:
 def git_undo_last_commit(folder: str) -> None:
     """Remove the last commit, keep working tree changes (soft reset).
 
-    Raises subprocess.CalledProcessError if no parent commit exists.
+    Handles the initial commit case (no parent) by deleting the branch ref
+    so the repo returns to an unborn state with files still on disk.
     """
-    subprocess.run(
-        ["git", "-C", folder, "reset", "--soft", "HEAD~1"],
-        capture_output=True,
-        text=True,
-        check=True,
+    has_parent = (
+        subprocess.run(
+            ["git", "-C", folder, "rev-parse", "--verify", "HEAD~1"],
+            capture_output=True,
+            text=True,
+        ).returncode
+        == 0
     )
+
+    if has_parent:
+        subprocess.run(
+            ["git", "-C", folder, "reset", "--soft", "HEAD~1"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    else:
+        # Initial commit — delete the branch ref, leaving files unstaged
+        subprocess.run(
+            ["git", "-C", folder, "update-ref", "-d", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
 
 
 def _is_tracked(folder: str, rel_path: str) -> bool:
@@ -182,3 +209,97 @@ def git_discard_files(folder: str, files: list[str]) -> None:
         src = Path(folder) / rel_path
         if src.exists():
             src.unlink()
+
+
+def git_log(folder: str) -> list[dict]:
+    """Return commit history for the git repo at folder, newest first.
+
+    Each entry contains:
+    - sha: full 40-char hex commit hash
+    - message: commit subject line
+    - author: author name
+    - timestamp: ISO-8601 author date string
+    - files_changed: workflow files changed in that commit (WORKFLOW_SUFFIXES only)
+    - has_parent: True if the commit has a parent (not the initial commit)
+
+    Returns [] when the repo has no commits.
+    Uses two-pass approach: first gets headers, then per-SHA gets diff-tree for files.
+    """
+    if not git_has_commits(folder):
+        return []
+
+    # Pass 1: get commit headers
+    result = subprocess.run(
+        ["git", "-C", folder, "log", "--pretty=format:%H\x1f%s\x1f%an\x1f%aI"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    entries: list[dict] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split("\x1f", 3)
+        if len(parts) < 4:
+            continue
+        sha, message, author, timestamp = parts
+
+        # Pass 2a: check has_parent via rev-parse of parent ref
+        has_parent = (
+            subprocess.run(
+                ["git", "-C", folder, "rev-parse", "--verify", f"{sha}~1"],
+                capture_output=True,
+                text=True,
+            ).returncode
+            == 0
+        )
+
+        # Pass 2b: get files changed in this commit (diff-tree)
+        diff_result = subprocess.run(
+            [
+                "git",
+                "-C",
+                folder,
+                "diff-tree",
+                "--no-commit-id",
+                "-r",
+                "--name-only",
+                sha,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        files_changed = [
+            f
+            for f in diff_result.stdout.splitlines()
+            if f and Path(f).suffix in WORKFLOW_SUFFIXES
+        ]
+
+        entries.append(
+            {
+                "sha": sha,
+                "message": message,
+                "author": author,
+                "timestamp": timestamp,
+                "files_changed": files_changed,
+                "has_parent": has_parent,
+            }
+        )
+
+    return entries
+
+
+def git_show_file(folder: str, sha: str, filepath: str) -> bytes:
+    """Return the raw bytes of filepath at the given commit sha.
+
+    Raises FileNotFoundError if the file does not exist at that commit.
+    """
+    result = subprocess.run(
+        ["git", "-C", folder, "show", f"{sha}:{filepath}"],
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        raise FileNotFoundError(f"{filepath} not found at {sha}")
+    return result.stdout
