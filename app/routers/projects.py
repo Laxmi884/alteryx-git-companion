@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services import config_store, git_ops
+from app.services.watcher_manager import watcher_manager
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -50,6 +51,7 @@ def add_project(body: ProjectIn) -> dict:
     project = {"id": str(uuid.uuid4()), "path": path_str, "name": p.name}
     cfg.setdefault("projects", []).append(project)
     config_store.save_config(cfg)
+    watcher_manager.start_watching(project["id"], path_str)
     return project
 
 
@@ -65,4 +67,5 @@ def remove_project(project_id: str) -> dict:
     if cfg.get("active_project") == project_id:
         cfg["active_project"] = None
     config_store.save_config(cfg)
+    watcher_manager.stop_watching(project_id)
     return {"removed": project_id}
