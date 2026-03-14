@@ -1,6 +1,7 @@
 """WatcherManager: central orchestrator for watchdog observer lifecycles.
 
-Manages file-system watchers for Alteryx workflow files (.yxmd, .yxwz),
+Manages file-system watchers for Alteryx workflow files
+(.yxmd, .yxwz, .yxmc, .yxzp, .yxapp),
 debounces file events, runs git status rescans, and pushes badge_update
 events to SSE subscriber queues.
 
@@ -38,7 +39,7 @@ class _WorkflowEventHandler(PatternMatchingEventHandler):
     """Watchdog handler that triggers a debounced rescan on any workflow file event.
 
     Uses on_any_event (not on_modified) to catch Alteryx's temp-file-rename
-    save pattern, which emits a created event for the final .yxmd file.
+    save pattern, which emits a created event for the final workflow file.
     """
 
     def __init__(
@@ -48,7 +49,7 @@ class _WorkflowEventHandler(PatternMatchingEventHandler):
         on_change: object,
     ) -> None:
         super().__init__(
-            patterns=["*.yxmd", "*.yxwz"],
+            patterns=["*.yxmd", "*.yxwz", "*.yxmc", "*.yxzp", "*.yxapp"],
             ignore_patterns=["*.tmp", "~*"],
             ignore_directories=True,
             case_sensitive=False,

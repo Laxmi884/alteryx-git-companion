@@ -45,11 +45,11 @@ def set_git_identity(name: str, email: str) -> None:
     subprocess.run(["git", "config", "--global", "user.email", email], check=True)
 
 
-WORKFLOW_SUFFIXES = frozenset({".yxmd", ".yxwz"})
+WORKFLOW_SUFFIXES = frozenset({".yxmd", ".yxwz", ".yxmc", ".yxzp", ".yxapp"})
 
 
 def git_changed_workflows(folder: str) -> list[str]:
-    """Return .yxmd/.yxwz files modified vs git HEAD (git status --porcelain v1).
+    """Return Alteryx workflow files modified vs git HEAD (git status --porcelain v1).
 
     Includes staged modifications, unstaged modifications, and untracked new files.
     Does NOT include files that are only in git's index with no changes.
@@ -75,7 +75,7 @@ def git_changed_workflows(folder: str) -> list[str]:
 
 
 def count_workflows(folder: str) -> int:
-    """Count all .yxmd/.yxwz files in folder (non-recursive, top-level only)."""
+    """Count all Alteryx workflow files in folder (non-recursive, top-level only)."""
     from pathlib import Path
 
     p = Path(folder)
