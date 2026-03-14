@@ -7,15 +7,23 @@ export interface Project {
   changedCount?: number
 }
 
+export interface LastSave {
+  message: string
+  fileCount: number
+  savedAt: Date
+}
+
 interface ProjectStore {
   projects: Project[]
   activeProjectId: string | null
   isLoading: boolean
+  lastSave: LastSave | null
   setProjects: (projects: Project[]) => void
   setActiveProject: (id: string) => void
   addProject: (project: Project) => void
   removeProject: (id: string) => void
   setChangedCount: (id: string, count: number) => void
+  setLastSave: (save: LastSave | null) => void
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
@@ -36,4 +44,6 @@ export const useProjectStore = create<ProjectStore>((set) => ({
         p.id === id ? { ...p, changedCount: count } : p
       ),
     })),
+  lastSave: null,
+  setLastSave: (save) => set({ lastSave: save }),
 }))
