@@ -116,14 +116,16 @@ Plans:
 **Plans**: TBD
 
 ### Phase 16: Remote Auth and Push
-**Goal**: Users can authenticate with GitHub or GitLab and back up saved versions to a remote with a single button
+**Goal**: Users can authenticate with GitHub or GitLab, back up saved versions to a remote with a single button, auto-create the remote repo if needed, and see at a glance how far ahead or behind they are from the remote
 **Depends on**: Phase 15
-**Requirements**: REMOTE-01, REMOTE-02, REMOTE-03, REMOTE-04
+**Requirements**: REMOTE-01, REMOTE-02, REMOTE-03, REMOTE-04, REMOTE-05, REMOTE-06
 **Success Criteria** (what must be TRUE):
   1. User can connect to GitHub using a browser-based OAuth flow — no PAT or command-line steps required
   2. User can connect to GitLab using a personal access token with in-app step-by-step instructions and a direct link to the GitLab token settings page
   3. Auth credentials survive app restarts — stored in Windows Credential Manager or macOS Keychain via the OS credential store, never in plaintext
   4. User can push saved versions to the connected remote with a single button click
+  5. If no remote repository exists yet, the app creates it automatically on first push — user never has to visit GitHub/GitLab to create a repo manually
+  6. The UI shows an ahead/behind indicator (e.g. "↑ 3 ahead · ↓ 1 behind") so users know which saved versions exist only locally and which exist only on the remote
 **Plans**: TBD
 
 ### Phase 17: Branch Management
@@ -165,7 +167,7 @@ Plans:
 | 10. App Scaffold | v1.1 | 3/3 | Complete    | 2026-03-13 |
 | 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
 | 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
-| 13. Save Version | 3/4 | In Progress|  | - |
+| 13. Save Version | 4/4 | Complete   | 2026-03-14 | - |
 | 14. History and Diff Viewer | v1.1 | 0/TBD | Not started | - |
 | 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
 | 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
