@@ -12,9 +12,15 @@ from fastapi import FastAPI
 from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
+from app.routers import folder_picker, git_identity, projects
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Alteryx Git Companion")
+
+app.include_router(projects.router)
+app.include_router(git_identity.router)
+app.include_router(folder_picker.router)
 
 
 def _static_dir() -> Path:
