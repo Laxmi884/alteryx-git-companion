@@ -22,7 +22,7 @@ from app.services.watcher_utils import is_network_path
 
 
 def test_git_changed_workflows(tmp_path):
-    """git_changed_workflows returns .yxmd/.yxwz filenames and excludes others."""
+    """git_changed_workflows returns Alteryx workflow filenames; excludes others."""
     # Set up a real git repo with one committed .yxmd file
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(
@@ -56,9 +56,12 @@ def test_git_changed_workflows(tmp_path):
     new_yxwz = tmp_path / "pipeline.yxwz"
     new_yxwz.write_text("<root/>")
 
+    # Add a .yxmc macro (should appear — it's a workflow type)
+    new_yxmc = tmp_path / "macro.yxmc"
+    new_yxmc.write_text("<root/>")
+
     # Add files that should NOT appear in results
     (tmp_path / "notes.txt").write_text("irrelevant")
-    (tmp_path / "data.yxmc").write_text("<cache/>")
 
     result = git_changed_workflows(str(tmp_path))
 
@@ -66,8 +69,8 @@ def test_git_changed_workflows(tmp_path):
     filenames = [r.split("/")[-1] if "/" in r else r for r in result]
     assert "analysis.yxmd" in filenames
     assert "pipeline.yxwz" in filenames
+    assert "macro.yxmc" in filenames
     assert not any(f.endswith(".txt") for f in result)
-    assert not any(f.endswith(".yxmc") for f in result)
 
 
 # ---------------------------------------------------------------------------
@@ -76,17 +79,20 @@ def test_git_changed_workflows(tmp_path):
 
 
 def test_count_workflows(tmp_path):
-    """count_workflows counts .yxmd and .yxwz files only (non-recursive)."""
+    """count_workflows counts all Alteryx workflow file types (non-recursive)."""
     (tmp_path / "a.yxmd").write_text("<root/>")
     (tmp_path / "b.yxmd").write_text("<root/>")
     (tmp_path / "c.yxwz").write_text("<root/>")
+    (tmp_path / "d.yxmc").write_text("<root/>")
+    (tmp_path / "e.yxzp").write_text("<root/>")
+    (tmp_path / "f.yxapp").write_text("<root/>")
     (tmp_path / "readme.txt").write_text("ignore me")
     # Subdirectory file must NOT be counted (non-recursive)
     sub = tmp_path / "sub"
     sub.mkdir()
-    (sub / "d.yxmd").write_text("<root/>")
+    (sub / "g.yxmd").write_text("<root/>")
 
-    assert count_workflows(str(tmp_path)) == 3
+    assert count_workflows(str(tmp_path)) == 6
 
 
 # ---------------------------------------------------------------------------
