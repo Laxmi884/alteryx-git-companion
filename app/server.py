@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
-from app.routers import folder_picker, git_identity, projects, save, watch
+from app.routers import folder_picker, git_identity, history, projects, save, watch
 from app.services import config_store
 from app.services.watcher_manager import watcher_manager
 
@@ -48,6 +48,7 @@ app.include_router(git_identity.router)
 app.include_router(folder_picker.router)
 app.include_router(watch.router)
 app.include_router(save.router)
+app.include_router(history.router)
 
 
 def _static_dir() -> Path:
