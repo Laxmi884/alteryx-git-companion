@@ -8,6 +8,7 @@ import json
 from fastapi import APIRouter, Request
 from sse_starlette.sse import EventSourceResponse
 
+from app.services import git_ops
 from app.services.watcher_manager import watcher_manager
 
 router = APIRouter(prefix="/api/watch", tags=["watch"])
@@ -58,10 +59,10 @@ async def watch_events(request: Request):
 
 
 @router.get("/status")
-def watch_status() -> dict:
-    """Return per-project change counts and commit status.
+def watch_status(project_id: str | None = None, folder: str | None = None) -> dict:
+    """Return per-project change counts, commit status, and changed file list.
 
-    Response shape:
+    Without query params — returns all projects:
     {
       "<project_id>": {
         "changed_count": int,
@@ -70,7 +71,26 @@ def watch_status() -> dict:
       }
     }
 
-    Called by Phase 13 (Save Version) at save-time to determine whether
-    to show the initial-commit warning (has_any_commits=False).
+    With project_id + folder — returns single project status including changed_files:
+    {
+      "changed_count": int,
+      "total_workflows": int,
+      "has_any_commits": bool,
+      "changed_files": list[str]
+    }
+
+    Called by AppShell on project activation and after undo to hydrate
+    ChangesPanel with filenames. The changed_files list avoids a separate
+    fetch and enables the panel's checkbox pre-selection.
     """
+    if project_id is not None and folder is not None:
+        all_status = watcher_manager.get_status()
+        project_status = all_status.get(project_id, {})
+        changed_files = git_ops.git_changed_workflows(folder)
+        return {
+            "changed_count": project_status.get("changed_count", 0),
+            "total_workflows": project_status.get("total_workflows", 0),
+            "has_any_commits": project_status.get("has_any_commits", False),
+            "changed_files": changed_files,
+        }
     return watcher_manager.get_status()
