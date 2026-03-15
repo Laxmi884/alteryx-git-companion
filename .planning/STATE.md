@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 14-03-PLAN.md
-last_updated: "2026-03-15T00:27:44.608Z"
+stopped_at: Completed 14-04-PLAN.md
+last_updated: "2026-03-15T00:49:58.626Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
   percent: 0
 ---
 
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 14-history-and-diff-viewer P01 | 2 | 2 tasks | 3 files |
 | Phase 14-history-and-diff-viewer P02 | 5 | 2 tasks | 2 files |
 | Phase 14-history-and-diff-viewer P03 | 15 | 2 tasks | 2 files |
+| Phase 14-history-and-diff-viewer P04 | 25 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,8 @@ Recent decisions affecting current work:
 - [Phase 14-history-and-diff-viewer]: mkstemp pattern used for temp files in _run_diff — Windows-safe alternative to NamedTemporaryFile
 - [Phase 14-history-and-diff-viewer]: DiffViewer uses iframe + blob URL for HTML isolation — ACD diff reports contain style/script tags that collide if injected into the React DOM directly
 - [Phase 14-history-and-diff-viewer]: HistoryPanel inline file selector uses tab buttons for 2-4 files, shadcn Select for 5+ — avoids modal overhead for small file sets
+- [Phase 14-history-and-diff-viewer]: localStorage shim injected into blob HTML — blob: URLs have null origin causing SecurityError on localStorage access which aborts vis.js graph init
+- [Phase 14-history-and-diff-viewer]: onLoad calls switchView('split') on iframe contentWindow to force vis.js Networks init after iframe is fully painted with correct container dimensions
 
 ### Pending Todos
 
@@ -140,6 +143,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T00:27:44.605Z
-Stopped at: Completed 14-03-PLAN.md
+Last session: 2026-03-15T00:49:58.624Z
+Stopped at: Completed 14-04-PLAN.md
 Resume file: None
