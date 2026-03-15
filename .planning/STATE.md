@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-15T02:03:31.481Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-03-15T02:08:01.575Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 26
-  completed_plans: 23
+  completed_plans: 24
   percent: 0
 ---
 
@@ -73,6 +73,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 14-history-and-diff-viewer P04 | 25 | 3 tasks | 3 files |
 | Phase 15-system-tray-and-auto-start P01 | 4 | 2 tasks | 4 files |
 | Phase 15-system-tray-and-auto-start P02 | 4 | 2 tasks | 4 files |
+| Phase 15-system-tray-and-auto-start P03 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,8 @@ Recent decisions affecting current work:
 - [Phase 15-02]: is_instance_running delegates to find_available_port(start=7433, count=1) so test patches propagate correctly in test environment where port 7433 is occupied
 - [Phase 15-02]: app/tray.py stub created before Plan 03 pystray implementation so main() tray import succeeds during test_main.py runs
 - [Phase 15-02]: PIL removed from app.spec excludes — pystray requires Pillow; console=True flipped to console=False for background-mode deployment
+- [Phase 15-system-tray-and-auto-start]: pystray import guarded by try/except at module level -- PYSTRAY_AVAILABLE flag controls run() path; CI/macOS tests never need pystray
+- [Phase 15-system-tray-and-auto-start]: settings.router registered in server.py after history.router; module-level autostart import enables unittest.mock.patch targeting
 
 ### Pending Todos
 
@@ -151,6 +154,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T02:03:31.478Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-03-15T02:08:01.573Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
