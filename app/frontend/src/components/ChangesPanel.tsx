@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,7 +13,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Card, CardContent } from '@/components/ui/card'
-import { type LastSave } from '@/store/useProjectStore'
 import { cn } from '@/lib/utils'
 
 interface ChangesPanelProps {
@@ -21,9 +20,8 @@ interface ChangesPanelProps {
   projectPath: string
   changedFiles: string[]
   hasAnyCommits: boolean
-  totalWorkflows: number
-  onSaved: (save: LastSave) => void
-  onDiscarded: () => void
+  onSaved: () => Promise<void>
+  onDiscarded: () => Promise<void>
 }
 
 export function ChangesPanel({
@@ -31,7 +29,6 @@ export function ChangesPanel({
   projectPath,
   changedFiles,
   hasAnyCommits,
-  totalWorkflows,
   onSaved,
   onDiscarded,
 }: ChangesPanelProps) {
@@ -39,6 +36,11 @@ export function ChangesPanel({
   const [commitMessage, setCommitMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
+
+  // Keep checkedFiles in sync when the file list changes (e.g. after a partial commit)
+  useEffect(() => {
+    setCheckedFiles(changedFiles)
+  }, [changedFiles])
 
   function toggleFile(file: string, checked: boolean) {
     setCheckedFiles((prev) =>
@@ -61,11 +63,7 @@ export function ChangesPanel({
         }),
       })
       if (res.ok) {
-        onSaved({
-          message: commitMessage || 'Save',
-          fileCount: checkedFiles.length,
-          savedAt: new Date(),
-        })
+        await onSaved()
       }
     } finally {
       setIsSaving(false)
@@ -107,8 +105,8 @@ export function ChangesPanel({
         <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950">
           <CardContent className="pt-4">
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              <strong>First version save</strong> — This will save all{' '}
-              {totalWorkflows} existing workflows in this folder as your starting
+              <strong>First version save</strong> — This will save{' '}
+              {checkedFiles.length} workflow{checkedFiles.length !== 1 ? 's' : ''} as your starting
               point.
             </p>
           </CardContent>
