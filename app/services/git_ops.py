@@ -215,7 +215,7 @@ def git_discard_files(folder: str, files: list[str]) -> None:
             src.unlink()
 
 
-def git_log(folder: str) -> list[dict]:
+def git_log(folder: str, branch: str | None = None) -> list[dict]:
     """Return commit history for the git repo at folder, newest first.
 
     Each entry contains:
@@ -233,8 +233,11 @@ def git_log(folder: str) -> list[dict]:
         return []
 
     # Pass 1: get commit headers
+    cmd = ["git", "-C", folder, "log", "--pretty=format:%H\x1f%s\x1f%an\x1f%aI"]
+    if branch is not None:
+        cmd.append(branch)
     result = subprocess.run(
-        ["git", "-C", folder, "log", "--pretty=format:%H\x1f%s\x1f%an\x1f%aI"],
+        cmd,
         capture_output=True,
         text=True,
     )
@@ -483,3 +486,88 @@ def git_show_file(folder: str, sha: str, filepath: str) -> bytes:
     if result.returncode != 0:
         raise FileNotFoundError(f"{filepath} not found at {sha}")
     return result.stdout
+
+
+def git_list_branches(folder: str) -> list[dict]:
+    """Return list of branches with name and is_current fields.
+
+    Returns [] for unborn HEAD or non-git folders.
+    Each entry: {"name": str, "is_current": bool}
+    """
+    result = subprocess.run(
+        ["git", "-C", folder, "branch", "--format=%(refname:short)\x1f%(HEAD)"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return []
+    branches: list[dict] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split("\x1f", 1)
+        if len(parts) < 2:
+            continue
+        name, head_marker = parts[0], parts[1]
+        branches.append({"name": name, "is_current": head_marker == "*"})
+    return branches
+
+
+def git_current_branch(folder: str) -> str:
+    """Return the current branch name.
+
+    Returns "main" as fallback when the command fails (unborn HEAD, detached HEAD).
+    """
+    result = subprocess.run(
+        ["git", "-C", folder, "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 else "main"
+
+
+def git_create_branch(folder: str, name: str) -> None:
+    """Create and checkout a new branch.
+
+    Raises subprocess.CalledProcessError on failure (name conflict, invalid name).
+    """
+    subprocess.run(
+        ["git", "-C", folder, "checkout", "-b", name],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+
+def git_checkout(folder: str, branch: str) -> dict:
+    """Checkout a branch by name.
+
+    Returns {"success": True} on success.
+    Returns {"success": False, "error": "..."} on failure — does not raise.
+    """
+    result = subprocess.run(
+        ["git", "-C", folder, "checkout", branch],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return {"success": False, "error": result.stderr.strip()}
+    return {"success": True}
+
+
+def git_delete_branch(folder: str, branch: str, force: bool = False) -> dict:
+    """Delete a branch.
+
+    Uses -D flag when force=True, -d otherwise.
+    Returns {"success": True} on success.
+    Returns {"success": False, "error": "..."} on failure — does not raise.
+    """
+    flag = "-D" if force else "-d"
+    result = subprocess.run(
+        ["git", "-C", folder, "branch", flag, branch],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return {"success": False, "error": result.stderr.strip()}
+    return {"success": True}
