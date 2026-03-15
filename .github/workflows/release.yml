@@ -40,7 +40,9 @@ jobs:
       - name: Generate version info
         env:
           TAG_NAME: ${{ github.ref_name }}
-        run: uv run pyivf-make_version --source-format yaml --metadata-source version_info.yml --outfile file_version_info.txt --version "$env:TAG_NAME"
+        run: |
+          $version = "$env:TAG_NAME".TrimStart('v') + ".0"
+          uv run pyivf-make_version --source-format yaml --metadata-source version_info.yml --outfile file_version_info.txt --version "$version"
 
       - name: Build EXE
         run: uv run pyinstaller app.spec --noconfirm
