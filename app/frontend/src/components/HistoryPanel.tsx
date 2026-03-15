@@ -280,6 +280,11 @@ function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: Gr
                   <p className={cn('text-xs font-medium truncate', i === 0 && 'text-foreground')}>
                     {truncated}
                   </p>
+                  {i === 0 && (
+                    <span className="text-[10px] font-semibold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                      latest
+                    </span>
+                  )}
                   {isPushed && (
                     <span title={buildTooltip(remoteStatus)}>
                       <Cloud className="h-3 w-3 text-blue-500 shrink-0" />

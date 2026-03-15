@@ -273,15 +273,28 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
     )
   }
 
+  async function disconnect(provider: 'github' | 'gitlab') {
+    await fetch(`/api/remote/${provider}/disconnect`, { method: 'POST' })
+    await fetchStatus()
+  }
+
   function renderGithubTab() {
     const connected = remoteStatus?.github_connected ?? false
 
     if (connected) {
       return (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-sm font-medium text-green-600">Connected</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-sm font-medium text-green-600">Connected</span>
+            </div>
+            <button
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-destructive transition-colors"
+              onClick={() => disconnect('github')}
+            >
+              Disconnect
+            </button>
           </div>
           {renderPushButton('github')}
         </div>
@@ -368,9 +381,17 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
     if (connected) {
       return (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-sm font-medium text-green-600">Connected</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-sm font-medium text-green-600">Connected</span>
+            </div>
+            <button
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-destructive transition-colors"
+              onClick={() => disconnect('gitlab')}
+            >
+              Disconnect
+            </button>
           </div>
           {renderPushButton('gitlab')}
         </div>
