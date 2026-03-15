@@ -295,6 +295,41 @@ def git_log(folder: str) -> list[dict]:
     return entries
 
 
+def git_fetch(folder: str, remote_url: str, token: str) -> None:
+    """Fetch from remote_url using GIT_ASKPASS credential injection.
+
+    Non-zero returncode is ignored — remote may be unreachable.
+    Uses same GIT_ASKPASS temp-script pattern as git_push.
+    """
+    fd, askpass_path = tempfile.mkstemp(
+        suffix=".bat" if sys.platform == "win32" else ".sh"
+    )
+    try:
+        if sys.platform == "win32":
+            script_content = f"@echo off\necho {token}\n"
+        else:
+            script_content = f"#!/bin/sh\necho '{token}'\n"
+
+        with os.fdopen(fd, "w") as f:
+            f.write(script_content)
+
+        os.chmod(askpass_path, 0o700)
+
+        env = dict(os.environ)
+        env["GIT_ASKPASS"] = askpass_path
+        env["GIT_TERMINAL_PROMPT"] = "0"
+
+        subprocess.run(
+            ["git", "-C", folder, "fetch", "origin"],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    finally:
+        with contextlib.suppress(OSError):
+            os.unlink(askpass_path)
+
+
 def git_push(folder: str, remote_url: str, token: str) -> None:
     """Push current branch to remote_url using GIT_ASKPASS credential injection.
 
