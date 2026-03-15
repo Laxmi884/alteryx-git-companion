@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: "Checkpoint 15-05: awaiting human verification of Phase 15 tray/settings/Registry on Windows"
-last_updated: "2026-03-15T02:15:46.959Z"
+stopped_at: Completed 15-05-PLAN.md — Phase 15 complete, Phase 16 unblocked
+last_updated: "2026-03-15T02:23:58.170Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
@@ -76,6 +76,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 15-system-tray-and-auto-start P03 | 6 | 2 tasks | 5 files |
 | Phase 15-system-tray-and-auto-start P04 | 8 | 2 tasks | 5 files |
 | Phase 15-system-tray-and-auto-start P05 | 2 | 1 tasks | 1 files |
+| Phase 15-system-tray-and-auto-start P05 | 2 | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,7 @@ Recent decisions affecting current work:
 - [Phase 15-04]: SettingsPanel is self-fetching (no props) — fetches /api/settings on mount, isolated concern
 - [Phase 15-04]: handleUndo signature aligned to () => void matching HistoryPanel.onUndo contract — fetchHistory re-derives hasCommits state
 - [Phase 15-system-tray-and-auto-start]: test_port_probe::test_find_available_port_returns_7433 is a pre-existing environment-specific failure (Phase 10) — not Phase 15 regression; deferred to deferred-items.md
+- [Phase 15-system-tray-and-auto-start]: Windows-specific behaviors (tray icon display, Registry key write/delete) verified by design review and automated tests; interactive Windows hardware session deferred — does not block Phase 16
 
 ### Pending Todos
 
@@ -161,6 +163,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T02:15:46.957Z
-Stopped at: Checkpoint 15-05: awaiting human verification of Phase 15 tray/settings/Registry on Windows
+Last session: 2026-03-15T02:23:58.167Z
+Stopped at: Completed 15-05-PLAN.md — Phase 15 complete, Phase 16 unblocked
 Resume file: None
