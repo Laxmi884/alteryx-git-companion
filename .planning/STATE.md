@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 15 context gathered
-last_updated: "2026-03-15T01:33:22.847Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-15T01:58:18.505Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 5
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 26
+  completed_plans: 22
   percent: 0
 ---
 
@@ -71,6 +71,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 14-history-and-diff-viewer P02 | 5 | 2 tasks | 2 files |
 | Phase 14-history-and-diff-viewer P03 | 15 | 2 tasks | 2 files |
 | Phase 14-history-and-diff-viewer P04 | 25 | 3 tasks | 3 files |
+| Phase 15-system-tray-and-auto-start P01 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,9 @@ Recent decisions affecting current work:
 - [Phase 14-history-and-diff-viewer]: HistoryPanel inline file selector uses tab buttons for 2-4 files, shadcn Select for 5+ — avoids modal overhead for small file sets
 - [Phase 14-history-and-diff-viewer]: localStorage shim injected into blob HTML — blob: URLs have null origin causing SecurityError on localStorage access which aborts vis.js graph init
 - [Phase 14-history-and-diff-viewer]: onLoad calls switchView('split') on iframe contentWindow to force vis.js Networks init after iframe is fully painted with correct container dimensions
+- [Phase 15-01]: Graceful RED pattern: try/except ImportError + _require() so stubs report FAILED not collection ERROR
+- [Phase 15-01]: winreg mocked via sys.modules injection (patch.dict) for cross-platform testing of Windows-registry functions
+- [Phase 15-01]: _compute_state designed as pure function (dict -> tuple) so tray tests need no pystray or OS dependency
 
 ### Pending Todos
 
@@ -143,6 +147,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T01:33:22.843Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-system-tray-and-auto-start/15-CONTEXT.md
+Last session: 2026-03-15T01:58:18.502Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: None
