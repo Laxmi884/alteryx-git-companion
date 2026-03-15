@@ -221,6 +221,47 @@ def test_get_github_status_disconnected():
     assert data.get("connected") is False, f"Expected connected: False, got {data}"
 
 
+def test_post_github_connect():
+    """POST /api/remote/github/connect stores GitHub PAT; returns {connected: True}."""
+    _require_remote()
+
+    with patch("app.routers.remote.remote_auth.store_github_token") as mock_store:
+        resp = _client.post(
+            "/api/remote/github/connect", json={"token": "ghp_test_token"}
+        )
+
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+    data = resp.json()
+    assert data.get("connected") is True, f"Expected connected: True, got {data}"
+    mock_store.assert_called_once_with("ghp_test_token")
+
+
+def test_get_gitlab_status_connected():
+    """GET /api/remote/gitlab/status returns {connected: True} when token in keyring."""
+    _require_remote()
+
+    with patch(
+        "app.routers.remote.remote_auth.get_gitlab_token", return_value="glpat-abc"
+    ):
+        resp = _client.get("/api/remote/gitlab/status")
+
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+    data = resp.json()
+    assert data.get("connected") is True, f"Expected connected: True, got {data}"
+
+
+def test_get_gitlab_status_disconnected():
+    """GET /api/remote/gitlab/status returns {connected: False} with no token."""
+    _require_remote()
+
+    with patch("app.routers.remote.remote_auth.get_gitlab_token", return_value=None):
+        resp = _client.get("/api/remote/gitlab/status")
+
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+    data = resp.json()
+    assert data.get("connected") is False, f"Expected connected: False, got {data}"
+
+
 # ---------------------------------------------------------------------------
 # REMOTE-02: GitLab PAT validation
 # ---------------------------------------------------------------------------
@@ -557,6 +598,56 @@ def test_git_ahead_behind_no_upstream():
     assert result == (0, 0), f"Expected (0, 0) when no upstream, got {result}"
 
 
+def test_git_fetch_calls_subprocess():
+    """git_ops.git_fetch calls subprocess with git -C folder fetch origin."""
+    _require_git_ops()
+    from app.services import git_ops
+
+    with patch("app.services.git_ops.subprocess") as mock_sub:
+        mock_sub.run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        git_ops.git_fetch(
+            "/fake/folder", "https://github.com/owner/repo.git", "ght_tok"
+        )
+
+    calls = mock_sub.run.call_args_list
+    assert len(calls) >= 1, "Expected at least one subprocess.run call"
+
+    fetch_call_found = any(
+        isinstance(c.args[0], list)
+        and "git" in c.args[0]
+        and "-C" in c.args[0]
+        and "/fake/folder" in c.args[0]
+        and "fetch" in c.args[0]
+        for c in calls
+    )
+    assert fetch_call_found, (
+        f"Expected a subprocess call with git -C /fake/folder fetch ..., got {calls}"
+    )
+
+
+def test_git_fetch_uses_askpass():
+    """git_ops.git_fetch uses GIT_ASKPASS env var for credential injection."""
+    _require_git_ops()
+    from app.services import git_ops
+
+    captured_envs: list[dict] = []
+
+    def mock_run(args, **kwargs):
+        env = kwargs.get("env", {})
+        if env:
+            captured_envs.append(dict(env))
+        return MagicMock(returncode=0, stdout="", stderr="")
+
+    with patch("app.services.git_ops.subprocess") as mock_sub:
+        mock_sub.run.side_effect = mock_run
+        git_ops.git_fetch(
+            "/fake/folder", "https://github.com/owner/repo.git", "ght_tok"
+        )
+
+    askpass_found = any("GIT_ASKPASS" in env for env in captured_envs)
+    assert askpass_found, f"Expected GIT_ASKPASS in env, captured envs: {captured_envs}"
+
+
 def test_get_remote_status_ahead_behind():
     """GET /api/remote/status returns ahead, behind and connection status fields."""
     _require_remote()
@@ -585,3 +676,65 @@ def test_get_remote_status_ahead_behind():
     assert data.get("gitlab_connected") is False, (
         f"Expected gitlab_connected: False, got {data}"
     )
+
+
+def test_get_remote_status_includes_repo_url():
+    """GET /api/remote/status returns repo_url from config_store."""
+    _require_remote()
+
+    with (
+        patch("app.routers.remote.git_ops.git_ahead_behind", return_value=(0, 0)),
+        patch("app.routers.remote.git_ops.git_fetch"),
+        patch(
+            "app.routers.remote.remote_auth.get_github_token", return_value="ght_abc"
+        ),
+        patch("app.routers.remote.remote_auth.get_gitlab_token", return_value=None),
+        patch(
+            "app.routers.remote.config_store.get_remote_repo",
+            return_value={"github_url": "https://github.com/user/repo.git"},
+        ),
+    ):
+        resp = _client.get(
+            "/api/remote/status",
+            params={"project_id": "proj-1", "folder": "/fake/folder"},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "repo_url" in data, f"Expected repo_url in response, got {data}"
+    assert data["repo_url"] == "https://github.com/user/repo.git", (
+        f"Expected repo_url from config_store, got {data}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# config_store helpers: get_remote_repo, set_remote_repo
+# ---------------------------------------------------------------------------
+
+
+def test_config_store_set_and_get_remote_repo(tmp_path, monkeypatch):
+    """set_remote_repo stores URL; get_remote_repo retrieves it."""
+    monkeypatch.setattr(
+        "app.services.config_store._config_path", lambda: tmp_path / "config.json"
+    )
+    from app.services import config_store
+
+    config_store.set_remote_repo(
+        "proj-abc", "github", "https://github.com/user/repo.git"
+    )
+    result = config_store.get_remote_repo("proj-abc")
+
+    assert result.get("github_url") == "https://github.com/user/repo.git", (
+        f"Expected github_url in remote_repos, got {result}"
+    )
+
+
+def test_config_store_get_remote_repo_missing(tmp_path, monkeypatch):
+    """get_remote_repo returns empty dict when no entry for project_id."""
+    monkeypatch.setattr(
+        "app.services.config_store._config_path", lambda: tmp_path / "config.json"
+    )
+    from app.services import config_store
+
+    result = config_store.get_remote_repo("nonexistent-proj")
+    assert result == {}, f"Expected empty dict for missing project, got {result}"
