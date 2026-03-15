@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useProjectStore, type LastSave } from '@/store/useProjectStore'
+import { useProjectStore } from '@/store/useProjectStore'
 import Sidebar from '@/components/Sidebar'
 import EmptyState from '@/components/EmptyState'
 import { GitIdentityCard } from '@/components/GitIdentityCard'
 import { ChangesPanel } from '@/components/ChangesPanel'
-import { SuccessCard } from '@/components/SuccessCard'
+import { HistoryPanel, type CommitEntry } from '@/components/HistoryPanel'
+import { DiffViewer } from '@/components/DiffViewer'
 
 interface AppShellProps {
   onAddFolder?: () => void
@@ -13,54 +14,70 @@ interface AppShellProps {
 }
 
 export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySaved }: AppShellProps) {
-  const { projects, activeProjectId, lastSave, setLastSave } = useProjectStore()
+  const { projects, activeProjectId } = useProjectStore()
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
   // Watch status state — fetched on project activation and after undo
   const [hasCommits, setHasCommits] = useState(false)
   const [changedFiles, setChangedFiles] = useState<string[]>([])
   const [totalWorkflows, setTotalWorkflows] = useState(0)
+  const [history, setHistory] = useState<CommitEntry[]>([])
+  const [selectedDiff, setSelectedDiff] = useState<{ sha: string; file: string } | null>(null)
 
-  const fetchWatchStatus = useCallback(async () => {
-    if (!activeProject) return
+  const fetchWatchStatus = useCallback(async (): Promise<string[]> => {
+    if (!activeProject) return []
     try {
       const res = await fetch(
         `/api/watch/status?project_id=${activeProject.id}&folder=${encodeURIComponent(activeProject.path)}`
       )
-      if (!res.ok) return
+      if (!res.ok) return []
       const data = await res.json()
+      const files: string[] = data.changed_files ?? []
       setHasCommits(data.has_any_commits ?? false)
-      setChangedFiles(data.changed_files ?? [])
+      setChangedFiles(files)
       setTotalWorkflows(data.total_workflows ?? 0)
+      return files
     } catch {
-      // Network error — keep existing state
+      return []
     }
+  }, [activeProject])
+
+  const fetchHistory = useCallback(async () => {
+    if (!activeProject) return
+    try {
+      const res = await fetch(
+        `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}`
+      )
+      if (!res.ok) return
+      const data: CommitEntry[] = await res.json()
+      setHistory(data ?? [])
+      setHasCommits((data ?? []).length > 0)
+    } catch { /* ignore */ }
   }, [activeProject])
 
   // Fetch on project change
   useEffect(() => {
-    setLastSave(null)  // clear last save when switching projects
     setChangedFiles([])
     setHasCommits(false)
+    setHistory([])
+    setSelectedDiff(null)
     fetchWatchStatus()
-  }, [activeProjectId, fetchWatchStatus, setLastSave])
+    fetchHistory()
+  }, [activeProjectId, fetchWatchStatus, fetchHistory])
 
-  function handleSaved(save: LastSave) {
-    setLastSave(save)
-    // Badge clears automatically via SSE (watcher_manager.clear_count called in router)
+  async function handleSaved() {
+    await fetchWatchStatus()
+    await fetchHistory()
   }
 
-  function handleDiscarded() {
-    // Badge clears via SSE — changedFiles will update when watcher rescans
-    // Fetch status immediately to get updated state
-    fetchWatchStatus()
+  async function handleDiscarded() {
+    await fetchWatchStatus()
   }
 
-  function handleUndo(undoHasAnyCommits: boolean) {
-    setLastSave(null)
+  async function handleUndo(undoHasAnyCommits: boolean) {
     setHasCommits(undoHasAnyCommits)
-    // Watcher will rescan and push badge_update — changedFiles will update via SSE
-    fetchWatchStatus()
+    await fetchWatchStatus()
+    await fetchHistory()
   }
 
   function renderMainContent() {
@@ -78,26 +95,37 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
         </div>
       )
     }
-    // State machine: changedCount > 0 → ChangesPanel; lastSave → SuccessCard; else → EmptyState
-    if ((activeProject.changedCount ?? 0) > 0) {
+    // State machine: changedFiles > 0 → ChangesPanel; hasCommits + selectedDiff → DiffViewer; hasCommits → HistoryPanel; else → EmptyState
+    if (changedFiles.length > 0) {
       return (
         <ChangesPanel
           projectId={activeProject.id}
           projectPath={activeProject.path}
           changedFiles={changedFiles}
           hasAnyCommits={hasCommits}
-          totalWorkflows={totalWorkflows}
           onSaved={handleSaved}
           onDiscarded={handleDiscarded}
         />
       )
     }
-    if (lastSave) {
+    if (hasCommits && selectedDiff) {
       return (
-        <SuccessCard
-          lastSave={lastSave}
+        <DiffViewer
+          sha={selectedDiff.sha}
+          file={selectedDiff.file}
+          folder={activeProject.path}
+          commitMessage={history.find(e => e.sha === selectedDiff.sha)?.message ?? ''}
+          onBack={() => setSelectedDiff(null)}
+        />
+      )
+    }
+    if (hasCommits) {
+      return (
+        <HistoryPanel
+          entries={history}
           projectId={activeProject.id}
           projectPath={activeProject.path}
+          onSelectEntry={(entry, file) => setSelectedDiff({ sha: entry.sha, file })}
           onUndo={handleUndo}
         />
       )
