@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-03-15T00:27:27.781Z"
+stopped_at: Completed 14-03-PLAN.md
+last_updated: "2026-03-15T00:27:44.608Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
@@ -69,6 +69,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 13-save-version P04 | 10 | 2 tasks | 2 files |
 | Phase 14-history-and-diff-viewer P01 | 2 | 2 tasks | 3 files |
 | Phase 14-history-and-diff-viewer P02 | 5 | 2 tasks | 2 files |
+| Phase 14-history-and-diff-viewer P03 | 15 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Recent decisions affecting current work:
 - [Phase 14-01]: history router uses module-level git_ops import (noqa: F401) so mock.patch targeting app.routers.history.git_ops works correctly — matches save.py convention
 - [Phase 14-history-and-diff-viewer]: Two-pass git log approach (headers + diff-tree per SHA) avoids fragile blank-line parsing from --name-only single-pass
 - [Phase 14-history-and-diff-viewer]: mkstemp pattern used for temp files in _run_diff — Windows-safe alternative to NamedTemporaryFile
+- [Phase 14-history-and-diff-viewer]: DiffViewer uses iframe + blob URL for HTML isolation — ACD diff reports contain style/script tags that collide if injected into the React DOM directly
+- [Phase 14-history-and-diff-viewer]: HistoryPanel inline file selector uses tab buttons for 2-4 files, shadcn Select for 5+ — avoids modal overhead for small file sets
 
 ### Pending Todos
 
@@ -137,6 +140,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T00:27:24.786Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-03-15T00:27:44.605Z
+Stopped at: Completed 14-03-PLAN.md
 Resume file: None
