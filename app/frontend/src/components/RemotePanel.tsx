@@ -19,6 +19,7 @@ interface GitHubFlow {
 
 type PushState = 'idle' | 'pushing' | 'done' | 'error'
 type PushErrorKind = 'generic' | 'auth_expired' | null
+type PullState = 'idle' | 'pulling' | 'done' | 'up_to_date' | 'error'
 
 export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } = {}) {
   const { projects, activeProjectId } = useProjectStore()
@@ -50,6 +51,12 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
   const [githubPushError, setGithubPushError] = useState<PushErrorKind>(null)
   const [gitlabPushState, setGitlabPushState] = useState<PushState>('idle')
   const [gitlabPushError, setGitlabPushError] = useState<PushErrorKind>(null)
+
+  // Pull state
+  const [githubPullState, setGithubPullState] = useState<PullState>('idle')
+  const [gitlabPullState, setGitlabPullState] = useState<PullState>('idle')
+  const [githubPullError, setGithubPullError] = useState<string | null>(null)
+  const [gitlabPullError, setGitlabPullError] = useState<string | null>(null)
 
   async function fetchStatus() {
     if (!activeProject) {
@@ -204,6 +211,37 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
     }
   }
 
+  async function handlePull(provider: 'github' | 'gitlab') {
+    if (!activeProject) return
+    const setPullState = provider === 'github' ? setGithubPullState : setGitlabPullState
+    const setPullError = provider === 'github' ? setGithubPullError : setGitlabPullError
+    setPullState('pulling')
+    setPullError(null)
+    try {
+      const res = await fetch('/api/remote/pull', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: activeProject.id,
+          folder: activeProject.path,
+          provider,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setPullState(data.already_up_to_date ? 'up_to_date' : 'done')
+        await fetchStatus()
+        setTimeout(() => setPullState('idle'), 3000)
+      } else {
+        setPullError(data.error ?? 'Pull failed.')
+        setPullState('error')
+      }
+    } catch {
+      setPullError('Pull failed. Check your connection.')
+      setPullState('error')
+    }
+  }
+
   function copyCode(code: string) {
     navigator.clipboard.writeText(code)
     setCodeCopied(true)
@@ -223,6 +261,8 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
     if (!remoteStatus) return null
     const pushState = provider === 'github' ? githubPushState : gitlabPushState
     const pushError = provider === 'github' ? githubPushError : gitlabPushError
+    const pullState = provider === 'github' ? githubPullState : gitlabPullState
+    const pullError = provider === 'github' ? githubPullError : gitlabPullError
     const repoUrl = remoteStatus.repo_url
     const projectSlug = activeProject?.name.toLowerCase().replace(/[^a-z0-9-]/g, '-') ?? 'my-workflows'
 
@@ -234,19 +274,37 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
             No remote repo yet. We'll create <strong>{projectSlug}</strong> (private) on {provider === 'github' ? 'GitHub' : 'GitLab'}.
           </p>
         )}
-        <Button
-          size="sm"
-          onClick={() => handlePush(provider)}
-          disabled={pushState === 'pushing'}
-        >
-          {pushState === 'pushing'
-            ? 'Pushing...'
-            : pushState === 'done'
-            ? 'Pushed!'
-            : repoUrl
-            ? `Push to ${provider === 'github' ? 'GitHub' : 'GitLab'}`
-            : `Push and Create Repo`}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            onClick={() => handlePush(provider)}
+            disabled={pushState === 'pushing'}
+          >
+            {pushState === 'pushing'
+              ? 'Pushing...'
+              : pushState === 'done'
+              ? 'Pushed!'
+              : repoUrl
+              ? `Push`
+              : `Push and Create Repo`}
+          </Button>
+          {repoUrl && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handlePull(provider)}
+              disabled={pullState === 'pulling'}
+            >
+              {pullState === 'pulling'
+                ? 'Pulling...'
+                : pullState === 'done'
+                ? 'Pulled!'
+                : pullState === 'up_to_date'
+                ? 'Up to date'
+                : 'Pull'}
+            </Button>
+          )}
+        </div>
         {pushState === 'error' && pushError === 'auth_expired' && (
           <div className="flex items-center gap-2 mt-1">
             <p className="text-xs text-red-500">Authentication expired.</p>
@@ -268,6 +326,9 @@ export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } 
         )}
         {pushState === 'error' && pushError === 'generic' && (
           <p className="text-xs text-red-500 mt-1">Push failed. Check your connection and try again.</p>
+        )}
+        {pullState === 'error' && (
+          <p className="text-xs text-red-500 mt-1">{pullError}</p>
         )}
       </div>
     )

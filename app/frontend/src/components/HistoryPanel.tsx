@@ -451,6 +451,14 @@ function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus, acti
   )
 }
 
+interface BehindCommit {
+  sha: string
+  short_sha: string
+  message: string
+  author: string
+  timestamp: string
+}
+
 export function HistoryPanel({
   entries,
   projectId,
@@ -467,6 +475,8 @@ export function HistoryPanel({
   const [remoteStatus, setRemoteStatus] = useState<RemoteStatus | null>(null)
   const [pushState, setPushState] = useState<'idle' | 'pushing' | 'error'>('idle')
   const [pushError, setPushError] = useState<string | null>(null)
+  const [behindCommits, setBehindCommits] = useState<BehindCommit[]>([])
+  const [behindExpanded, setBehindExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'graph'>(() => {
     try {
       return (localStorage.getItem('history_view_mode') as 'list' | 'graph') ?? 'list'
@@ -489,7 +499,25 @@ export function HistoryPanel({
         `/api/remote/status?project_id=${encodeURIComponent(projectId)}&folder=${encodeURIComponent(projectPath)}`
       )
       if (!res.ok) return
-      setRemoteStatus(await res.json())
+      const data: RemoteStatus = await res.json()
+      setRemoteStatus(data)
+      if (data.behind > 0) {
+        fetchBehindCommits()
+      } else {
+        setBehindCommits([])
+        setBehindExpanded(false)
+      }
+    } catch { /* ignore */ }
+  }
+
+  async function fetchBehindCommits() {
+    if (!projectPath) return
+    try {
+      const res = await fetch(
+        `/api/remote/behind-commits?folder=${encodeURIComponent(projectPath)}`
+      )
+      if (!res.ok) return
+      setBehindCommits(await res.json())
     } catch { /* ignore */ }
   }
 
@@ -581,11 +609,24 @@ export function HistoryPanel({
           <div>
             <h2 className="text-sm font-semibold">Saved Versions</h2>
             {remoteConnected && (aheadCount > 0 || behindCount > 0) && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {aheadCount > 0 && `${aheadCount} ahead`}
-                {aheadCount > 0 && behindCount > 0 && ' · '}
-                {behindCount > 0 && `${behindCount} behind`}
-              </p>
+              <div className="mt-0.5 flex items-center gap-1.5">
+                {aheadCount > 0 && (
+                  <span className="text-xs text-muted-foreground">↑ {aheadCount} ahead</span>
+                )}
+                {aheadCount > 0 && behindCount > 0 && (
+                  <span className="text-xs text-muted-foreground">·</span>
+                )}
+                {behindCount > 0 && (
+                  <button
+                    className="text-xs text-amber-600 hover:text-amber-700 transition-colors flex items-center gap-0.5"
+                    onClick={() => setBehindExpanded((v) => !v)}
+                    title="Show remote commits not yet pulled"
+                  >
+                    ↓ {behindCount} behind
+                    <span className="text-[10px]">{behindExpanded ? '▲' : '▼'}</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
           {onBranchSwitch && (
@@ -623,7 +664,7 @@ export function HistoryPanel({
               &#9638; Graph
             </button>
           </div>
-          {remoteConnected && behindCount > 0 && (
+          {remoteConnected && remoteStatus?.repo_url && (
             <Button
               variant="outline"
               size="sm"
@@ -631,7 +672,11 @@ export function HistoryPanel({
               disabled={pushState === 'pushing'}
               className="shrink-0"
             >
-              {pushState === 'pushing' ? 'Pulling...' : `↓ Pull ${behindCount} version${behindCount !== 1 ? 's' : ''}`}
+              {pushState === 'pushing'
+                ? 'Pulling...'
+                : behindCount > 0
+                ? `↓ Pull ${behindCount} version${behindCount !== 1 ? 's' : ''}`
+                : '↓ Pull'}
             </Button>
           )}
           {remoteConnected && aheadCount > 0 && (
@@ -663,6 +708,28 @@ export function HistoryPanel({
           )}
         </div>
       </div>
+
+      {/* Behind commits detail panel */}
+      {behindExpanded && behindCount > 0 && (
+        <div className="border-b bg-amber-50/50 dark:bg-amber-950/20 px-4 py-2 space-y-1">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1.5">
+            {behindCount} remote version{behindCount !== 1 ? 's' : ''} not yet pulled:
+          </p>
+          {behindCommits.length > 0 ? (
+            behindCommits.map((c) => (
+              <div key={c.sha} className="flex items-start gap-2">
+                <code className="text-[10px] text-muted-foreground font-mono shrink-0 mt-0.5">{c.short_sha}</code>
+                <div className="min-w-0">
+                  <p className="text-xs truncate">{c.message}</p>
+                  <p className="text-[10px] text-muted-foreground">{c.author} · {formatRelativeTime(c.timestamp)}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-muted-foreground">Loading...</p>
+          )}
+        </div>
+      )}
 
       {pushError && (
         <p className="text-xs text-red-500 px-4 pb-1">{pushError}</p>

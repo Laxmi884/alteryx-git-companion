@@ -516,6 +516,55 @@ def git_ahead_behind(folder: str) -> tuple[int, int]:
     return (ahead, behind)
 
 
+def git_behind_commits(folder: str) -> list[dict]:
+    """Return commit details for commits on upstream but not local (the 'behind' set).
+
+    Each entry: {sha, short_sha, message, author, timestamp (ISO-8601)}.
+    Returns [] if no upstream or no behind commits.
+    """
+    upstream_result = subprocess.run(
+        ["git", "-C", folder, "rev-parse", "--abbrev-ref", "@{u}"],
+        capture_output=True,
+        text=True,
+    )
+    if upstream_result.returncode != 0:
+        return []
+
+    upstream = upstream_result.stdout.strip()
+
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            folder,
+            "log",
+            f"HEAD..{upstream}",
+            "--format=%H\x1f%s\x1f%an\x1f%aI",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    commits = []
+    for line in result.stdout.strip().splitlines():
+        parts = line.split("\x1f", 3)
+        if len(parts) != 4:
+            continue
+        sha, message, author, timestamp = parts
+        commits.append(
+            {
+                "sha": sha,
+                "short_sha": sha[:7],
+                "message": message,
+                "author": author,
+                "timestamp": timestamp,
+            }
+        )
+    return commits
+
+
 def git_show_file(folder: str, sha: str, filepath: str) -> bytes:
     """Return the raw bytes of filepath at the given commit sha.
 

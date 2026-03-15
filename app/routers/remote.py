@@ -255,3 +255,11 @@ def remote_status(
         "gitlab_connected": remote_auth.get_gitlab_token() is not None,
         "repo_url": repo_url,
     }
+
+
+@router.get("/behind-commits")
+def remote_behind_commits(folder: str) -> list[dict]:
+    """Return the list of commits on the upstream that are not yet local."""
+    with contextlib.suppress(Exception):
+        return git_ops.git_behind_commits(folder)
+    return []

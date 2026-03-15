@@ -218,3 +218,13 @@ Plans:
 | 16.1. Git History UX + Graph View | 4/4 | Complete    | 2026-03-15 | - |
 | 17. Branch Management | 5/5 | Complete    | 2026-03-15 | - |
 | 18. CI Polish | 3/3 | Complete    | 2026-03-15 | - |
+
+### Phase 18.1: Creation of PR (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 18.1 to break down)

@@ -17,6 +17,7 @@ interface AppShellProps {
 
 export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySaved }: AppShellProps) {
   const { projects, activeProjectId, activeBranch, setActiveBranch } = useProjectStore()
+  const activeProjectChangedCount = projects.find((p) => p.id === activeProjectId)?.changedCount ?? 0
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
   const [activeView, setActiveView] = useState<'default' | 'settings' | 'remote'>('default')
@@ -54,7 +55,8 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     if (!activeProject) return
     setAllBranchEntries([])
     try {
-      const currentBranch = activeBranch[activeProject.id] ?? null
+      // Read branch from store's latest state to avoid stale closure on initial load
+      const currentBranch = useProjectStore.getState().activeBranch[activeProject.id] ?? null
       const branchParam = currentBranch ? `&branch=${encodeURIComponent(currentBranch)}` : ''
       const res = await fetch(
         `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}${branchParam}`
@@ -124,7 +126,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
       return
     }
     setIsProjectLoading(true)
-    Promise.all([fetchBranch(), fetchWatchStatus(), fetchHistory()]).finally(() => {
+    fetchBranch().then(() => Promise.all([fetchWatchStatus(), fetchHistory()])).finally(() => {
       setIsProjectLoading(false)
     })
   }, [activeProjectId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,6 +137,12 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     if (!activeProjectId || isProjectLoading) return
     fetchHistory()
   }, [currentActiveBranch]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch watch status when the SSE badge_update fires for the active project
+  useEffect(() => {
+    if (!activeProjectId || isProjectLoading) return
+    fetchWatchStatus()
+  }, [activeProjectChangedCount]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleBranchSwitch() {
     await fetchBranch()
