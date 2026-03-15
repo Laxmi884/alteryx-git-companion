@@ -31,6 +31,9 @@ interface HistoryPanelProps {
   lastPushTimestamp?: number
   onNavigate?: (view: 'remote') => void
   onPushComplete?: () => void
+  activeBranch?: string
+  mergeBaseSha?: string | null
+  allBranchEntries?: CommitEntry[]
 }
 
 function formatRelativeTime(isoTimestamp: string): string {
@@ -185,13 +188,15 @@ interface GraphViewProps {
   onSelectEntry: (entry: CommitEntry, file: string) => void
   remoteConnected: boolean
   remoteStatus: RemoteStatus | null
+  activeBranch?: string
+  allBranchEntries?: CommitEntry[]
 }
 
 const NODE_R = 8
 const NODE_SPACING = 48
 const SVG_COL_WIDTH = 36
 
-function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: GraphViewProps) {
+function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus, activeBranch, allBranchEntries }: GraphViewProps) {
   if (entries.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-8">
@@ -199,6 +204,189 @@ function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: Gr
       </p>
     )
   }
+
+  // Multi-branch mode: experiment branch AND we have all-branch entries with more commits
+  const isMultiBranch = activeBranch?.startsWith('experiment/') &&
+    allBranchEntries && allBranchEntries.length > entries.length
+
+  if (isMultiBranch && allBranchEntries) {
+    const experimentShas = new Set(entries.map(e => e.sha))
+    const mainEntries = allBranchEntries.filter(e => !experimentShas.has(e.sha))
+
+    // Build a combined timeline: allBranchEntries provides the ordering
+    // Each entry gets a row index based on its position in allBranchEntries
+    const allShaIndex = new Map(allBranchEntries.map((e, i) => [e.sha, i]))
+
+    // For rows: total rows = allBranchEntries.length
+    const totalRows = allBranchEntries.length
+    const svgWidth = SVG_COL_WIDTH * 2
+    const svgHeight = NODE_R + totalRows * NODE_SPACING
+
+    // Find branch point row: the last main entry (highest index = oldest = bottom)
+    // The branch connector goes from the bottom-most main commit to the top-most experiment commit
+    const firstExpEntry = entries[entries.length - 1] // oldest experiment commit
+    const lastMainEntry = mainEntries[mainEntries.length - 1] // oldest main commit (= branch point)
+
+    const firstExpRow = allShaIndex.get(firstExpEntry?.sha ?? '') ?? 0
+    const branchPointRow = allShaIndex.get(lastMainEntry?.sha ?? '') ?? 0
+
+    const mainColX = SVG_COL_WIDTH / 2       // 18
+    const expColX = SVG_COL_WIDTH * 1.5      // 54
+
+    return (
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-0">
+        <div className="relative" style={{ height: svgHeight }}>
+          {/* SVG track — two columns */}
+          <svg
+            width={svgWidth}
+            height={svgHeight}
+            className="absolute top-0 left-0 shrink-0"
+            aria-hidden="true"
+          >
+            {/* Main column vertical line */}
+            {mainEntries.length > 0 && (
+              <line
+                x1={mainColX}
+                y1={NODE_R}
+                x2={mainColX}
+                y2={svgHeight - NODE_R}
+                stroke="currentColor"
+                strokeWidth={2}
+                className="text-border"
+              />
+            )}
+            {/* Experiment column vertical line */}
+            {entries.length > 1 && (
+              <line
+                x1={expColX}
+                y1={NODE_R + (allShaIndex.get(entries[0].sha) ?? 0) * NODE_SPACING}
+                x2={expColX}
+                y2={NODE_R + (allShaIndex.get(entries[entries.length - 1].sha) ?? 0) * NODE_SPACING}
+                stroke="#f59e0b"
+                strokeWidth={2}
+              />
+            )}
+            {/* Branch connector: diagonal from branch-point main node to first experiment node */}
+            {firstExpEntry && lastMainEntry && (
+              <line
+                x1={mainColX}
+                y1={NODE_R + branchPointRow * NODE_SPACING}
+                x2={expColX}
+                y2={NODE_R + firstExpRow * NODE_SPACING}
+                stroke="#f59e0b"
+                strokeWidth={2}
+              />
+            )}
+            {/* Main column nodes */}
+            {mainEntries.map((entry) => {
+              const rowIdx = allShaIndex.get(entry.sha) ?? 0
+              const cy = NODE_R + rowIdx * NODE_SPACING
+              const isPushedNode = remoteConnected && entry.is_pushed
+              return (
+                <g
+                  key={entry.sha}
+                  onClick={() => onSelectEntry(entry, entry.files_changed[0] ?? '')}
+                  className="cursor-pointer group"
+                  role="button"
+                  aria-label={entry.message}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectEntry(entry, entry.files_changed[0] ?? '')
+                    }
+                  }}
+                >
+                  {isPushedNode ? (
+                    <>
+                      <circle cx={mainColX} cy={cy} r={NODE_R} fill="#3b82f6" className="group-hover:opacity-80 transition-opacity" />
+                      <circle cx={mainColX} cy={cy} r={NODE_R - 3.5} fill="white" />
+                    </>
+                  ) : (
+                    <circle cx={mainColX} cy={cy} r={NODE_R} fill="hsl(var(--muted-foreground))" className="group-hover:opacity-80 transition-opacity" />
+                  )}
+                </g>
+              )
+            })}
+            {/* Experiment column nodes (amber) */}
+            {entries.map((entry) => {
+              const rowIdx = allShaIndex.get(entry.sha) ?? 0
+              const cy = NODE_R + rowIdx * NODE_SPACING
+              return (
+                <g
+                  key={entry.sha}
+                  onClick={() => onSelectEntry(entry, entry.files_changed[0] ?? '')}
+                  className="cursor-pointer group"
+                  role="button"
+                  aria-label={entry.message}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectEntry(entry, entry.files_changed[0] ?? '')
+                    }
+                  }}
+                >
+                  <circle cx={expColX} cy={cy} r={NODE_R} fill="#f59e0b" className="group-hover:opacity-80 transition-opacity" />
+                </g>
+              )
+            })}
+          </svg>
+
+          {/* Commit info rows — right of SVG columns */}
+          <div
+            className="absolute top-0 right-0 flex flex-col"
+            style={{ left: svgWidth + 8 }}
+          >
+            {allBranchEntries.map((entry) => {
+              const rowIdx = allShaIndex.get(entry.sha) ?? 0
+              const isExp = experimentShas.has(entry.sha)
+              const truncated = entry.message.length > 46
+                ? entry.message.slice(0, 46) + '…'
+                : entry.message
+              const isPushed = remoteConnected && entry.is_pushed
+              const isLatest = rowIdx === 0
+              return (
+                <div
+                  key={entry.sha}
+                  className="flex flex-col justify-center cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5 transition-colors"
+                  style={{ height: NODE_SPACING }}
+                  onClick={() => onSelectEntry(entry, entry.files_changed[0] ?? '')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      onSelectEntry(entry, entry.files_changed[0] ?? '')
+                    }
+                  }}
+                  aria-label={entry.message}
+                >
+                  <div className="flex items-center gap-1">
+                    <p className={cn('text-xs font-medium truncate', isLatest && 'text-foreground', isExp && 'text-amber-700')}>
+                      {truncated}
+                    </p>
+                    {isLatest && (
+                      <span className="text-[10px] font-semibold px-1 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                        latest
+                      </span>
+                    )}
+                    {isPushed && (
+                      <span title={buildTooltip(remoteStatus)}>
+                        <Cloud className="h-3 w-3 text-blue-500 shrink-0" />
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {formatRelativeTime(entry.timestamp)}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Single-branch path (unchanged from Phase 16.1)
   const svgHeight = NODE_R + entries.length * NODE_SPACING
 
   return (
@@ -332,6 +520,8 @@ export function HistoryPanel({
   lastPushTimestamp,
   onNavigate,
   onPushComplete,
+  activeBranch,
+  allBranchEntries,
 }: HistoryPanelProps) {
   const [remoteStatus, setRemoteStatus] = useState<RemoteStatus | null>(null)
   const [pushState, setPushState] = useState<'idle' | 'pushing' | 'error'>('idle')
@@ -502,6 +692,8 @@ export function HistoryPanel({
           onSelectEntry={onSelectEntry}
           remoteConnected={remoteConnected}
           remoteStatus={remoteStatus}
+          activeBranch={activeBranch}
+          allBranchEntries={allBranchEntries}
         />
       )}
     </div>
