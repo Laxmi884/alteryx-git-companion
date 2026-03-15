@@ -368,14 +368,18 @@ export function HistoryPanel({
       )
     )
     const anySucceeded = results.some((r) => r.status === 'fulfilled')
+    const failed = providers.filter((_, i) => results[i].status === 'rejected')
     if (anySucceeded) {
       setPushState('idle')
       await fetchRemoteStatus()
       onPushComplete?.()
     } else {
       setPushState('error')
-      setPushError('Backup failed. Check your connection and try again.')
-      setTimeout(() => { setPushState('idle'); setPushError(null) }, 4000)
+    }
+    if (failed.length > 0) {
+      const names = failed.map((p) => p === 'github' ? 'GitHub' : 'GitLab').join(' and ')
+      setPushError(`${names} backup failed. Check your connection and try again.`)
+      setTimeout(() => { setPushState('idle'); setPushError(null) }, 5000)
     }
   }
 
