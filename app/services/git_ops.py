@@ -398,20 +398,29 @@ def git_push(folder: str, remote_url: str, token: str) -> None:
 
 
 def git_pushed_shas(folder: str) -> set[str]:
-    """Return set of commit SHAs that exist at the tracked upstream.
+    """Return set of commit SHAs that exist at the remote.
 
-    Returns empty set when no upstream is configured or remote is unreachable.
-    Uses the tracked upstream ref from @{u} (same pattern as git_ahead_behind)
-    to handle repos using 'master' or any custom branch name correctly.
+    Tries @{u} (tracked upstream) first, then falls back to origin/<current_branch>
+    so cloud icons work even when the local branch has no tracking ref configured.
+    Returns empty set when no remote is reachable.
     """
     upstream_result = subprocess.run(
         ["git", "-C", folder, "rev-parse", "--abbrev-ref", "@{u}"],
         capture_output=True,
         text=True,
     )
-    if upstream_result.returncode != 0:
-        return set()
-    upstream = upstream_result.stdout.strip()
+    if upstream_result.returncode == 0:
+        upstream = upstream_result.stdout.strip()
+    else:
+        # Fall back to origin/<current branch>
+        branch_result = subprocess.run(
+            ["git", "-C", folder, "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+        )
+        if branch_result.returncode != 0:
+            return set()
+        upstream = f"origin/{branch_result.stdout.strip()}"
     result = subprocess.run(
         ["git", "-C", folder, "log", upstream, "--format=%H"],
         capture_output=True,

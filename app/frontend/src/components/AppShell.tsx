@@ -109,9 +109,9 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
         </div>
       )
     }
-    // State machine: changedFiles > 0 → ChangesPanel; hasCommits + selectedDiff → DiffViewer; hasCommits → HistoryPanel; else → EmptyState
+    // State machine: changedFiles > 0 → ChangesPanel (+ HistoryPanel below if commits exist); hasCommits + selectedDiff → DiffViewer; hasCommits → HistoryPanel; else → EmptyState
     if (changedFiles.length > 0) {
-      return (
+      const changesPane = (
         <ChangesPanel
           projectId={activeProject.id}
           projectPath={activeProject.path}
@@ -120,6 +120,24 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           onSaved={handleSaved}
           onDiscarded={handleDiscarded}
         />
+      )
+      if (!hasCommits) return changesPane
+      return (
+        <div className="flex flex-col h-full">
+          <div className="flex-shrink-0 border-b pb-2">{changesPane}</div>
+          <div className="flex-1 overflow-auto pt-2">
+            <HistoryPanel
+              entries={history}
+              projectId={activeProject.id}
+              projectPath={activeProject.path}
+              onSelectEntry={(entry, file) => setSelectedDiff({ sha: entry.sha, file })}
+              onUndo={handleUndo}
+              lastPushTimestamp={lastPushTimestamp}
+              onNavigate={(view) => setActiveView(view)}
+              onPushComplete={() => fetchHistory()}
+            />
+          </div>
+        </div>
       )
     }
     if (hasCommits && selectedDiff) {
