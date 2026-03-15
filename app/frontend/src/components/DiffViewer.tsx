@@ -53,8 +53,30 @@ export function DiffViewer({
           return
         }
 
-        const html = await res.text()
+        let html = await res.text()
         if (cancelled) return
+
+        // Blob URLs have a null origin, so localStorage access throws SecurityError
+        // in some browsers. Inject a safe in-memory shim before any script runs so
+        // vis.js graph initialisation doesn't abort due to a storage exception.
+        const localStorageShim = `<script>
+(function(){
+  var _store = {};
+  var _safe = {
+    getItem: function(k){ return Object.prototype.hasOwnProperty.call(_store, k) ? _store[k] : null; },
+    setItem: function(k, v){ _store[k] = String(v); },
+    removeItem: function(k){ delete _store[k]; },
+    clear: function(){ _store = {}; },
+    key: function(i){ return Object.keys(_store)[i] || null; },
+    get length(){ return Object.keys(_store).length; }
+  };
+  try { localStorage.getItem('__test__'); } catch(e) {
+    Object.defineProperty(window, 'localStorage', { value: _safe, writable: true });
+  }
+})();
+<\/script>`;
+        // Insert shim immediately after <head> so it runs before any inline scripts
+        html = html.replace(/<head>/i, '<head>' + localStorageShim)
 
         blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
         setIframeSrc(blobUrl)
@@ -126,6 +148,17 @@ export function DiffViewer({
             src={iframeSrc}
             className="w-full h-full border-0"
             title="Diff report"
+            onLoad={(e) => {
+              // After the iframe document is fully loaded, call switchView on the
+              // ACD report to force vis.js to (re-)initialise the network graphs
+              // with correct container dimensions.
+              try {
+                const win = (e.currentTarget as HTMLIFrameElement).contentWindow as (Window & { switchView?: (v: string) => void }) | null
+                win?.switchView?.('split')
+              } catch {
+                // Cross-origin or blocked — safe to ignore; graphs rendered via localStorage shim
+              }
+            }}
           />
         )}
       </div>
