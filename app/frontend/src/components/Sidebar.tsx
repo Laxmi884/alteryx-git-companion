@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Settings } from 'lucide-react'
+import { Plus, Settings, Cloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   ContextMenu,
@@ -23,9 +23,10 @@ import { cn } from '@/lib/utils'
 interface SidebarProps {
   onAddFolder?: () => void
   onOpenSettings?: () => void
+  onOpenRemote?: () => void
 }
 
-export default function Sidebar({ onAddFolder, onOpenSettings }: SidebarProps) {
+export default function Sidebar({ onAddFolder, onOpenSettings, onOpenRemote }: SidebarProps) {
   const { projects, activeProjectId, setActiveProject, removeProject } = useProjectStore()
   const [confirmRemove, setConfirmRemove] = useState<Project | null>(null)
 
@@ -83,7 +84,17 @@ export default function Sidebar({ onAddFolder, onOpenSettings }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="mt-auto pt-2 border-t">
+      <div className="mt-auto pt-2 border-t flex gap-1">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-7 w-7"
+          onClick={onOpenRemote}
+          title="Remote Backup"
+        >
+          <Cloud className="h-4 w-4" />
+          <span className="sr-only">Remote Backup</span>
+        </Button>
         <Button
           size="icon"
           variant="ghost"

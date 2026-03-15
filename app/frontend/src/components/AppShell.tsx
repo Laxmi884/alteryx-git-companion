@@ -7,6 +7,7 @@ import { ChangesPanel } from '@/components/ChangesPanel'
 import { HistoryPanel, type CommitEntry } from '@/components/HistoryPanel'
 import { DiffViewer } from '@/components/DiffViewer'
 import { SettingsPanel } from '@/components/SettingsPanel'
+import { RemotePanel } from '@/components/RemotePanel'
 
 interface AppShellProps {
   onAddFolder?: () => void
@@ -18,7 +19,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const { projects, activeProjectId } = useProjectStore()
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
-  const [activeView, setActiveView] = useState<'default' | 'settings'>('default')
+  const [activeView, setActiveView] = useState<'default' | 'settings' | 'remote'>('default')
 
   // Watch status state — fetched on project activation and after undo
   const [hasCommits, setHasCommits] = useState(false)
@@ -84,6 +85,9 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   }
 
   function renderMainContent() {
+    if (activeView === 'remote') {
+      return <RemotePanel />
+    }
     if (activeView === 'settings') {
       return <SettingsPanel />
     }
@@ -142,7 +146,11 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   return (
     <div className="flex h-screen overflow-hidden">
       <aside className="w-[220px] flex-shrink-0 border-r bg-muted/40 flex flex-col p-2">
-        <Sidebar onAddFolder={onAddFolder} onOpenSettings={() => setActiveView('settings')} />
+        <Sidebar
+          onAddFolder={onAddFolder}
+          onOpenSettings={() => setActiveView('settings')}
+          onOpenRemote={() => setActiveView('remote')}
+        />
       </aside>
       <main className="flex-1 overflow-auto p-6">
         {renderMainContent()}
