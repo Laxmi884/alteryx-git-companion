@@ -291,6 +291,24 @@ def git_log(folder: str) -> list[dict]:
     return entries
 
 
+def git_push(folder: str, remote_url: str, token: str) -> None:
+    """Push current branch to remote_url using GIT_ASKPASS credential injection.
+
+    Keeps token out of .git/config and process command-line arguments.
+    Raises NotImplementedError until Plan 16-02 implements this.
+    """
+    raise NotImplementedError
+
+
+def git_ahead_behind(folder: str) -> tuple[int, int]:
+    """Return (ahead, behind) commit counts vs. upstream tracking branch.
+
+    Returns (0, 0) if no upstream is set.
+    Raises NotImplementedError until Plan 16-02 implements this.
+    """
+    raise NotImplementedError
+
+
 def git_show_file(folder: str, sha: str, filepath: str) -> bytes:
     """Return the raw bytes of filepath at the given commit sha.
 
