@@ -149,14 +149,16 @@ export function DiffViewer({
             className="w-full h-full border-0"
             title="Diff report"
             onLoad={(e) => {
-              // After the iframe document is fully loaded, call switchView on the
-              // ACD report to force vis.js to (re-)initialise the network graphs
-              // with correct container dimensions.
+              // vis.js initialises the network graph inline during HTML parsing,
+              // before the iframe has been laid out, so the canvas gets zero
+              // dimensions. Dispatching a resize event after load triggers vis.js's
+              // built-in _onResize handler which calls setSize() + _requestRedraw
+              // with the now-correct container dimensions.
               try {
-                const win = (e.currentTarget as HTMLIFrameElement).contentWindow as (Window & { switchView?: (v: string) => void }) | null
-                win?.switchView?.('split')
+                const win = (e.currentTarget as HTMLIFrameElement).contentWindow
+                win?.dispatchEvent(new Event('resize'))
               } catch {
-                // Cross-origin or blocked — safe to ignore; graphs rendered via localStorage shim
+                // Cross-origin blob URLs are same-origin — this should not throw
               }
             }}
           />
