@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-15T01:58:18.505Z"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-15T02:03:31.481Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 26
-  completed_plans: 22
+  completed_plans: 23
   percent: 0
 ---
 
@@ -72,6 +72,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 14-history-and-diff-viewer P03 | 15 | 2 tasks | 2 files |
 | Phase 14-history-and-diff-viewer P04 | 25 | 3 tasks | 3 files |
 | Phase 15-system-tray-and-auto-start P01 | 4 | 2 tasks | 4 files |
+| Phase 15-system-tray-and-auto-start P02 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -134,6 +135,9 @@ Recent decisions affecting current work:
 - [Phase 15-01]: Graceful RED pattern: try/except ImportError + _require() so stubs report FAILED not collection ERROR
 - [Phase 15-01]: winreg mocked via sys.modules injection (patch.dict) for cross-platform testing of Windows-registry functions
 - [Phase 15-01]: _compute_state designed as pure function (dict -> tuple) so tray tests need no pystray or OS dependency
+- [Phase 15-02]: is_instance_running delegates to find_available_port(start=7433, count=1) so test patches propagate correctly in test environment where port 7433 is occupied
+- [Phase 15-02]: app/tray.py stub created before Plan 03 pystray implementation so main() tray import succeeds during test_main.py runs
+- [Phase 15-02]: PIL removed from app.spec excludes — pystray requires Pillow; console=True flipped to console=False for background-mode deployment
 
 ### Pending Todos
 
@@ -147,6 +151,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T01:58:18.502Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-15T02:03:31.478Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
