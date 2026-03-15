@@ -217,4 +217,4 @@ Plans:
 | 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
 | 16.1. Git History UX + Graph View | 4/4 | Complete    | 2026-03-15 | - |
 | 17. Branch Management | 5/5 | Complete    | 2026-03-15 | - |
-| 18. CI Polish | 1/3 | In Progress|  | - |
+| 18. CI Polish | 2/3 | In Progress|  | - |

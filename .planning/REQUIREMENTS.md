@@ -55,8 +55,8 @@
 
 ### CI — CI Integration Polish
 
-- [ ] **CI-01**: GitHub Actions workflow updates the existing PR comment on each push instead of creating a new one
-- [ ] **CI-02**: GitHub Actions embeds the workflow graph diff as an inline PNG image in the PR comment body (no ZIP download required)
+- [x] **CI-01**: GitHub Actions workflow updates the existing PR comment on each push instead of creating a new one
+- [x] **CI-02**: GitHub Actions embeds the workflow graph diff as an inline PNG image in the PR comment body (no ZIP download required)
 - [x] **CI-03**: GitLab CI removes the placeholder test-job step that serves no purpose
 - [ ] **CI-04**: CI repo has a proper README with step-by-step setup instructions for both GitHub Actions and GitLab CI
 
@@ -122,8 +122,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BRANCH-01 | Phase 17 | Complete |
 | BRANCH-02 | Phase 17 | Complete |
 | BRANCH-03 | Phase 17 | Complete |
-| CI-01 | Phase 18 | Pending |
-| CI-02 | Phase 18 | Pending |
+| CI-01 | Phase 18 | Complete |
+| CI-02 | Phase 18 | Complete |
 | CI-03 | Phase 18 | Complete |
 | CI-04 | Phase 18 | Pending |
 
