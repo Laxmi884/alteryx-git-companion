@@ -182,7 +182,7 @@ Plans:
 | 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
-| 15. System Tray and Auto-start | 1/5 | In Progress|  | - |
+| 15. System Tray and Auto-start | 2/5 | In Progress|  | - |
 | 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
