@@ -18,9 +18,7 @@ import keyring
 DEVICE_CODE_URL = "https://github.com/login/device/code"
 TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITLAB_BASE = "https://gitlab.com/api/v4"
-CLIENT_ID = (
-    "YOUR_GITHUB_CLIENT_ID"  # TODO: replace with registered client_id before ship
-)
+CLIENT_ID = "Ov23liIZIzK0pYwmA580"
 SERVICE_GITHUB = "AlteryxGitCompanion:github"
 SERVICE_GITLAB = "AlteryxGitCompanion:gitlab"
 USERNAME_KEY = "token"

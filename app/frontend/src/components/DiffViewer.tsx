@@ -39,12 +39,16 @@ export function DiffViewer({
 
         const contentType = res.headers.get('content-type') ?? ''
         if (contentType.includes('json')) {
-          const data = await res.json() as { is_first_commit?: boolean }
+          const data = await res.json() as { is_first_commit?: boolean; detail?: string }
           if (data?.is_first_commit) {
             setIsFirstCommit(true)
             setLoading(false)
             return
           }
+          // Unexpected JSON (e.g. validation error) — body is consumed, show error
+          setError(data?.detail ?? `Unexpected response (HTTP ${res.status})`)
+          setLoading(false)
+          return
         }
 
         if (!res.ok) {

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import contextlib
 import subprocess
+import threading
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -46,13 +47,24 @@ class PushRequest(BaseModel):
 
 @router.post("/github/start")
 def github_start() -> dict:
-    """Start GitHub OAuth Device Flow — returns user_code and verification_uri."""
+    """Start GitHub OAuth Device Flow — returns user_code and verification_uri.
+
+    Kicks off poll_and_store in a background thread so the token is stored
+    in keyring once the user authorises on GitHub.
+    """
     data = remote_auth.request_device_code()
+    device_code = data.get("device_code")
+    interval = int(data.get("interval", 5))
+    threading.Thread(
+        target=remote_auth.poll_and_store,
+        args=(device_code, interval),
+        daemon=True,
+    ).start()
     return {
         "user_code": data.get("user_code"),
         "verification_uri": data.get("verification_uri"),
-        "device_code": data.get("device_code"),
-        "interval": data.get("interval"),
+        "device_code": device_code,
+        "interval": interval,
         "expires_in": data.get("expires_in"),
     }
 

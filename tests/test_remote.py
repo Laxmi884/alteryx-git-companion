@@ -123,7 +123,7 @@ def test_poll_authorization_pending():
     with (
         patch("app.services.remote_auth.httpx") as mock_httpx,
         patch("app.services.remote_auth.time") as mock_time,
-        patch.dict("sys.modules", {"keyring": mock_keyring}),
+        patch("app.services.remote_auth.keyring", mock_keyring),
     ):
         mock_httpx.post.side_effect = responses
         mock_time.time.side_effect = [0, 1, 2, 3]  # stays within deadline
@@ -154,7 +154,7 @@ def test_poll_slow_down_increases_interval():
     with (
         patch("app.services.remote_auth.httpx") as mock_httpx,
         patch("app.services.remote_auth.time") as mock_time,
-        patch.dict("sys.modules", {"keyring": mock_keyring}),
+        patch("app.services.remote_auth.keyring", mock_keyring),
     ):
         mock_httpx.post.side_effect = responses
         mock_time.time.side_effect = [0, 1, 2]
