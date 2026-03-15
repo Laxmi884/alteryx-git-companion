@@ -184,13 +184,14 @@ interface GraphViewProps {
   entries: CommitEntry[]
   onSelectEntry: (entry: CommitEntry, file: string) => void
   remoteConnected: boolean
+  remoteStatus: RemoteStatus | null
 }
 
 const NODE_R = 8
 const NODE_SPACING = 48
 const SVG_COL_WIDTH = 36
 
-function GraphView({ entries, onSelectEntry, remoteConnected }: GraphViewProps) {
+function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: GraphViewProps) {
   if (entries.length === 0) {
     return (
       <p className="text-sm text-muted-foreground text-center py-8">
@@ -224,7 +225,6 @@ function GraphView({ entries, onSelectEntry, remoteConnected }: GraphViewProps) 
           )}
           {entries.map((entry, i) => {
             const cy = NODE_R + i * NODE_SPACING
-            const isPushedNode = remoteConnected && entry.is_pushed
             return (
               <g
                 key={entry.sha}
@@ -243,19 +243,9 @@ function GraphView({ entries, onSelectEntry, remoteConnected }: GraphViewProps) 
                   cx={SVG_COL_WIDTH / 2}
                   cy={cy}
                   r={NODE_R}
-                  fill={isPushedNode ? '#3b82f6' : 'hsl(var(--muted-foreground))'}
+                  fill="hsl(var(--muted-foreground))"
                   className="group-hover:opacity-80 transition-opacity"
                 />
-                {/* Cloud dot indicator for pushed nodes — tiny white dot in center */}
-                {isPushedNode && (
-                  <circle
-                    cx={SVG_COL_WIDTH / 2}
-                    cy={cy}
-                    r={3}
-                    fill="white"
-                    aria-label="Backed up"
-                  />
-                )}
               </g>
             )
           })}
@@ -267,9 +257,10 @@ function GraphView({ entries, onSelectEntry, remoteConnected }: GraphViewProps) 
           style={{ left: SVG_COL_WIDTH + 8 }}
         >
           {entries.map((entry, i) => {
-            const truncated = entry.message.length > 55
-              ? entry.message.slice(0, 55) + '…'
+            const truncated = entry.message.length > 50
+              ? entry.message.slice(0, 50) + '…'
               : entry.message
+            const isPushed = remoteConnected && entry.is_pushed
             return (
               <div
                 key={entry.sha}
@@ -285,9 +276,16 @@ function GraphView({ entries, onSelectEntry, remoteConnected }: GraphViewProps) 
                 }}
                 aria-label={entry.message}
               >
-                <p className={cn('text-xs font-medium truncate', i === 0 && 'text-foreground')}>
-                  {truncated}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className={cn('text-xs font-medium truncate', i === 0 && 'text-foreground')}>
+                    {truncated}
+                  </p>
+                  {isPushed && (
+                    <span title={buildTooltip(remoteStatus)}>
+                      <Cloud className="h-3 w-3 text-blue-500 shrink-0" />
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {formatRelativeTime(entry.timestamp)}
                 </p>
@@ -384,12 +382,22 @@ export function HistoryPanel({
 
   const remoteConnected = !!(remoteStatus?.github_connected || remoteStatus?.gitlab_connected)
   const aheadCount = remoteStatus?.ahead ?? 0
+  const behindCount = remoteStatus?.behind ?? 0
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
-        <h2 className="text-sm font-semibold">Saved Versions</h2>
+        <div>
+          <h2 className="text-sm font-semibold">Saved Versions</h2>
+          {remoteConnected && (aheadCount > 0 || behindCount > 0) && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {aheadCount > 0 && `${aheadCount} ahead`}
+              {aheadCount > 0 && behindCount > 0 && ' · '}
+              {behindCount > 0 && `${behindCount} behind`}
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
             <button
@@ -465,6 +473,7 @@ export function HistoryPanel({
           entries={entries}
           onSelectEntry={onSelectEntry}
           remoteConnected={remoteConnected}
+          remoteStatus={remoteStatus}
         />
       )}
     </div>
