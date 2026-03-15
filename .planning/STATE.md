@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-03-15T18:16:52.874Z"
+stopped_at: Completed 17-04-PLAN.md
+last_updated: "2026-03-15T18:22:33.217Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 40
-  completed_plans: 38
+  completed_plans: 39
   percent: 0
 ---
 
@@ -89,6 +89,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 17-branch-management P01 | 147 | 2 tasks | 3 files |
 | Phase 17-branch-management P02 | 177 | 2 tasks | 3 files |
 | Phase 17-branch-management P03 | 3 | 2 tasks | 6 files |
+| Phase 17-branch-management P04 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -185,6 +186,9 @@ Recent decisions affecting current work:
 - [Phase 17-02]: git_log branch param appended as final positional arg to git log command — filters log to ancestry of named branch ref
 - [Phase 17-branch-management]: lastBranchSwitchTimestamp removed — AppShell.handleBranchSwitch calls fetchHistory() directly; no behavioral loss, eliminates TS unused-variable error
 - [Phase 17-branch-management]: shadcn Popover moved from @/components/ui/ to src/components/ui/ per established Phase 11 alias pattern
+- [Phase 17-branch-management]: mergeBaseSha fetched in fetchBranch (branch property); allBranchEntries fetched in fetchHistory (history data)
+- [Phase 17-branch-management]: Multi-branch GraphView uses allBranchEntries as row index Map — both columns share vertical timeline
+- [Phase 17-branch-management]: compare toggle: isExperimentBranch + compareTo controls visibility; compareMode drives compare_to URL param
 
 ### Roadmap Evolution
 
@@ -202,6 +206,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:16:52.872Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-03-15T18:22:28.942Z
+Stopped at: Completed 17-04-PLAN.md
 Resume file: None
