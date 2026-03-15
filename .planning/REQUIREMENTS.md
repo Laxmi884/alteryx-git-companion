@@ -40,12 +40,12 @@
 
 ### REMOTE — Remote & Backup
 
-- [ ] **REMOTE-01**: User can connect to GitHub using browser-based OAuth (no PAT required)
-- [ ] **REMOTE-02**: User can connect to GitLab using a personal access token with in-app step-by-step instructions and direct link to GitLab settings
-- [ ] **REMOTE-03**: Auth credentials stored in OS credential store (Windows Credential Manager / macOS Keychain via keyring)
-- [ ] **REMOTE-04**: User can back up (push) saved versions to GitHub or GitLab with a single button
-- [ ] **REMOTE-05**: If no remote repository exists yet, the app creates one automatically on GitHub or GitLab when the user first pushes, without requiring the user to leave the app
-- [ ] **REMOTE-06**: User can see how many saved versions are ahead of the remote (local-only) and how many are behind (remote-only not yet pulled), shown as a simple ahead/behind indicator in the UI
+- [x] **REMOTE-01**: User can connect to GitHub using browser-based OAuth (no PAT required)
+- [x] **REMOTE-02**: User can connect to GitLab using a personal access token with in-app step-by-step instructions and direct link to GitLab settings
+- [x] **REMOTE-03**: Auth credentials stored in OS credential store (Windows Credential Manager / macOS Keychain via keyring)
+- [x] **REMOTE-04**: User can back up (push) saved versions to GitHub or GitLab with a single button
+- [x] **REMOTE-05**: If no remote repository exists yet, the app creates one automatically on GitHub or GitLab when the user first pushes, without requiring the user to leave the app
+- [x] **REMOTE-06**: User can see how many saved versions are ahead of the remote (local-only) and how many are behind (remote-only not yet pulled), shown as a simple ahead/behind indicator in the UI
 
 ### BRANCH — Experiment Copies
 
@@ -113,12 +113,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAVE-03 | Phase 13 | Complete |
 | HIST-01 | Phase 14 | Complete |
 | HIST-02 | Phase 14 | Complete |
-| REMOTE-01 | Phase 16 | Pending |
-| REMOTE-02 | Phase 16 | Pending |
-| REMOTE-03 | Phase 16 | Pending |
-| REMOTE-04 | Phase 16 | Pending |
-| REMOTE-05 | Phase 16 | Pending |
-| REMOTE-06 | Phase 16 | Pending |
+| REMOTE-01 | Phase 16 | Complete |
+| REMOTE-02 | Phase 16 | Complete |
+| REMOTE-03 | Phase 16 | Complete |
+| REMOTE-04 | Phase 16 | Complete |
+| REMOTE-05 | Phase 16 | Complete |
+| REMOTE-06 | Phase 16 | Complete |
 | BRANCH-01 | Phase 17 | Pending |
 | BRANCH-02 | Phase 17 | Pending |
 | BRANCH-03 | Phase 17 | Pending |
