@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 16.1-02-PLAN.md
-last_updated: "2026-03-15T16:47:03.332Z"
+stopped_at: Completed 16.1-03-PLAN.md
+last_updated: "2026-03-15T16:50:30.840Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 35
-  completed_plans: 33
+  completed_plans: 34
   percent: 0
 ---
 
@@ -84,6 +84,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16-remote-auth-and-push P05 | checkpoint | 2 tasks | 0 files |
 | Phase 16.1 P01 | 2 | 2 tasks | 3 files |
 | Phase 16.1 P02 | 2 | 2 tasks | 3 files |
+| Phase 16.1 P03 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -172,6 +173,7 @@ Recent decisions affecting current work:
 - [Phase 16.1]: RemoteStatus interface copied into HistoryPanel.tsx (not imported) to avoid circular dependencies between sibling components
 - [Phase 16.1]: lastPushTimestamp = Date.now() used as signal dependency for useEffect without extra boolean state (timestamp-as-signal pattern)
 - [Phase 16.1]: Back-nav from DiffViewer requires no change — setSelectedDiff(null) already returns to HistoryPanel with localStorage-restored view mode
+- [Phase 16.1]: HTML entity codes used for toggle button symbols to avoid unicode build issues; SVG_COL_WIDTH=36px; GraphView defined in same file as HistoryPanel to avoid circular imports
 
 ### Roadmap Evolution
 
@@ -189,6 +191,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T16:47:03.329Z
-Stopped at: Completed 16.1-02-PLAN.md
+Last session: 2026-03-15T16:50:30.837Z
+Stopped at: Completed 16.1-03-PLAN.md
 Resume file: None

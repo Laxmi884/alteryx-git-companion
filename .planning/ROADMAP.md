@@ -152,7 +152,7 @@ Plans:
 
 **Goal:** Enhance HistoryPanel with per-entry cloud backup status icons, a push-from-history button, and a toggleable SVG git graph view — all without leaving the history panel
 **Depends on:** Phase 16
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 16.1-01-PLAN.md — Backend: git_pushed_shas + extend history endpoint with is_pushed field + tests GREEN (Wave 1)
@@ -203,6 +203,6 @@ Plans:
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
 | 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
-| 16.1. Git History UX + Graph View | 2/4 | In Progress|  | - |
+| 16.1. Git History UX + Graph View | 3/4 | In Progress|  | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
