@@ -200,6 +200,6 @@ Plans:
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
-| 16. Remote Auth and Push | 5/5 | Complete   | 2026-03-15 | - |
+| 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
