@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 16.1-01-PLAN.md
-last_updated: "2026-03-15T16:43:26.092Z"
+stopped_at: Completed 16.1-02-PLAN.md
+last_updated: "2026-03-15T16:47:03.332Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 35
-  completed_plans: 32
+  completed_plans: 33
   percent: 0
 ---
 
@@ -83,6 +83,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16-remote-auth-and-push P04 | 3 | 2 tasks | 4 files |
 | Phase 16-remote-auth-and-push P05 | checkpoint | 2 tasks | 0 files |
 | Phase 16.1 P01 | 2 | 2 tasks | 3 files |
+| Phase 16.1 P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -168,6 +169,9 @@ Recent decisions affecting current work:
 - [Phase 16-remote-auth-and-push]: GitHub PAT fallback calls POST /api/remote/github/connect (SERVICE_GITHUB keyring), separate from GitLab endpoint
 - [Phase 16-remote-auth-and-push]: Plan 05 is verification-only — all implementation landed in 16-01 through 16-04; human confirmed all REMOTE requirements working end-to-end
 - [Phase 16.1]: git_pushed_shas placed after git_ahead_behind in git_ops.py — both use @{u} pattern; is_pushed annotated in router (list_history) not in git_log service — router owns response shape
+- [Phase 16.1]: RemoteStatus interface copied into HistoryPanel.tsx (not imported) to avoid circular dependencies between sibling components
+- [Phase 16.1]: lastPushTimestamp = Date.now() used as signal dependency for useEffect without extra boolean state (timestamp-as-signal pattern)
+- [Phase 16.1]: Back-nav from DiffViewer requires no change — setSelectedDiff(null) already returns to HistoryPanel with localStorage-restored view mode
 
 ### Roadmap Evolution
 
@@ -185,6 +189,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T16:43:17.699Z
-Stopped at: Completed 16.1-01-PLAN.md
+Last session: 2026-03-15T16:47:03.329Z
+Stopped at: Completed 16.1-02-PLAN.md
 Resume file: None
