@@ -58,7 +58,7 @@
 - [x] **CI-01**: GitHub Actions workflow updates the existing PR comment on each push instead of creating a new one
 - [x] **CI-02**: GitHub Actions embeds the workflow graph diff as an inline PNG image in the PR comment body (no ZIP download required)
 - [x] **CI-03**: GitLab CI removes the placeholder test-job step that serves no purpose
-- [ ] **CI-04**: CI repo has a proper README with step-by-step setup instructions for both GitHub Actions and GitLab CI
+- [x] **CI-04**: CI repo has a proper README with step-by-step setup instructions for both GitHub Actions and GitLab CI
 
 ## v2 Requirements
 
@@ -125,7 +125,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-01 | Phase 18 | Complete |
 | CI-02 | Phase 18 | Complete |
 | CI-03 | Phase 18 | Complete |
-| CI-04 | Phase 18 | Pending |
+| CI-04 | Phase 18 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 29 total

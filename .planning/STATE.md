@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 18-ci-polish 18-02-PLAN.md
-last_updated: "2026-03-15T22:05:28.750Z"
+stopped_at: Completed 18-ci-polish 18-03-PLAN.md
+last_updated: "2026-03-15T22:11:52.220Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 43
-  completed_plans: 42
+  completed_plans: 43
   percent: 0
 ---
 
@@ -92,6 +92,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 17-branch-management P04 | 5 | 2 tasks | 3 files |
 | Phase 18-ci-polish P01 | 2 | 2 tasks | 2 files |
 | Phase 18-ci-polish P02 | 2 | 2 tasks | 2 files |
+| Phase 18-ci-polish P03 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -198,6 +199,8 @@ Recent decisions affecting current work:
 - [Phase 18-ci-polish]: run_url promoted to explicit param on build_comment() — enables unit testing without env vars
 - [Phase 18-ci-polish]: is_private_repo() defaults to True conservatively on missing env or any exception
 - [Phase 18-ci-polish]: per_page:100 in listComments — avoids first-page miss on busy PRs (GitHub default is 30)
+- [Phase 18-ci-polish]: ruff noqa E501 on Markdown string literals in ci-templates Python helpers — Markdown output can't be line-wrapped; noqa is the correct fix
+- [Phase 18-ci-polish]: ci-templates/ mirrored directory structure — users copy entire directory without path surgery; README is the canonical setup guide
 
 ### Roadmap Evolution
 
@@ -215,6 +218,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T22:05:28.748Z
-Stopped at: Completed 18-ci-polish 18-02-PLAN.md
+Last session: 2026-03-15T22:11:52.216Z
+Stopped at: Completed 18-ci-polish 18-03-PLAN.md
 Resume file: None
