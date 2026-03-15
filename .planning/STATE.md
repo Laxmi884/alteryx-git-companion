@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 15-04-PLAN.md
-last_updated: "2026-03-15T02:13:02.809Z"
+stopped_at: "Checkpoint 15-05: awaiting human verification of Phase 15 tray/settings/Registry on Windows"
+last_updated: "2026-03-15T02:15:46.959Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 0
 ---
 
@@ -75,6 +75,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 15-system-tray-and-auto-start P02 | 4 | 2 tasks | 4 files |
 | Phase 15-system-tray-and-auto-start P03 | 6 | 2 tasks | 5 files |
 | Phase 15-system-tray-and-auto-start P04 | 8 | 2 tasks | 5 files |
+| Phase 15-system-tray-and-auto-start P05 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,7 @@ Recent decisions affecting current work:
 - [Phase 15-04]: activeView state ('default' | 'settings') in AppShell — simplest routing for single settings branch without router library
 - [Phase 15-04]: SettingsPanel is self-fetching (no props) — fetches /api/settings on mount, isolated concern
 - [Phase 15-04]: handleUndo signature aligned to () => void matching HistoryPanel.onUndo contract — fetchHistory re-derives hasCommits state
+- [Phase 15-system-tray-and-auto-start]: test_port_probe::test_find_available_port_returns_7433 is a pre-existing environment-specific failure (Phase 10) — not Phase 15 regression; deferred to deferred-items.md
 
 ### Pending Todos
 
@@ -159,6 +161,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T02:13:02.807Z
-Stopped at: Completed 15-04-PLAN.md
+Last session: 2026-03-15T02:15:46.957Z
+Stopped at: Checkpoint 15-05: awaiting human verification of Phase 15 tray/settings/Registry on Windows
 Resume file: None
