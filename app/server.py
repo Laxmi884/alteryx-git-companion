@@ -15,6 +15,7 @@ from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 
 from app.routers import (
+    branch,
     folder_picker,
     git_identity,
     history,
@@ -60,6 +61,7 @@ app.include_router(save.router)
 app.include_router(history.router)
 app.include_router(settings.router)
 app.include_router(remote.router)
+app.include_router(branch.router)
 
 
 def _static_dir() -> Path:
