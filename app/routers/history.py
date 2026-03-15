@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from alteryx_diff.pipeline import DiffRequest
 from alteryx_diff.pipeline import run as pipeline_run
+from alteryx_diff.renderers.graph_renderer import GraphRenderer
 from alteryx_diff.renderers.html_renderer import HTMLRenderer
 from app.services import git_ops  # noqa: F401 — required for mock.patch targeting
 
@@ -33,10 +34,17 @@ def _run_diff(old_bytes: bytes, new_bytes: bytes, filename: str) -> str:
         response = pipeline_run(
             DiffRequest(path_a=pathlib.Path(path_a), path_b=pathlib.Path(path_b))
         )
+        graph_html = GraphRenderer().render(
+            response.result,
+            response.doc_a.connections,
+            response.doc_a.nodes,
+            response.doc_b.nodes,
+        )
         return HTMLRenderer().render(
             response.result,
             file_a=f"{filename} (previous)",
             file_b=f"{filename} (this version)",
+            graph_html=graph_html,
         )
     finally:
         os.unlink(path_a)
