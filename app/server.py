@@ -19,6 +19,7 @@ from app.routers import (
     git_identity,
     history,
     projects,
+    remote,
     save,
     settings,
     watch,
@@ -58,6 +59,7 @@ app.include_router(watch.router)
 app.include_router(save.router)
 app.include_router(history.router)
 app.include_router(settings.router)
+app.include_router(remote.router)
 
 
 def _static_dir() -> Path:
