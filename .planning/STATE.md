@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Phase 16.1 context gathered
-last_updated: "2026-03-15T07:02:06.824Z"
+stopped_at: Completed 16.1-01-PLAN.md
+last_updated: "2026-03-15T16:43:26.092Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 7
-  total_plans: 31
-  completed_plans: 31
+  total_plans: 35
+  completed_plans: 32
   percent: 0
 ---
 
@@ -82,6 +82,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16-remote-auth-and-push P03 | 4 | 2 tasks | 5 files |
 | Phase 16-remote-auth-and-push P04 | 3 | 2 tasks | 4 files |
 | Phase 16-remote-auth-and-push P05 | checkpoint | 2 tasks | 0 files |
+| Phase 16.1 P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -166,6 +167,7 @@ Recent decisions affecting current work:
 - [Phase 16-remote-auth-and-push]: shadcn Tabs moved from @/components/ui/ to src/components/ui/ (Phase 11 alias pattern)
 - [Phase 16-remote-auth-and-push]: GitHub PAT fallback calls POST /api/remote/github/connect (SERVICE_GITHUB keyring), separate from GitLab endpoint
 - [Phase 16-remote-auth-and-push]: Plan 05 is verification-only — all implementation landed in 16-01 through 16-04; human confirmed all REMOTE requirements working end-to-end
+- [Phase 16.1]: git_pushed_shas placed after git_ahead_behind in git_ops.py — both use @{u} pattern; is_pushed annotated in router (list_history) not in git_log service — router owns response shape
 
 ### Roadmap Evolution
 
@@ -183,6 +185,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T07:02:06.819Z
-Stopped at: Phase 16.1 context gathered
-Resume file: .planning/phases/16.1-git-history-ux-with-push-integration-and-git-graph-view/16.1-CONTEXT.md
+Last session: 2026-03-15T16:43:17.699Z
+Stopped at: Completed 16.1-01-PLAN.md
+Resume file: None
