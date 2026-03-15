@@ -148,6 +148,16 @@ Plans:
 - [ ] 16-04-PLAN.md — Frontend: RemotePanel.tsx (tabs, device flow UI, GitLab PAT form, ahead/behind, push button) + AppShell/Sidebar wiring (Wave 3)
 - [ ] 16-05-PLAN.md — Human verification checkpoint: full OAuth flow, credential persistence, push, auto-create repo, ahead/behind (Wave 4)
 
+### Phase 16.1: Git history UX with push integration and git graph view (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 5/5 plans complete
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 16.1 to break down)
+
 ### Phase 17: Branch Management
 **Goal**: Users can create experiment copies of their project, switch between them, and always see which copy they are working on
 **Depends on**: Phase 16
@@ -190,6 +200,6 @@ Plans:
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
-| 16. Remote Auth and Push | 4/5 | In Progress|  | - |
+| 16. Remote Auth and Push | 5/5 | Complete   | 2026-03-15 | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
