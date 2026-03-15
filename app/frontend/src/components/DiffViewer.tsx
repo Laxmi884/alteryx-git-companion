@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 
 interface DiffViewerProps {
   sha: string
@@ -6,6 +7,8 @@ interface DiffViewerProps {
   folder: string
   commitMessage: string
   onBack: () => void
+  compareTo?: string | null     // merge-base SHA for "vs main" compare; undefined = vs previous save
+  isExperimentBranch?: boolean  // controls whether compare toggle shows
 }
 
 export function DiffViewer({
@@ -14,12 +17,15 @@ export function DiffViewer({
   folder,
   commitMessage,
   onBack,
+  compareTo,
+  isExperimentBranch,
 }: DiffViewerProps) {
   const [loading, setLoading] = useState(true)
   const [iframeSrc, setIframeSrc] = useState<string | null>(null)
   const [isFirstCommit, setIsFirstCommit] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [compareMode, setCompareMode] = useState<'previous' | 'main'>('previous')
 
   useEffect(() => {
     let blobUrl: string | null = null
@@ -32,8 +38,11 @@ export function DiffViewer({
       setIframeSrc(null)
 
       try {
+        const compareToParam = compareMode === 'main' && compareTo
+          ? `&compare_to=${encodeURIComponent(compareTo)}`
+          : ''
         const res = await fetch(
-          `/api/history/${sha}/diff?folder=${encodeURIComponent(folder)}&file=${encodeURIComponent(file)}`
+          `/api/history/${sha}/diff?folder=${encodeURIComponent(folder)}&file=${encodeURIComponent(file)}${compareToParam}`
         )
         if (cancelled) return
 
@@ -117,7 +126,7 @@ window.addEventListener('load', function() {
       cancelled = true
       if (blobUrl) URL.revokeObjectURL(blobUrl)
     }
-  }, [sha, file, folder, retryCount])
+  }, [sha, file, folder, retryCount, compareMode, compareTo])
 
   const truncatedMessage =
     commitMessage.length > 80
@@ -136,6 +145,32 @@ window.addEventListener('load', function() {
         </button>
         <span className="text-muted-foreground select-none">|</span>
         <span className="text-sm font-medium truncate">{truncatedMessage}</span>
+        {isExperimentBranch && compareTo && (
+          <div className="flex items-center gap-1 ml-auto shrink-0">
+            <button
+              className={cn(
+                "text-xs px-2 py-0.5 rounded border transition-colors",
+                compareMode === 'previous'
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-input hover:bg-muted"
+              )}
+              onClick={() => setCompareMode('previous')}
+            >
+              vs previous save
+            </button>
+            <button
+              className={cn(
+                "text-xs px-2 py-0.5 rounded border transition-colors",
+                compareMode === 'main'
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-input hover:bg-muted"
+              )}
+              onClick={() => setCompareMode('main')}
+            >
+              vs main
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content area */}
