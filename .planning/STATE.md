@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-03-15T05:41:11.376Z"
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-03-15T05:47:27.912Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 6
   total_plans: 31
-  completed_plans: 28
+  completed_plans: 29
   percent: 0
 ---
 
@@ -79,6 +79,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 15-system-tray-and-auto-start P05 | 2 | 2 tasks | 0 files |
 | Phase 16-remote-auth-and-push P01 | 5 | 1 tasks | 6 files |
 | Phase 16-remote-auth-and-push P02 | 15 | 2 tasks | 7 files |
+| Phase 16-remote-auth-and-push P03 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,9 @@ Recent decisions affecting current work:
 - [Phase 16-remote-auth-and-push]: poll_and_store implemented as synchronous function (time.sleep) — tests patch app.services.remote_auth.time; router github/start returns immediately without waiting for poll
 - [Phase 16-remote-auth-and-push]: remote.router registered in server.py — router tests use TestClient on app; missing registration caused 405 Method Not Allowed
 - [Phase 16-remote-auth-and-push]: GIT_ASKPASS pattern for git_push: write temp .sh/.bat echoing token, chmod 700, set GIT_ASKPASS env var; token never in URL or subprocess args
+- [Phase 16-remote-auth-and-push]: git_fetch uses GIT_ASKPASS temp-script pattern; non-zero returncode silently ignored for unreachable remote
+- [Phase 16-remote-auth-and-push]: POST /github/connect stores PAT without API validation — user trusted, consistent with device-flow path
+- [Phase 16-remote-auth-and-push]: config_store remote_repos stored as dict keyed by project_id then provider_url — not in keyring
 
 ### Pending Todos
 
@@ -170,6 +174,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T05:41:11.373Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-03-15T05:47:27.909Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
