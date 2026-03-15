@@ -459,6 +459,10 @@ def test_post_push_success():
         patch(
             "app.routers.remote.remote_auth.get_github_token", return_value="ght_tok"
         ),
+        patch(
+            "app.routers.remote.config_store.get_remote_repo",
+            return_value={"github_url": "https://github.com/owner/repo.git"},
+        ),
     ):
         mock_push.return_value = None
         resp = _client.post(
