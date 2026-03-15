@@ -174,7 +174,7 @@ Plans:
 | 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
 | 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
-| 14. History and Diff Viewer | 1/4 | In Progress|  | - |
+| 14. History and Diff Viewer | 3/4 | In Progress|  | - |
 | 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
 | 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
