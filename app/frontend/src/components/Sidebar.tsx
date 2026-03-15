@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   ContextMenu,
@@ -22,9 +22,10 @@ import { cn } from '@/lib/utils'
 
 interface SidebarProps {
   onAddFolder?: () => void
+  onOpenSettings?: () => void
 }
 
-export default function Sidebar({ onAddFolder }: SidebarProps) {
+export default function Sidebar({ onAddFolder, onOpenSettings }: SidebarProps) {
   const { projects, activeProjectId, setActiveProject, removeProject } = useProjectStore()
   const [confirmRemove, setConfirmRemove] = useState<Project | null>(null)
 
@@ -81,6 +82,19 @@ export default function Sidebar({ onAddFolder }: SidebarProps) {
           </ContextMenu>
         ))}
       </nav>
+
+      <div className="mt-auto pt-2 border-t">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-7 w-7"
+          onClick={onOpenSettings}
+          title="Settings"
+        >
+          <Settings className="h-4 w-4" />
+          <span className="sr-only">Settings</span>
+        </Button>
+      </div>
 
       <AlertDialog open={confirmRemove !== null} onOpenChange={(open) => !open && setConfirmRemove(null)}>
         <AlertDialogContent>

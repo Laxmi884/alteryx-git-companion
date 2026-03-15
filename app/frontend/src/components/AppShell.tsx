@@ -6,6 +6,7 @@ import { GitIdentityCard } from '@/components/GitIdentityCard'
 import { ChangesPanel } from '@/components/ChangesPanel'
 import { HistoryPanel, type CommitEntry } from '@/components/HistoryPanel'
 import { DiffViewer } from '@/components/DiffViewer'
+import { SettingsPanel } from '@/components/SettingsPanel'
 
 interface AppShellProps {
   onAddFolder?: () => void
@@ -17,10 +18,12 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const { projects, activeProjectId } = useProjectStore()
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
+  const [activeView, setActiveView] = useState<'default' | 'settings'>('default')
+
   // Watch status state — fetched on project activation and after undo
   const [hasCommits, setHasCommits] = useState(false)
   const [changedFiles, setChangedFiles] = useState<string[]>([])
-  const [totalWorkflows, setTotalWorkflows] = useState(0)
+  const [, setTotalWorkflows] = useState(0)
   const [history, setHistory] = useState<CommitEntry[]>([])
   const [selectedDiff, setSelectedDiff] = useState<{ sha: string; file: string } | null>(null)
 
@@ -61,6 +64,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     setHasCommits(false)
     setHistory([])
     setSelectedDiff(null)
+    setActiveView('default')
     fetchWatchStatus()
     fetchHistory()
   }, [activeProjectId, fetchWatchStatus, fetchHistory])
@@ -74,13 +78,15 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     await fetchWatchStatus()
   }
 
-  async function handleUndo(undoHasAnyCommits: boolean) {
-    setHasCommits(undoHasAnyCommits)
+  async function handleUndo() {
     await fetchWatchStatus()
     await fetchHistory()
   }
 
   function renderMainContent() {
+    if (activeView === 'settings') {
+      return <SettingsPanel />
+    }
     if (showIdentityCard && onIdentitySaved) {
       return (
         <div className="flex h-full items-center justify-center">
@@ -136,7 +142,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   return (
     <div className="flex h-screen overflow-hidden">
       <aside className="w-[220px] flex-shrink-0 border-r bg-muted/40 flex flex-col p-2">
-        <Sidebar onAddFolder={onAddFolder} />
+        <Sidebar onAddFolder={onAddFolder} onOpenSettings={() => setActiveView('settings')} />
       </aside>
       <main className="flex-1 overflow-auto p-6">
         {renderMainContent()}
