@@ -356,24 +356,23 @@ export function HistoryPanel({
     const providers: Array<'github' | 'gitlab'> = []
     if (remoteStatus.github_connected) providers.push('github')
     if (remoteStatus.gitlab_connected) providers.push('gitlab')
-    try {
-      await Promise.all(
-        providers.map((provider) =>
-          fetch('/api/remote/push', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project_id: projectId, folder: projectPath, provider }),
-          }).then((res) => res.json()).then((data) => {
-            if (!data.success) throw new Error(data.error ?? 'push failed')
-          })
-        )
+    const results = await Promise.allSettled(
+      providers.map((provider) =>
+        fetch('/api/remote/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_id: projectId, folder: projectPath, provider }),
+        }).then((res) => res.json()).then((data) => {
+          if (!data.success) throw new Error(data.error ?? 'push failed')
+        })
       )
+    )
+    const anySucceeded = results.some((r) => r.status === 'fulfilled')
+    if (anySucceeded) {
       setPushState('idle')
-      // Re-fetch to update is_pushed flags and ahead count
       await fetchRemoteStatus()
-      // Signal parent to re-fetch history entries with updated is_pushed
       onPushComplete?.()
-    } catch {
+    } else {
       setPushState('error')
       setPushError('Backup failed. Check your connection and try again.')
       setTimeout(() => { setPushState('idle'); setPushError(null) }, 4000)
