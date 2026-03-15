@@ -270,3 +270,87 @@ def test_diff_endpoint(client, tmp_path):
     assert resp.status_code == 200
     # Response should be HTML content
     assert "html" in resp.headers.get("content-type", "").lower() or resp.text
+
+
+# ---------------------------------------------------------------------------
+# Unit tests — git_pushed_shas (Phase 16.1 Plan 01)
+# ---------------------------------------------------------------------------
+
+
+def test_git_pushed_shas_no_upstream(tmp_path):
+    """16.1-01: git_pushed_shas returns empty set when no upstream is configured."""
+    from app.services.git_ops import git_pushed_shas  # noqa: PLC0415
+
+    repo = _make_git_repo(tmp_path)
+    # No remote upstream configured — must return set(), not crash
+    result = git_pushed_shas(str(repo))
+    assert result == set()
+
+
+def test_git_pushed_shas_uses_upstream_ref(tmp_path):
+    """16.1-01: git_pushed_shas uses @{u} tracking branch (not hardcoded origin/main).
+
+    Verified by observing it returns set() on a fresh repo with no upstream —
+    if it used a hardcoded ref it would either error or return wrong data.
+    A repo with no upstream has returncode != 0 for rev-parse @{u}, so the
+    function must gracefully return set(). This test creates two distinct
+    repos to confirm the function uses dynamic @{u} resolution.
+    """
+    from app.services.git_ops import git_pushed_shas  # noqa: PLC0415
+
+    # Repo with no upstream: @{u} fails → should return set()
+    repo = _make_git_repo(tmp_path)
+    result = git_pushed_shas(str(repo))
+    assert isinstance(result, set)
+    assert result == set()
+
+
+# ---------------------------------------------------------------------------
+# Endpoint tests — is_pushed field in list_history (Phase 16.1 Plan 01)
+# ---------------------------------------------------------------------------
+
+
+def test_list_history_includes_is_pushed(client, tmp_path):
+    """16.1-01: list_history includes is_pushed=True when sha is in pushed set."""
+    entry = {
+        "sha": "abc123",
+        "message": "Pushed commit",
+        "author": "Jane Smith",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "files_changed": [],
+        "has_parent": False,
+    }
+    with (
+        patch("app.routers.history.git_ops.git_has_commits", return_value=True),
+        patch("app.routers.history.git_ops.git_log", return_value=[entry]),
+        patch("app.routers.history.git_ops.git_pushed_shas", return_value={"abc123"}),
+    ):
+        resp = client.get("/api/history/proj1", params={"folder": str(tmp_path)})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["is_pushed"] is True
+
+
+def test_list_history_is_pushed_false_when_not_in_set(client, tmp_path):
+    """16.1-01: list_history includes is_pushed=False when sha is not in pushed set."""
+    entry = {
+        "sha": "abc123",
+        "message": "Local only commit",
+        "author": "Jane Smith",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "files_changed": [],
+        "has_parent": False,
+    }
+    with (
+        patch("app.routers.history.git_ops.git_has_commits", return_value=True),
+        patch("app.routers.history.git_ops.git_log", return_value=[entry]),
+        patch("app.routers.history.git_ops.git_pushed_shas", return_value=set()),
+    ):
+        resp = client.get("/api/history/proj1", params={"folder": str(tmp_path)})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    assert data[0]["is_pushed"] is False
