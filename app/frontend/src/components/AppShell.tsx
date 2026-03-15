@@ -28,6 +28,8 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const [, setTotalWorkflows] = useState(0)
   const [history, setHistory] = useState<CommitEntry[]>([])
   const [selectedDiff, setSelectedDiff] = useState<{ sha: string; file: string } | null>(null)
+  const [mergeBaseSha, setMergeBaseSha] = useState<string | null>(null)
+  const [allBranchEntries, setAllBranchEntries] = useState<CommitEntry[]>([])
 
   const fetchWatchStatus = useCallback(async (): Promise<string[]> => {
     if (!activeProject) return []
@@ -59,6 +61,20 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
       const data: CommitEntry[] = await res.json()
       setHistory(data ?? [])
       setHasCommits((data ?? []).length > 0)
+      // For experiment branches: also fetch all-branch history for multi-branch GraphView
+      if (currentBranch?.startsWith('experiment/')) {
+        try {
+          const allRes = await fetch(
+            `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}`
+          )
+          if (allRes.ok) {
+            const allData: CommitEntry[] = await allRes.json()
+            setAllBranchEntries(allData ?? [])
+          }
+        } catch { /* ignore */ }
+      } else {
+        setAllBranchEntries([])
+      }
     } catch { /* ignore */ }
   }, [activeProject, activeBranch])
 
@@ -68,7 +84,25 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     if (!res.ok) return
     const branches: { name: string; is_current: boolean }[] = await res.json()
     const current = branches.find((b) => b.is_current)
-    if (current) setActiveBranch(activeProject.id, current.name)
+    if (current) {
+      setActiveBranch(activeProject.id, current.name)
+      // Fetch merge-base SHA for experiment branches (used by DiffViewer compare toggle)
+      if (current.name.startsWith('experiment/')) {
+        try {
+          const mbRes = await fetch(
+            `/api/branch/${activeProject.id}/merge-base?folder=${encodeURIComponent(activeProject.path)}&branch=${encodeURIComponent(current.name)}`
+          )
+          if (mbRes.ok) {
+            const mbData = await mbRes.json()
+            setMergeBaseSha(mbData.merge_base_sha ?? null)
+          }
+        } catch { /* ignore */ }
+      } else {
+        setMergeBaseSha(null)
+      }
+    } else {
+      setMergeBaseSha(null)
+    }
   }, [activeProject, setActiveBranch])
 
   // Fetch on project change
@@ -78,6 +112,8 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     setHistory([])
     setSelectedDiff(null)
     setActiveView('default')
+    setMergeBaseSha(null)
+    setAllBranchEntries([])
     fetchBranch()
     fetchWatchStatus()
     fetchHistory()
@@ -153,12 +189,16 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
               lastPushTimestamp={lastPushTimestamp}
               onNavigate={(view) => setActiveView(view)}
               onPushComplete={() => fetchHistory()}
+              activeBranch={activeBranch[activeProject.id]}
+              mergeBaseSha={mergeBaseSha}
+              allBranchEntries={allBranchEntries}
             />
           </div>
         </div>
       )
     }
     if (hasCommits && selectedDiff) {
+      const currentBranchName = activeBranch[activeProject.id] ?? null
       return (
         <DiffViewer
           sha={selectedDiff.sha}
@@ -166,6 +206,8 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           folder={activeProject.path}
           commitMessage={history.find(e => e.sha === selectedDiff.sha)?.message ?? ''}
           onBack={() => setSelectedDiff(null)}
+          isExperimentBranch={currentBranchName?.startsWith('experiment/') ?? false}
+          compareTo={mergeBaseSha}
         />
       )
     }
@@ -180,6 +222,9 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           lastPushTimestamp={lastPushTimestamp}
           onNavigate={(view) => setActiveView(view)}
           onPushComplete={() => fetchHistory()}
+          activeBranch={activeBranch[activeProject.id]}
+          mergeBaseSha={mergeBaseSha}
+          allBranchEntries={allBranchEntries}
         />
       )
     }
