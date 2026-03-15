@@ -397,6 +397,31 @@ def git_push(folder: str, remote_url: str, token: str) -> None:
             os.unlink(askpass_path)
 
 
+def git_pushed_shas(folder: str) -> set[str]:
+    """Return set of commit SHAs that exist at the tracked upstream.
+
+    Returns empty set when no upstream is configured or remote is unreachable.
+    Uses the tracked upstream ref from @{u} (same pattern as git_ahead_behind)
+    to handle repos using 'master' or any custom branch name correctly.
+    """
+    upstream_result = subprocess.run(
+        ["git", "-C", folder, "rev-parse", "--abbrev-ref", "@{u}"],
+        capture_output=True,
+        text=True,
+    )
+    if upstream_result.returncode != 0:
+        return set()
+    upstream = upstream_result.stdout.strip()
+    result = subprocess.run(
+        ["git", "-C", folder, "log", upstream, "--format=%H"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return set()
+    return {sha for sha in result.stdout.splitlines() if sha}
+
+
 def git_ahead_behind(folder: str) -> tuple[int, int]:
     """Return (ahead, behind) commit counts vs. upstream tracking branch.
 
