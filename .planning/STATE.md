@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-03-15T05:47:27.912Z"
+stopped_at: Completed 16-04-PLAN.md
+last_updated: "2026-03-15T05:52:27.716Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 6
   total_plans: 31
-  completed_plans: 29
+  completed_plans: 30
   percent: 0
 ---
 
@@ -80,6 +80,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16-remote-auth-and-push P01 | 5 | 1 tasks | 6 files |
 | Phase 16-remote-auth-and-push P02 | 15 | 2 tasks | 7 files |
 | Phase 16-remote-auth-and-push P03 | 4 | 2 tasks | 5 files |
+| Phase 16-remote-auth-and-push P04 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -161,6 +162,8 @@ Recent decisions affecting current work:
 - [Phase 16-remote-auth-and-push]: git_fetch uses GIT_ASKPASS temp-script pattern; non-zero returncode silently ignored for unreachable remote
 - [Phase 16-remote-auth-and-push]: POST /github/connect stores PAT without API validation — user trusted, consistent with device-flow path
 - [Phase 16-remote-auth-and-push]: config_store remote_repos stored as dict keyed by project_id then provider_url — not in keyring
+- [Phase 16-remote-auth-and-push]: shadcn Tabs moved from @/components/ui/ to src/components/ui/ (Phase 11 alias pattern)
+- [Phase 16-remote-auth-and-push]: GitHub PAT fallback calls POST /api/remote/github/connect (SERVICE_GITHUB keyring), separate from GitLab endpoint
 
 ### Pending Todos
 
@@ -174,6 +177,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T05:47:27.909Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-03-15T05:52:27.714Z
+Stopped at: Completed 16-04-PLAN.md
 Resume file: None
