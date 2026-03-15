@@ -171,11 +171,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Wave 0: RED test scaffold (test_branch.py) + branch.py stub router + server.py registration
-- [ ] 17-02-PLAN.md — Backend: git_ops branch functions + branch router implementation + history ?branch= param → GREEN
-- [ ] 17-03-PLAN.md — Frontend: shadcn Popover install + useProjectStore activeBranch + ChangesPanel branch chip + popover + AppShell wiring
-- [ ] 17-04-PLAN.md — Frontend: HistoryPanel branch-aware re-fetch + DiffViewer compare toggle + GraphView multi-branch SVG
-- [ ] 17-05-PLAN.md — Human verification checkpoint: all BRANCH requirements end-to-end
+- [x] 17-01-PLAN.md — Wave 0: RED test scaffold (test_branch.py) + branch.py stub router + server.py registration
+- [x] 17-02-PLAN.md — Backend: git_ops branch functions + branch router implementation + history ?branch= param → GREEN
+- [x] 17-03-PLAN.md — Frontend: shadcn Popover install + useProjectStore activeBranch + ChangesPanel branch chip + popover + AppShell wiring
+- [x] 17-04-PLAN.md — Frontend: HistoryPanel branch-aware re-fetch + DiffViewer compare toggle + GraphView multi-branch SVG
+- [x] 17-05-PLAN.md — Human verification checkpoint: all BRANCH requirements end-to-end
 
 ### Phase 18: CI Polish
 **Goal**: CI template files live in the alteryx_diff repo under ci-templates/, are polished and production-ready, and ship with a setup README so users copy them into their own workflow repos
@@ -183,10 +183,15 @@ Plans:
 **Requirements**: CI-01, CI-02, CI-03, CI-04
 **Success Criteria** (what must be TRUE):
   1. GitHub Actions workflow updates the existing PR comment on each push instead of posting a new comment — one comment per PR regardless of push count
-  2. GitHub Actions embeds the workflow graph diff as an inline PNG image in the PR comment body — no ZIP attachment or download link is required
+  2. GitHub Actions embeds a per-file interactive HTML report link in the PR comment — no single-ZIP bulk download link
   3. GitLab CI config no longer contains the placeholder test-job step
   4. ci-templates/README.md provides complete step-by-step setup instructions for both GitHub Actions and GitLab CI so a new user can configure it without reading source
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Wave 0: RED test scaffold (test_ci_github_comment.py) + GitLab CI cleanup — remove test-job (CI-03) (Wave 1)
+- [ ] 18-02-PLAN.md — Update GitHub helper (is_private_repo, per-file table, marker) + rewrite workflow Step 5 to find-or-update pattern → tests GREEN (CI-01, CI-02) (Wave 2)
+- [ ] 18-03-PLAN.md — Assemble ci-templates/ distributable package + write README for non-technical analysts (CI-04) (Wave 3)
 
 ## Progress
 
@@ -211,5 +216,5 @@ Plans:
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
 | 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
 | 16.1. Git History UX + Graph View | 4/4 | Complete    | 2026-03-15 | - |
-| 17. Branch Management | 4/5 | In Progress|  | - |
-| 18. CI Polish | v1.1 | 0/TBD | Not started | - |
+| 17. Branch Management | 5/5 | Complete    | 2026-03-15 | - |
+| 18. CI Polish | v1.1 | 0/3 | Not started | - |
