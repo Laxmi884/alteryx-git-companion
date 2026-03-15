@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import contextlib
+import os
 import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 
@@ -295,18 +299,79 @@ def git_push(folder: str, remote_url: str, token: str) -> None:
     """Push current branch to remote_url using GIT_ASKPASS credential injection.
 
     Keeps token out of .git/config and process command-line arguments.
-    Raises NotImplementedError until Plan 16-02 implements this.
+    Uses a temporary GIT_ASKPASS script so the token is never passed on the
+    command line or embedded in the remote URL.
     """
-    raise NotImplementedError
+    # Write a temporary askpass script that echoes the token.
+    # On Windows, write a .bat; on Unix, write a shell script.
+    fd, askpass_path = tempfile.mkstemp(
+        suffix=".bat" if sys.platform == "win32" else ".sh"
+    )
+    try:
+        if sys.platform == "win32":
+            script_content = f"@echo off\necho {token}\n"
+        else:
+            script_content = f"#!/bin/sh\necho '{token}'\n"
+
+        with os.fdopen(fd, "w") as f:
+            f.write(script_content)
+
+        # Make the script executable (no-op on Windows)
+        os.chmod(askpass_path, 0o700)
+
+        env = dict(os.environ)
+        env["GIT_ASKPASS"] = askpass_path
+        env["GIT_TERMINAL_PROMPT"] = "0"
+
+        subprocess.run(
+            ["git", "-C", folder, "push", remote_url],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    finally:
+        with contextlib.suppress(OSError):
+            os.unlink(askpass_path)
 
 
 def git_ahead_behind(folder: str) -> tuple[int, int]:
     """Return (ahead, behind) commit counts vs. upstream tracking branch.
 
     Returns (0, 0) if no upstream is set.
-    Raises NotImplementedError until Plan 16-02 implements this.
     """
-    raise NotImplementedError
+    # Get the name of the upstream tracking branch
+    upstream_result = subprocess.run(
+        ["git", "-C", folder, "rev-parse", "--abbrev-ref", "@{u}"],
+        capture_output=True,
+        text=True,
+    )
+    if upstream_result.returncode != 0:
+        return (0, 0)
+
+    upstream = upstream_result.stdout.strip()
+
+    # Count commits ahead (local has but upstream does not)
+    ahead_result = subprocess.run(
+        ["git", "-C", folder, "rev-list", "--count", f"{upstream}..HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    # Count commits behind (upstream has but local does not)
+    behind_result = subprocess.run(
+        ["git", "-C", folder, "rev-list", "--count", f"HEAD..{upstream}"],
+        capture_output=True,
+        text=True,
+    )
+
+    try:
+        ahead = int(ahead_result.stdout.strip()) if ahead_result.returncode == 0 else 0
+        behind = (
+            int(behind_result.stdout.strip()) if behind_result.returncode == 0 else 0
+        )
+    except ValueError:
+        ahead, behind = 0, 0
+
+    return (ahead, behind)
 
 
 def git_show_file(folder: str, sha: str, filepath: str) -> bytes:

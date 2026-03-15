@@ -521,13 +521,13 @@ def test_git_ahead_behind():
         if "--abbrev-ref" in args and "@{u}" in args:
             result.stdout = "origin/main\n"
             result.returncode = 0
-        elif "rev-list" in args and "HEAD" in args:
+        elif "rev-list" in args and any("HEAD" in a for a in args):
             joined = " ".join(args)
             if "HEAD..origin" in joined or "HEAD.." in joined:
-                # behind
+                # behind: HEAD..upstream (commits upstream has that HEAD lacks)
                 result.stdout = "1\n"
             else:
-                # ahead: origin/main..HEAD
+                # ahead: upstream..HEAD (commits HEAD has that upstream lacks)
                 result.stdout = "3\n"
         return result
 
