@@ -78,6 +78,25 @@ export function DiffViewer({
         // Insert shim immediately after <head> so it runs before any inline scripts
         html = html.replace(/<head>/i, '<head>' + localStorageShim)
 
+        // vis.js initialises the canvas inline before the iframe is laid out, so
+        // the canvas gets 0×0 dimensions. Inject a fix at the end of </body> that
+        // runs after load: network is a top-level var (= window property) so it's
+        // accessible here. setSize() resizes the canvas, redraw() renders it, fit()
+        // centres the graph.
+        const visRedrawFix = `<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (typeof network !== 'undefined') {
+      var c = document.getElementById('graph-container');
+      if (c) { network.setSize(c.clientWidth, c.clientHeight); }
+      network.redraw();
+      network.fit();
+    }
+  }, 50);
+});
+<\/script>`
+        html = html.replace(/<\/body>/i, visRedrawFix + '</body>')
+
         blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
         setIframeSrc(blobUrl)
         setLoading(false)
