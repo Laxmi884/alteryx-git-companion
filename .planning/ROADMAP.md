@@ -168,7 +168,14 @@ Plans:
   1. User can create an experiment copy with an auto-generated name in the format experiment/YYYY-MM-DD-description
   2. User can switch between experiment copies from within the app
   3. The current workspace (branch) is shown as a plain text label in the UI — no graph or DAG visualization is displayed
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Wave 0: RED test scaffold (test_branch.py) + branch.py stub router + server.py registration
+- [ ] 17-02-PLAN.md — Backend: git_ops branch functions + branch router implementation + history ?branch= param → GREEN
+- [ ] 17-03-PLAN.md — Frontend: shadcn Popover install + useProjectStore activeBranch + ChangesPanel branch chip + popover + AppShell wiring
+- [ ] 17-04-PLAN.md — Frontend: HistoryPanel branch-aware re-fetch + DiffViewer compare toggle + GraphView multi-branch SVG
+- [ ] 17-05-PLAN.md — Human verification checkpoint: all BRANCH requirements end-to-end
 
 ### Phase 18: CI Polish
 **Goal**: CI template files live in the alteryx_diff repo under ci-templates/, are polished and production-ready, and ship with a setup README so users copy them into their own workflow repos
