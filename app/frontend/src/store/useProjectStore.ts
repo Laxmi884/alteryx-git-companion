@@ -11,17 +11,20 @@ interface ProjectStore {
   projects: Project[]
   activeProjectId: string | null
   isLoading: boolean
+  activeBranch: Record<string, string>
   setProjects: (projects: Project[]) => void
   setActiveProject: (id: string) => void
   addProject: (project: Project) => void
   removeProject: (id: string) => void
   setChangedCount: (id: string, count: number) => void
+  setActiveBranch: (projectId: string, branch: string) => void
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
   projects: [],
   activeProjectId: null,
   isLoading: true,
+  activeBranch: {},
   setProjects: (projects) => set({ projects, isLoading: false }),
   setActiveProject: (id) => set({ activeProjectId: id }),
   addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
@@ -35,5 +38,9 @@ export const useProjectStore = create<ProjectStore>((set) => ({
       projects: state.projects.map((p) =>
         p.id === id ? { ...p, changedCount: count } : p
       ),
+    })),
+  setActiveBranch: (projectId, branch) =>
+    set((state) => ({
+      activeBranch: { ...state.activeBranch, [projectId]: branch },
     })),
 }))
