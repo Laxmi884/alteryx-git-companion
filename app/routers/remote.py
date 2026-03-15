@@ -166,6 +166,29 @@ def push(body: PushRequest) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# REMOTE-06b: Disconnect endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post("/github/disconnect")
+def disconnect_github() -> dict:
+    """Remove the stored GitHub token from the OS keyring."""
+    import keyring  # noqa: PLC0415
+
+    keyring.delete_password(remote_auth.SERVICE_GITHUB, remote_auth.USERNAME_KEY)
+    return {"disconnected": True}
+
+
+@router.post("/gitlab/disconnect")
+def disconnect_gitlab() -> dict:
+    """Remove the stored GitLab token from the OS keyring."""
+    import keyring  # noqa: PLC0415
+
+    keyring.delete_password(remote_auth.SERVICE_GITLAB, remote_auth.USERNAME_KEY)
+    return {"disconnected": True}
+
+
+# ---------------------------------------------------------------------------
 # REMOTE-06: Ahead/behind status endpoint
 # ---------------------------------------------------------------------------
 
