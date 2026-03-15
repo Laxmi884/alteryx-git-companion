@@ -20,6 +20,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
   const [activeView, setActiveView] = useState<'default' | 'settings' | 'remote'>('default')
+  const [lastPushTimestamp, setLastPushTimestamp] = useState(0)
 
   // Watch status state — fetched on project activation and after undo
   const [hasCommits, setHasCommits] = useState(false)
@@ -86,7 +87,10 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
 
   function renderMainContent() {
     if (activeView === 'remote') {
-      return <RemotePanel />
+      return <RemotePanel onPushComplete={() => {
+        setLastPushTimestamp(Date.now())
+        fetchHistory()
+      }} />
     }
     if (activeView === 'settings') {
       return <SettingsPanel />
@@ -137,6 +141,9 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           projectPath={activeProject.path}
           onSelectEntry={(entry, file) => setSelectedDiff({ sha: entry.sha, file })}
           onUndo={handleUndo}
+          lastPushTimestamp={lastPushTimestamp}
+          onNavigate={(view) => setActiveView(view)}
+          onPushComplete={() => fetchHistory()}
         />
       )
     }
