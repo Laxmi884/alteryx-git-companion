@@ -64,8 +64,9 @@ def get_diff(
 ) -> object:
     """Return a diff for the given sha and file.
 
-    Returns {"is_first_commit": true} when sha has no parent.
-    Returns an HTML response when sha has a parent commit.
+    Returns {"is_first_commit": true} when sha has no parent or when the file
+    did not exist in the parent commit (i.e. this is the first version of the file).
+    Returns an HTML response when a previous version of the file exists to compare.
     """
     parent_sha = compare_to if compare_to else f"{sha}~1"
     has_parent = (
@@ -80,6 +81,10 @@ def get_diff(
         return JSONResponse({"is_first_commit": True})
     try:
         old_bytes = git_ops.git_show_file(folder, parent_sha, file)
+    except FileNotFoundError:
+        # File didn't exist in the parent — this is the first version of this file
+        return JSONResponse({"is_first_commit": True})
+    try:
         new_bytes = git_ops.git_show_file(folder, sha, file)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
