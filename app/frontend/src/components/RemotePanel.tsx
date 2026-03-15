@@ -247,7 +247,23 @@ export function RemotePanel() {
             : `Push and Create Repo`}
         </Button>
         {pushState === 'error' && pushError === 'auth_expired' && (
-          <p className="text-xs text-red-500 mt-1">Authentication expired. Please reconnect.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-xs text-red-500">Authentication expired.</p>
+            <button
+              className="text-xs text-blue-500 underline underline-offset-2 hover:text-blue-600 transition-colors"
+              onClick={() => {
+                const setPushState = provider === 'github' ? setGithubPushState : setGitlabPushState
+                const setPushError = provider === 'github' ? setGithubPushError : setGitlabPushError
+                setPushState('idle')
+                setPushError(null)
+                setRemoteStatus((prev) => prev
+                  ? { ...prev, github_connected: provider === 'github' ? false : prev.github_connected, gitlab_connected: provider === 'gitlab' ? false : prev.gitlab_connected }
+                  : prev)
+              }}
+            >
+              Reconnect
+            </button>
+          </div>
         )}
         {pushState === 'error' && pushError === 'generic' && (
           <p className="text-xs text-red-500 mt-1">Push failed. Check your connection and try again.</p>
@@ -418,7 +434,10 @@ export function RemotePanel() {
           <Button size="sm" variant="outline" onClick={startGithubDeviceFlow}>
             Connect GitHub
           </Button>
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" onClick={() => {
+            const trigger = document.querySelector<HTMLElement>('[data-value="gitlab"]')
+            trigger?.click()
+          }}>
             Connect GitLab
           </Button>
         </div>

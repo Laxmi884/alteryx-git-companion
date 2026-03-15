@@ -16,6 +16,11 @@ dependencies = [
     "pyinstaller>=6.6",
     "pyinstaller-versionfile>=3.0",
     "platformdirs>=4.0",
+    "keyring>=24.0",
+    "httpx>=0.27",
+    "watchdog>=4.0",
+    "sse-starlette>=2.0",
+    "pillow>=10.0",
 ]
 
 [build-system]

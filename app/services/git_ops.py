@@ -358,12 +358,40 @@ def git_push(folder: str, remote_url: str, token: str) -> None:
         env["GIT_ASKPASS"] = askpass_path
         env["GIT_TERMINAL_PROMPT"] = "0"
 
+        # Set the remote URL (add or update origin)
         subprocess.run(
-            ["git", "-C", folder, "push", remote_url],
+            ["git", "-C", folder, "remote", "add", "origin", remote_url],
             capture_output=True,
             text=True,
             env=env,
         )
+        subprocess.run(
+            ["git", "-C", folder, "remote", "set-url", "origin", remote_url],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+
+        # Push current branch, setting upstream so ahead/behind works after
+        current_branch = (
+            subprocess.run(
+                ["git", "-C", folder, "rev-parse", "--abbrev-ref", "HEAD"],
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            or "main"
+        )
+
+        result = subprocess.run(
+            ["git", "-C", folder, "push", "--set-upstream", "origin", current_branch],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(
+                result.returncode, result.args, result.stdout, result.stderr
+            )
     finally:
         with contextlib.suppress(OSError):
             os.unlink(askpass_path)
