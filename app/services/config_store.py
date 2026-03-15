@@ -30,3 +30,28 @@ def save_config(cfg: dict) -> None:
     _config_path().write_text(
         json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+
+
+def get_remote_repo(project_id: str) -> dict:
+    """Return the remote repo info dict for project_id.
+
+    Returns {} if no entry exists.
+    Shape: {"github_url": "...", "gitlab_url": "..."} (only keys that are set).
+    """
+    cfg = load_config()
+    return cfg.get("remote_repos", {}).get(project_id, {})
+
+
+def set_remote_repo(project_id: str, provider: str, url: str) -> None:
+    """Store a remote repo URL for the given project and provider.
+
+    Persists under cfg["remote_repos"][project_id]["{provider}_url"].
+    Provider should be "github" or "gitlab".
+    """
+    cfg = load_config()
+    if "remote_repos" not in cfg:
+        cfg["remote_repos"] = {}
+    if project_id not in cfg["remote_repos"]:
+        cfg["remote_repos"][project_id] = {}
+    cfg["remote_repos"][project_id][f"{provider}_url"] = url
+    save_config(cfg)
