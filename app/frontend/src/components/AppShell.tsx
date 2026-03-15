@@ -16,7 +16,7 @@ interface AppShellProps {
 }
 
 export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySaved }: AppShellProps) {
-  const { projects, activeProjectId } = useProjectStore()
+  const { projects, activeProjectId, activeBranch, setActiveBranch } = useProjectStore()
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
   const [activeView, setActiveView] = useState<'default' | 'settings' | 'remote'>('default')
@@ -50,15 +50,26 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const fetchHistory = useCallback(async () => {
     if (!activeProject) return
     try {
+      const currentBranch = activeBranch[activeProject.id] ?? null
+      const branchParam = currentBranch ? `&branch=${encodeURIComponent(currentBranch)}` : ''
       const res = await fetch(
-        `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}`
+        `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}${branchParam}`
       )
       if (!res.ok) return
       const data: CommitEntry[] = await res.json()
       setHistory(data ?? [])
       setHasCommits((data ?? []).length > 0)
     } catch { /* ignore */ }
-  }, [activeProject])
+  }, [activeProject, activeBranch])
+
+  const fetchBranch = useCallback(async () => {
+    if (!activeProject) return
+    const res = await fetch(`/api/branch/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}`)
+    if (!res.ok) return
+    const branches: { name: string; is_current: boolean }[] = await res.json()
+    const current = branches.find((b) => b.is_current)
+    if (current) setActiveBranch(activeProject.id, current.name)
+  }, [activeProject, setActiveBranch])
 
   // Fetch on project change
   useEffect(() => {
@@ -67,9 +78,15 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
     setHistory([])
     setSelectedDiff(null)
     setActiveView('default')
+    fetchBranch()
     fetchWatchStatus()
     fetchHistory()
-  }, [activeProjectId, fetchWatchStatus, fetchHistory])
+  }, [activeProjectId, fetchBranch, fetchWatchStatus, fetchHistory])
+
+  async function handleBranchSwitch() {
+    await fetchBranch()
+    await fetchHistory()
+  }
 
   async function handleSaved() {
     await fetchWatchStatus()
@@ -119,6 +136,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           hasAnyCommits={hasCommits}
           onSaved={handleSaved}
           onDiscarded={handleDiscarded}
+          onBranchSwitch={handleBranchSwitch}
         />
       )
       if (!hasCommits) return changesPane
