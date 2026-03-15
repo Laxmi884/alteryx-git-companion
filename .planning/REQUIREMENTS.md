@@ -49,9 +49,9 @@
 
 ### BRANCH — Experiment Copies
 
-- [ ] **BRANCH-01**: User can create an experiment copy (branch) with auto-generated name (experiment/YYYY-MM-DD-description)
-- [ ] **BRANCH-02**: User can switch between experiment copies
-- [ ] **BRANCH-03**: Current workspace shown as a label in the UI (no DAG visualization)
+- [x] **BRANCH-01**: User can create an experiment copy (branch) with auto-generated name (experiment/YYYY-MM-DD-description)
+- [x] **BRANCH-02**: User can switch between experiment copies
+- [x] **BRANCH-03**: Current workspace shown as a label in the UI (no DAG visualization)
 
 ### CI — CI Integration Polish
 
@@ -119,9 +119,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REMOTE-04 | Phase 16 | Complete |
 | REMOTE-05 | Phase 16 | Complete |
 | REMOTE-06 | Phase 16 | Complete |
-| BRANCH-01 | Phase 17 | Pending |
-| BRANCH-02 | Phase 17 | Pending |
-| BRANCH-03 | Phase 17 | Pending |
+| BRANCH-01 | Phase 17 | Complete |
+| BRANCH-02 | Phase 17 | Complete |
+| BRANCH-03 | Phase 17 | Complete |
 | CI-01 | Phase 18 | Pending |
 | CI-02 | Phase 18 | Pending |
 | CI-03 | Phase 18 | Pending |
