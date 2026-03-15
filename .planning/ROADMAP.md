@@ -211,5 +211,5 @@ Plans:
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
 | 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
 | 16.1. Git History UX + Graph View | 4/4 | Complete    | 2026-03-15 | - |
-| 17. Branch Management | 3/5 | In Progress|  | - |
+| 17. Branch Management | 4/5 | In Progress|  | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
