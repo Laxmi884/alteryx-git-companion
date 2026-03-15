@@ -139,7 +139,14 @@ Plans:
   4. User can push saved versions to the connected remote with a single button click
   5. If no remote repository exists yet, the app creates it automatically on first push — user never has to visit GitHub/GitLab to create a repo manually
   6. The UI shows an ahead/behind indicator (e.g. "↑ 3 ahead · ↓ 1 behind") so users know which saved versions exist only locally and which exist only on the remote
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Wave 0 test scaffold: tests/test_remote.py (all RED) + stub files for remote_auth, github_api, gitlab_api, remote router (Wave 1)
+- [ ] 16-02-PLAN.md — Backend auth services: remote_auth.py (device flow + keyring), github_api.py, gitlab_api.py → REMOTE-01/02/03 tests GREEN (Wave 2)
+- [ ] 16-03-PLAN.md — Backend push: git_push/git_fetch/git_ahead_behind in git_ops.py + remote router + server.py + app.spec keyring hiddenimports → REMOTE-04/05/06 tests GREEN (Wave 2, parallel)
+- [ ] 16-04-PLAN.md — Frontend: RemotePanel.tsx (tabs, device flow UI, GitLab PAT form, ahead/behind, push button) + AppShell/Sidebar wiring (Wave 3)
+- [ ] 16-05-PLAN.md — Human verification checkpoint: full OAuth flow, credential persistence, push, auto-create repo, ahead/behind (Wave 4)
 
 ### Phase 17: Branch Management
 **Goal**: Users can create experiment copies of their project, switch between them, and always see which copy they are working on
@@ -183,6 +190,6 @@ Plans:
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
-| 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
+| 16. Remote Auth and Push | v1.1 | 0/5 | Not started | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
