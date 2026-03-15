@@ -150,13 +150,15 @@ Plans:
 
 ### Phase 16.1: Git history UX with push integration and git graph view (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Enhance HistoryPanel with per-entry cloud backup status icons, a push-from-history button, and a toggleable SVG git graph view — all without leaving the history panel
 **Depends on:** Phase 16
-**Plans:** 5/5 plans complete
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 16.1 to break down)
+- [ ] 16.1-01-PLAN.md — Backend: git_pushed_shas + extend history endpoint with is_pushed field + tests GREEN (Wave 1)
+- [ ] 16.1-02-PLAN.md — Frontend: cloud icons on EntryRow, push button in header, cross-panel push signal (AppShell + RemotePanel) (Wave 2)
+- [ ] 16.1-03-PLAN.md — Frontend: SVG GraphView component + list/graph toggle + localStorage persistence (Wave 3)
+- [ ] 16.1-04-PLAN.md — Human verification checkpoint: all 6 feature tests end-to-end (Wave 4)
 
 ### Phase 17: Branch Management
 **Goal**: Users can create experiment copies of their project, switch between them, and always see which copy they are working on
@@ -181,7 +183,7 @@ Plans:
 
 ## Progress
 
-**Execution Order:** 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 (Phase 18 independent)
+**Execution Order:** 10 → 11 → 12 → 13 → 14 → 15 → 16 → 16.1 → 17 → 18 (Phase 18 independent)
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -201,5 +203,6 @@ Plans:
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
 | 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
 | 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
+| 16.1. Git History UX + Graph View | v1.1 | 0/4 | In planning | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
