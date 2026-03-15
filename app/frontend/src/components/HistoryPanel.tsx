@@ -225,6 +225,7 @@ function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: Gr
           )}
           {entries.map((entry, i) => {
             const cy = NODE_R + i * NODE_SPACING
+            const isPushedNode = remoteConnected && entry.is_pushed
             return (
               <g
                 key={entry.sha}
@@ -239,13 +240,32 @@ function GraphView({ entries, onSelectEntry, remoteConnected, remoteStatus }: Gr
                   }
                 }}
               >
-                <circle
-                  cx={SVG_COL_WIDTH / 2}
-                  cy={cy}
-                  r={NODE_R}
-                  fill="hsl(var(--muted-foreground))"
-                  className="group-hover:opacity-80 transition-opacity"
-                />
+                {isPushedNode ? (
+                  <>
+                    {/* Blue ring for pushed commits */}
+                    <circle
+                      cx={SVG_COL_WIDTH / 2}
+                      cy={cy}
+                      r={NODE_R}
+                      fill="#3b82f6"
+                      className="group-hover:opacity-80 transition-opacity"
+                    />
+                    <circle
+                      cx={SVG_COL_WIDTH / 2}
+                      cy={cy}
+                      r={NODE_R - 3.5}
+                      fill="white"
+                    />
+                  </>
+                ) : (
+                  <circle
+                    cx={SVG_COL_WIDTH / 2}
+                    cy={cy}
+                    r={NODE_R}
+                    fill="hsl(var(--muted-foreground))"
+                    className="group-hover:opacity-80 transition-opacity"
+                  />
+                )}
               </g>
             )
           })}
