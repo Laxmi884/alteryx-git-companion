@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 18-ci-polish 18-01-PLAN.md
-last_updated: "2026-03-15T22:01:50.131Z"
+stopped_at: Completed 18-ci-polish 18-02-PLAN.md
+last_updated: "2026-03-15T22:05:28.750Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 9
   total_plans: 43
-  completed_plans: 41
+  completed_plans: 42
   percent: 0
 ---
 
@@ -91,6 +91,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 17-branch-management P03 | 3 | 2 tasks | 6 files |
 | Phase 17-branch-management P04 | 5 | 2 tasks | 3 files |
 | Phase 18-ci-polish P01 | 2 | 2 tasks | 2 files |
+| Phase 18-ci-polish P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -193,6 +194,10 @@ Recent decisions affecting current work:
 - [Phase 18-ci-polish]: Marker constant defined as module-level MARKER var in test file — single source of truth for expected first-line value
 - [Phase 18-ci-polish]: Tests use sys.path.insert to import non-package helper from alteryx repo — no install required
 - [Phase 18-ci-polish]: Task 2 committed in /alteryx repo (separate git repo) — correct git context for .gitlab-ci.yml change
+- [Phase 18-ci-polish]: Python owns the marker: both comment builders prepend <!-- acd-diff-report -->; JS reads file as-is to prevent double-marker
+- [Phase 18-ci-polish]: run_url promoted to explicit param on build_comment() — enables unit testing without env vars
+- [Phase 18-ci-polish]: is_private_repo() defaults to True conservatively on missing env or any exception
+- [Phase 18-ci-polish]: per_page:100 in listComments — avoids first-page miss on busy PRs (GitHub default is 30)
 
 ### Roadmap Evolution
 
@@ -210,6 +215,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T22:01:50.129Z
-Stopped at: Completed 18-ci-polish 18-01-PLAN.md
+Last session: 2026-03-15T22:05:28.748Z
+Stopped at: Completed 18-ci-polish 18-02-PLAN.md
 Resume file: None
