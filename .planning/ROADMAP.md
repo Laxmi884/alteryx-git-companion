@@ -119,7 +119,14 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. App starts automatically when Windows boots and runs silently without opening a browser or blocking the user
   2. System tray icon reflects current app state — watching (active), changes detected (badge), idle — and opens the browser UI when clicked
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Wave 0: test scaffold (test_autostart.py, test_settings.py, test_tray.py, test_main.py — all RED)
+- [ ] 15-02-PLAN.md — Backend: autostart.py service + main.py (--background, second-instance, tray thread) + app.spec console=False (Wave 1)
+- [ ] 15-03-PLAN.md — Backend: tray.py + settings router + server.py registration + placeholder icon assets (Wave 1, parallel)
+- [ ] 15-04-PLAN.md — Frontend: SettingsPanel.tsx + Sidebar gear icon + AppShell settings view branch (Wave 2)
+- [ ] 15-05-PLAN.md — Human verification checkpoint: tray icon states, settings toggle, Registry key (Wave 3)
 
 ### Phase 16: Remote Auth and Push
 **Goal**: Users can authenticate with GitHub or GitLab, back up saved versions to a remote with a single button, auto-create the remote repo if needed, and see at a glance how far ahead or behind they are from the remote
@@ -175,7 +182,7 @@ Plans:
 | 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
 | 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
 | 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
-| 15. System Tray and Auto-start | v1.1 | 0/TBD | Not started | - |
+| 15. System Tray and Auto-start | v1.1 | 0/5 | Not started | - |
 | 16. Remote Auth and Push | v1.1 | 0/TBD | Not started | - |
 | 17. Branch Management | v1.1 | 0/TBD | Not started | - |
 | 18. CI Polish | v1.1 | 0/TBD | Not started | - |
