@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-03-15T02:08:01.575Z"
+stopped_at: Completed 15-04-PLAN.md
+last_updated: "2026-03-15T02:13:02.809Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 26
-  completed_plans: 24
+  completed_plans: 25
   percent: 0
 ---
 
@@ -74,6 +74,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 15-system-tray-and-auto-start P01 | 4 | 2 tasks | 4 files |
 | Phase 15-system-tray-and-auto-start P02 | 4 | 2 tasks | 4 files |
 | Phase 15-system-tray-and-auto-start P03 | 6 | 2 tasks | 5 files |
+| Phase 15-system-tray-and-auto-start P04 | 8 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,10 @@ Recent decisions affecting current work:
 - [Phase 15-02]: PIL removed from app.spec excludes — pystray requires Pillow; console=True flipped to console=False for background-mode deployment
 - [Phase 15-system-tray-and-auto-start]: pystray import guarded by try/except at module level -- PYSTRAY_AVAILABLE flag controls run() path; CI/macOS tests never need pystray
 - [Phase 15-system-tray-and-auto-start]: settings.router registered in server.py after history.router; module-level autostart import enables unittest.mock.patch targeting
+- [Phase 15-04]: shadcn CLI resolves @/ alias literally — switch.tsx and label.tsx moved from @/components/ui/ to src/components/ui/ per vite alias (same pattern as Phase 11/13)
+- [Phase 15-04]: activeView state ('default' | 'settings') in AppShell — simplest routing for single settings branch without router library
+- [Phase 15-04]: SettingsPanel is self-fetching (no props) — fetches /api/settings on mount, isolated concern
+- [Phase 15-04]: handleUndo signature aligned to () => void matching HistoryPanel.onUndo contract — fetchHistory re-derives hasCommits state
 
 ### Pending Todos
 
@@ -154,6 +159,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T02:08:01.573Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-03-15T02:13:02.807Z
+Stopped at: Completed 15-04-PLAN.md
 Resume file: None
