@@ -20,7 +20,7 @@ interface GitHubFlow {
 type PushState = 'idle' | 'pushing' | 'done' | 'error'
 type PushErrorKind = 'generic' | 'auth_expired' | null
 
-export function RemotePanel() {
+export function RemotePanel({ onPushComplete }: { onPushComplete?: () => void } = {}) {
   const { projects, activeProjectId } = useProjectStore()
   const activeProject = projects.find((p) => p.id === activeProjectId)
 
@@ -188,6 +188,7 @@ export function RemotePanel() {
         setPushState('done')
         await fetchStatus()
         setTimeout(() => setPushState('idle'), 3000)
+        onPushComplete?.()
       } else {
         const errorMsg: string = data.error ?? ''
         if (errorMsg.toLowerCase().includes('auth') || errorMsg.toLowerCase().includes('401')) {
