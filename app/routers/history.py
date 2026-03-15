@@ -52,15 +52,21 @@ def _run_diff(old_bytes: bytes, new_bytes: bytes, filename: str) -> str:
 
 
 @router.get("/{project_id}")
-def list_history(project_id: str, folder: str = Query(...)) -> list[dict]:
+def list_history(
+    project_id: str,
+    folder: str = Query(...),
+    branch: str | None = Query(None),
+) -> list[dict]:
     """Return commit history for the project folder.
 
     Returns a list of commit entries with sha, message, author, timestamp,
     files_changed, has_parent, and is_pushed fields.
+
+    Optional ?branch=<name> filters history to that branch.
     """
     if not git_ops.git_has_commits(folder):
         return []
-    entries = git_ops.git_log(folder)
+    entries = git_ops.git_log(folder, branch=branch)
     pushed = git_ops.git_pushed_shas(folder)
     for entry in entries:
         entry["is_pushed"] = entry["sha"] in pushed
