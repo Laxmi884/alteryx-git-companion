@@ -129,6 +129,10 @@ None - all configuration is in committed files. GitHub Actions workflow runs aut
 - Phase 15 (system tray) will update app.spec with console=False and add crash logging before the tray background mode is activated
 - assets/icon.ico placeholder should be replaced with a real icon before v1 public release
 
+## Self-Check: PASSED
+
+All key files present (app.spec, version_info.yml, assets/icon.ico, .github/workflows/release.yml, 10-03-SUMMARY.md) and both task commits verified (e534880, d1cfce8).
+
 ---
 *Phase: 10-app-scaffold*
 *Completed: 2026-03-13*

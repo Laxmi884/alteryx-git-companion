@@ -36,6 +36,8 @@ def commit_version(body: CommitBody) -> dict:
     """Stage selected files and create a git commit. Clears the change badge via SSE."""
     if not body.files:
         raise HTTPException(status_code=400, detail="files list must not be empty")
+    if not git_ops.is_git_repo(body.folder):
+        git_ops.git_init(body.folder)
     try:
         git_ops.git_commit_files(body.folder, body.files, body.message)
     except subprocess.CalledProcessError as exc:
