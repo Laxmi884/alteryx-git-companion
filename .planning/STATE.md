@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-15T18:07:20.269Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-15T18:11:20.111Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 40
-  completed_plans: 36
+  completed_plans: 37
   percent: 0
 ---
 
@@ -87,6 +87,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16.1 P03 | 2 | 1 tasks | 1 files |
 | Phase 16.1-git-history-ux-with-push-integration-and-git-graph-view P04 | 5 | 2 tasks | 0 files |
 | Phase 17-branch-management P01 | 147 | 2 tasks | 3 files |
+| Phase 17-branch-management P02 | 177 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,8 @@ Recent decisions affecting current work:
 - [Phase 16.1]: Plan 04 is verification-only — all Phase 16.1 implementation confirmed working end-to-end by human verification; 203 backend tests passed
 - [Phase 17-branch-management]: branch.router registered after remote.router; branch name inputs in body/query params not path segments (experiment/ contains /)
 - [Phase 17-01]: Module-level subprocess import in branch.py enables mock.patch for merge-base tests
+- [Phase 17-02]: None-guard in checkout/delete router endpoints: mock.return_value=None in tests but router expects dict — normalize to {success: True} when git_ops returns None
+- [Phase 17-02]: git_log branch param appended as final positional arg to git log command — filters log to ancestry of named branch ref
 
 ### Roadmap Evolution
 
@@ -196,6 +199,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:07:20.267Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-03-15T18:11:20.109Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
