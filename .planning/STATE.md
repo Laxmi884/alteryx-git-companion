@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alteryx Git Companion
 status: planning
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-15T18:11:20.111Z"
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-03-15T18:16:52.874Z"
 last_activity: 2026-03-13 — Roadmap created for v1.1 (9 phases, 28 requirements mapped)
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 40
-  completed_plans: 37
+  completed_plans: 38
   percent: 0
 ---
 
@@ -88,6 +88,7 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 | Phase 16.1-git-history-ux-with-push-integration-and-git-graph-view P04 | 5 | 2 tasks | 0 files |
 | Phase 17-branch-management P01 | 147 | 2 tasks | 3 files |
 | Phase 17-branch-management P02 | 177 | 2 tasks | 3 files |
+| Phase 17-branch-management P03 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -182,6 +183,8 @@ Recent decisions affecting current work:
 - [Phase 17-01]: Module-level subprocess import in branch.py enables mock.patch for merge-base tests
 - [Phase 17-02]: None-guard in checkout/delete router endpoints: mock.return_value=None in tests but router expects dict — normalize to {success: True} when git_ops returns None
 - [Phase 17-02]: git_log branch param appended as final positional arg to git log command — filters log to ancestry of named branch ref
+- [Phase 17-branch-management]: lastBranchSwitchTimestamp removed — AppShell.handleBranchSwitch calls fetchHistory() directly; no behavioral loss, eliminates TS unused-variable error
+- [Phase 17-branch-management]: shadcn Popover moved from @/components/ui/ to src/components/ui/ per established Phase 11 alias pattern
 
 ### Roadmap Evolution
 
@@ -199,6 +202,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:11:20.109Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-03-15T18:16:52.872Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
