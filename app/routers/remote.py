@@ -166,6 +166,33 @@ def push(body: PushRequest) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Pull endpoint
+# ---------------------------------------------------------------------------
+
+
+@router.post("/pull")
+def pull(body: PushRequest) -> dict:
+    """Pull latest changes from remote for the current branch (--ff-only)."""
+    if body.provider == "github":
+        token = remote_auth.get_github_token()
+    else:
+        token = remote_auth.get_gitlab_token()
+
+    if not token:
+        return {"success": False, "error": "Not connected"}
+
+    repo_info = config_store.get_remote_repo(body.project_id)
+    repo_url = repo_info.get(f"{body.provider}_url")
+    if not repo_url:
+        return {"success": False, "error": "No remote configured"}
+
+    try:
+        return git_ops.git_pull(body.folder, repo_url, token)
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
 # REMOTE-06b: Disconnect endpoints
 # ---------------------------------------------------------------------------
 

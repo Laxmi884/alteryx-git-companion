@@ -333,6 +333,48 @@ def git_fetch(folder: str, remote_url: str, token: str) -> None:
             os.unlink(askpass_path)
 
 
+def git_pull(folder: str, remote_url: str, token: str) -> dict:
+    """Pull latest changes from remote using GIT_ASKPASS credential injection.
+
+    Returns ``{"success": True, "already_up_to_date": bool}``
+    or ``{"success": False, "error": str}``.
+
+    """
+    fd, askpass_path = tempfile.mkstemp(
+        suffix=".bat" if sys.platform == "win32" else ".sh"
+    )
+    try:
+        script_content = (
+            f"@echo off\necho {token}\n"
+            if sys.platform == "win32"
+            else f"#!/bin/sh\necho '{token}'\n"
+        )
+        with os.fdopen(fd, "w") as f:
+            f.write(script_content)
+        os.chmod(askpass_path, 0o700)
+
+        env = dict(os.environ)
+        env["GIT_ASKPASS"] = askpass_path
+        env["GIT_TERMINAL_PROMPT"] = "0"
+
+        result = subprocess.run(
+            ["git", "-C", folder, "pull", "--ff-only"],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        if result.returncode != 0:
+            return {
+                "success": False,
+                "error": result.stderr.strip() or result.stdout.strip(),
+            }
+        already_up_to_date = "Already up to date" in result.stdout
+        return {"success": True, "already_up_to_date": already_up_to_date}
+    finally:
+        with contextlib.suppress(OSError):
+            os.unlink(askpass_path)
+
+
 def git_push(folder: str, remote_url: str, token: str) -> None:
     """Push current branch to remote_url using GIT_ASKPASS credential injection.
 

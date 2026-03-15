@@ -30,6 +30,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
   const [selectedDiff, setSelectedDiff] = useState<{ sha: string; file: string } | null>(null)
   const [mergeBaseSha, setMergeBaseSha] = useState<string | null>(null)
   const [allBranchEntries, setAllBranchEntries] = useState<CommitEntry[]>([])
+  const [isProjectLoading, setIsProjectLoading] = useState(false)
 
   const fetchWatchStatus = useCallback(async (): Promise<string[]> => {
     if (!activeProject) return []
@@ -51,6 +52,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
 
   const fetchHistory = useCallback(async () => {
     if (!activeProject) return
+    setAllBranchEntries([])
     try {
       const currentBranch = activeBranch[activeProject.id] ?? null
       const branchParam = currentBranch ? `&branch=${encodeURIComponent(currentBranch)}` : ''
@@ -61,16 +63,20 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
       const data: CommitEntry[] = await res.json()
       setHistory(data ?? [])
       setHasCommits((data ?? []).length > 0)
-      // For experiment branches: also fetch all-branch history for multi-branch GraphView
+      // For experiment branches: fetch main branch history for multi-branch GraphView
       if (currentBranch?.startsWith('experiment/')) {
         try {
-          const allRes = await fetch(
-            `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}`
-          )
-          if (allRes.ok) {
-            const allData: CommitEntry[] = await allRes.json()
-            setAllBranchEntries(allData ?? [])
+          let mainData: CommitEntry[] = []
+          for (const base of ['main', 'master']) {
+            const allRes = await fetch(
+              `/api/history/${activeProject.id}?folder=${encodeURIComponent(activeProject.path)}&branch=${base}`
+            )
+            if (allRes.ok) {
+              const d: CommitEntry[] = await allRes.json()
+              if (d.length > 0) { mainData = d; break }
+            }
           }
+          setAllBranchEntries(mainData)
         } catch { /* ignore */ }
       } else {
         setAllBranchEntries([])
@@ -107,21 +113,32 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
 
   // Fetch on project change
   useEffect(() => {
-    setChangedFiles([])
-    setHasCommits(false)
-    setHistory([])
     setSelectedDiff(null)
     setActiveView('default')
-    setMergeBaseSha(null)
-    setAllBranchEntries([])
-    fetchBranch()
-    fetchWatchStatus()
+    if (!activeProjectId) {
+      setChangedFiles([])
+      setHasCommits(false)
+      setHistory([])
+      setMergeBaseSha(null)
+      setAllBranchEntries([])
+      return
+    }
+    setIsProjectLoading(true)
+    Promise.all([fetchBranch(), fetchWatchStatus(), fetchHistory()]).finally(() => {
+      setIsProjectLoading(false)
+    })
+  }, [activeProjectId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch history whenever the active branch changes for the current project
+  const currentActiveBranch = activeBranch[activeProjectId ?? '']
+  useEffect(() => {
+    if (!activeProjectId || isProjectLoading) return
     fetchHistory()
-  }, [activeProjectId, fetchBranch, fetchWatchStatus, fetchHistory])
+  }, [currentActiveBranch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleBranchSwitch() {
     await fetchBranch()
-    await fetchHistory()
+    // fetchHistory is triggered automatically by the currentActiveBranch effect above
   }
 
   async function handleSaved() {
@@ -162,6 +179,9 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
         </div>
       )
     }
+    if (isProjectLoading) {
+      return <div className="flex h-full" />
+    }
     // State machine: changedFiles > 0 → ChangesPanel (+ HistoryPanel below if commits exist); hasCommits + selectedDiff → DiffViewer; hasCommits → HistoryPanel; else → EmptyState
     if (changedFiles.length > 0) {
       const changesPane = (
@@ -189,6 +209,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
               lastPushTimestamp={lastPushTimestamp}
               onNavigate={(view) => setActiveView(view)}
               onPushComplete={() => fetchHistory()}
+              onBranchSwitch={handleBranchSwitch}
               activeBranch={activeBranch[activeProject.id]}
               mergeBaseSha={mergeBaseSha}
               allBranchEntries={allBranchEntries}
@@ -222,6 +243,7 @@ export default function AppShell({ onAddFolder, showIdentityCard, onIdentitySave
           lastPushTimestamp={lastPushTimestamp}
           onNavigate={(view) => setActiveView(view)}
           onPushComplete={() => fetchHistory()}
+          onBranchSwitch={handleBranchSwitch}
           activeBranch={activeBranch[activeProject.id]}
           mergeBaseSha={mergeBaseSha}
           allBranchEntries={allBranchEntries}
