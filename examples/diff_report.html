@@ -6,869 +6,684 @@
 <title>Alteryx Workflow Diff Report</title>
 <style>
 :root {
-  --bg: #fff;
-  --text: #212529;
-  --text-muted: #666;
-  --border: #dee2e6;
-  --row-bg: #f8f9fa;
-  --row-hover: #e9ecef;
-  --detail-bg: #fff;
-  --field-label: #555;
-  --before-bg: #fff5f5;
-  --after-bg: #f5fff5;
-  --btn-bg: #fff;
-  --btn-text: #475569;
-  --btn-border: #cbd5e1;
-  --btn-hover-bg: #f1f5f9;
-  --btn-hover-border: #94a3b8;
-  --section-border: #eee;
-  --empty-color: #888;
-  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
-  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
-  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
-  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+  --bg: #0f172a; --surface: #1e293b; --surface-2: #131f31;
+  --border: #1e3a5f; --border-subtle: #334155;
+  --text: #e2e8f0; --text-muted: #64748b;
+  --accent-added: #57ef92; --accent-added-bg: #052e16; --accent-added-border: #166534;
+  --accent-removed: #f87171; --accent-removed-bg: #2d1515; --accent-removed-border: #7f1d1d;
+  --accent-modified: #fbbf24; --accent-modified-bg: #1c1506; --accent-modified-border: #78350f;
+  --accent-conn: #60a5fa; --accent-conn-bg: #0c1a3a; --accent-conn-border: #1e3a5f;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f172a;
-    --text: #e2e8f0;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --row-bg: #1e293b;
-    --row-hover: #273449;
-    --detail-bg: #131f31;
-    --field-label: #94a3b8;
-    --before-bg: #2d1518;
-    --after-bg: #132318;
-    --btn-bg: #1e293b;
-    --btn-text: #94a3b8;
-    --btn-border: #475569;
-    --btn-hover-bg: #273449;
-    --btn-hover-border: #64748b;
-    --section-border: #334155;
-    --empty-color: #64748b;
-    --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
-    --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
-    --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
-    --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
-  }
+html.light {
+  --bg: #ffffff; --surface: #f8f9fb; --surface-2: #f1f5f9;
+  --border: #e2e8f0; --border-subtle: #f1f5f9;
+  --text: #0f172a; --text-muted: #64748b;
+  --accent-added: #16a34a; --accent-added-bg: #f0fdf4; --accent-added-border: #bbf7d0;
+  --accent-removed: #dc2626; --accent-removed-bg: #fef2f2; --accent-removed-border: #fecaca;
+  --accent-modified: #d97706; --accent-modified-bg: #fffbeb; --accent-modified-border: #fde68a;
+  --accent-conn: #2563eb; --accent-conn-bg: #eff6ff; --accent-conn-border: #bfdbfe;
 }
-[data-theme=dark] {
-  --bg: #0f172a;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --row-bg: #1e293b;
-  --row-hover: #273449;
-  --detail-bg: #131f31;
-  --field-label: #94a3b8;
-  --before-bg: #2d1518;
-  --after-bg: #132318;
-  --btn-bg: #1e293b;
-  --btn-text: #94a3b8;
-  --btn-border: #475569;
-  --btn-hover-bg: #273449;
-  --btn-hover-border: #64748b;
-  --section-border: #334155;
-  --empty-color: #64748b;
-  --badge-added-bg: #052e16; --badge-added-text: #86efac; --badge-added-border: #166534;
-  --badge-removed-bg: #2d1515; --badge-removed-text: #fca5a5; --badge-removed-border: #7f1d1d;
-  --badge-modified-bg: #1c1506; --badge-modified-text: #fcd34d; --badge-modified-border: #78350f;
-  --badge-conn-bg: #0c1a3a; --badge-conn-text: #93c5fd; --badge-conn-border: #1e3a5f;
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px; line-height: 1.5;
 }
-[data-theme=light] {
-  --bg: #fff;
-  --text: #212529;
-  --text-muted: #666;
-  --border: #dee2e6;
-  --row-bg: #f8f9fa;
-  --row-hover: #e9ecef;
-  --detail-bg: #fff;
-  --field-label: #555;
-  --before-bg: #fff5f5;
-  --after-bg: #f5fff5;
-  --btn-bg: #fff;
-  --btn-text: #475569;
-  --btn-border: #cbd5e1;
-  --btn-hover-bg: #f1f5f9;
-  --btn-hover-border: #94a3b8;
-  --section-border: #eee;
-  --empty-color: #888;
-  --badge-added-bg: #d4edda; --badge-added-text: #155724; --badge-added-border: #c3e6cb;
-  --badge-removed-bg: #f8d7da; --badge-removed-text: #721c24; --badge-removed-border: #f5c6cb;
-  --badge-modified-bg: #fff3cd; --badge-modified-text: #856404; --badge-modified-border: #ffeeba;
-  --badge-conn-bg: #cce5ff; --badge-conn-text: #004085; --badge-conn-border: #b8daff;
+.container { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+/* ---- Header ---- */
+.site-header {
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 16px 0; margin-bottom: 24px;
 }
-body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-.container { max-width: 960px; margin: 0 auto; }
-.badge { display: inline-block; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 1.1em; text-decoration: none; cursor: pointer; margin: 4px; }
-.badge-added { background: var(--badge-added-bg); color: var(--badge-added-text); border: 1px solid var(--badge-added-border); }
-.badge-removed { background: var(--badge-removed-bg); color: var(--badge-removed-text); border: 1px solid var(--badge-removed-border); }
-.badge-modified { background: var(--badge-modified-bg); color: var(--badge-modified-text); border: 1px solid var(--badge-modified-border); }
-.badge-connections { background: var(--badge-conn-bg); color: var(--badge-conn-text); border: 1px solid var(--badge-conn-border); }
-h2 { font-size: 1.1em; font-weight: 600; margin: 24px 0 8px; border-bottom: 2px solid var(--section-border); padding-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-.tool-row { display: flex; align-items: center; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; margin: 4px 0; cursor: pointer; background: var(--row-bg); user-select: none; }
-.tool-row:hover { background: var(--row-hover); }
-.chevron { display: inline-block; transition: transform 0.15s; margin-right: 8px; font-style: normal; }
+.header-inner {
+  max-width: 960px; margin: 0 auto; padding: 0 32px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.header-left { display: flex; flex-direction: column; gap: 4px; }
+.header-title-row { display: flex; align-items: center; gap: 8px; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #57ef92; animation: pulse 2s ease-in-out infinite; flex-shrink: 0;
+}
+.header-title { font-size: 18px; font-weight: 600; color: var(--text); margin: 0; }
+.header-meta { font-size: 12px; color: var(--text-muted); margin: 0; }
+.theme-toggle {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 9999px;
+  padding: 6px 14px; cursor: pointer; color: var(--text-muted);
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-family: inherit; transition: background 0.15s ease;
+}
+.theme-toggle:hover { background: var(--surface-2); }
+/* ---- Summary stat cards ---- */
+.stat-cards { display: flex; gap: 12px; margin-bottom: 24px; }
+.stat-card {
+  flex: 1; border-radius: 8px; padding: 16px; cursor: pointer;
+  border: 1px solid; transition: opacity 0.15s ease; text-decoration: none;
+}
+.stat-card:hover { opacity: 0.85; }
+.stat-card-added { background: var(--accent-added-bg); border-color: var(--accent-added-border); }
+.stat-card-removed { background: var(--accent-removed-bg); border-color: var(--accent-removed-border); }
+.stat-card-modified { background: var(--accent-modified-bg); border-color: var(--accent-modified-border); }
+.stat-card-conn { background: var(--accent-conn-bg); border-color: var(--accent-conn-border); }
+.stat-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.stat-card-added .stat-label { color: var(--accent-added); opacity: 0.8; }
+.stat-card-removed .stat-label { color: var(--accent-removed); opacity: 0.8; }
+.stat-card-modified .stat-label { color: var(--accent-modified); opacity: 0.8; }
+.stat-card-conn .stat-label { color: var(--accent-conn); opacity: 0.8; }
+.stat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.stat-card-added .stat-dot { background: var(--accent-added); }
+.stat-card-removed .stat-dot { background: var(--accent-removed); }
+.stat-card-modified .stat-dot { background: var(--accent-modified); }
+.stat-card-conn .stat-dot { background: var(--accent-conn); }
+.stat-count { font-size: 32px; font-weight: 700; line-height: 1; }
+.stat-card-added .stat-count { color: var(--accent-added); }
+.stat-card-removed .stat-count { color: var(--accent-removed); }
+.stat-card-modified .stat-count { color: var(--accent-modified); }
+.stat-card-conn .stat-count { color: var(--accent-conn); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+/* ---- Section headers ---- */
+.section-wrap { margin-bottom: 24px; }
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 0 10px 12px; margin-bottom: 8px;
+}
+.section-header-added { border-left: 3px solid var(--accent-added); }
+.section-header-removed { border-left: 3px solid var(--accent-removed); }
+.section-header-modified { border-left: 3px solid var(--accent-modified); }
+.section-header-conn { border-left: 3px solid var(--accent-conn); }
+.section-title { font-size: 14px; font-weight: 600; color: var(--text); margin: 0; }
+.count-pill {
+  border-radius: 9999px; padding: 2px 10px; font-size: 12px; border: 1px solid;
+}
+.count-pill-added { background: var(--accent-added-bg); border-color: var(--accent-added-border); color: var(--accent-added); }
+.count-pill-removed { background: var(--accent-removed-bg); border-color: var(--accent-removed-border); color: var(--accent-removed); }
+.count-pill-modified { background: var(--accent-modified-bg); border-color: var(--accent-modified-border); color: var(--accent-modified); }
+.count-pill-conn { background: var(--accent-conn-bg); border-color: var(--accent-conn-border); color: var(--accent-conn); }
+.section-actions { margin-left: auto; display: flex; gap: 6px; }
+.ctrl-btn {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+  border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  font-family: inherit; transition: background 0.15s ease;
+}
+.ctrl-btn:hover { background: var(--surface-2); }
+/* ---- Tool rows ---- */
+.tool-row {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  margin: 8px 0; padding: 10px 14px; cursor: pointer;
+  display: flex; align-items: center; user-select: none;
+  transition: background 0.15s ease;
+}
+.tool-row:hover { background: #273449; }
+html.light .tool-row:hover { background: #f1f5f9; }
+.chevron {
+  display: inline-block; transition: transform 0.15s ease;
+  margin-right: 8px; font-style: normal; flex-shrink: 0;
+}
 .tool-row.expanded .chevron { transform: rotate(90deg); }
-.tool-detail { padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 4px 4px; background: var(--detail-bg); }
+.tool-type-name { color: var(--text); }
+.tool-id-pill {
+  background: var(--surface-2); border-radius: 4px; padding: 2px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; margin-left: 8px; color: var(--text-muted);
+}
+.tool-row-right { margin-left: auto; }
+.change-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px; border: 1px solid;
+}
+.change-badge-added { background: var(--accent-added-bg); border-color: var(--accent-added-border); color: var(--accent-added); }
+.change-badge-removed { background: var(--accent-removed-bg); border-color: var(--accent-removed-border); color: var(--accent-removed); }
+.change-badge-modified { background: var(--accent-modified-bg); border-color: var(--accent-modified-border); color: var(--accent-modified); }
+.change-badge-conn { background: var(--accent-conn-bg); border-color: var(--accent-conn-border); color: var(--accent-conn); }
+/* ---- Expanded detail panel ---- */
+.tool-detail {
+  background: var(--surface-2); border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 8px 8px; padding: 12px 16px 12px 40px;
+}
 .field-row { margin: 6px 0; }
-.field-name { font-weight: 600; font-size: 0.85em; color: var(--field-label); margin-bottom: 2px; }
-.before-row { background: var(--before-bg); border-left: 3px solid #dc3545; padding: 4px 8px; margin: 2px 0; }
-.after-row { background: var(--after-bg); border-left: 3px solid #28a745; padding: 4px 8px; margin: 2px 0; }
-.before-label { font-weight: 600; color: #dc3545; }
-.after-label { font-weight: 600; color: #28a745; }
-.value-block { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all; font-size: 0.9em; }
-.ctrl-btn { font-size: 0.8em; padding: 4px 10px; cursor: pointer; border: 1px solid var(--btn-border); border-radius: 6px; background: var(--btn-bg); color: var(--btn-text); font-weight: 500; transition: background 0.15s, border-color 0.15s; }
-.ctrl-btn:hover { background: var(--btn-hover-bg); border-color: var(--btn-hover-border); }
-.empty { color: var(--empty-color); font-style: italic; }
-header { border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 12px; }
-header h1 { font-size: 1.5em; margin: 0 0 4px; }
-header p { margin: 2px 0; color: var(--text-muted); font-size: 0.9em; }
-.theme-toggle { display:flex; width:64px; height:32px; padding:4px; border-radius:9999px; cursor:pointer; box-sizing:border-box; transition:background 0.3s,border-color 0.3s; margin-top:8px; outline:none; }
-.theme-toggle:focus-visible { box-shadow:0 0 0 2px var(--btn-border); }
-.toggle-inner { display:flex; justify-content:space-between; align-items:center; width:100%; }
-.toggle-thumb,.toggle-passive { display:flex; justify-content:center; align-items:center; width:24px; height:24px; border-radius:9999px; transition:transform 0.3s,background 0.3s; flex-shrink:0; }
-.theme-toggle[data-mode=dark] { background:#09090b; border:1px solid #27272a; }
-.theme-toggle[data-mode=dark] .toggle-thumb { transform:translateX(0); background:#3f3f46; color:#fff; }
-.theme-toggle[data-mode=dark] .toggle-passive { background:transparent; color:#6b7280; transform:translateX(0); }
-.theme-toggle[data-mode=light] { background:#fff; border:1px solid #e4e4e7; }
-.theme-toggle[data-mode=light] .toggle-thumb { transform:translateX(32px); background:#e5e7eb; color:#374151; }
-.theme-toggle[data-mode=light] .toggle-passive { transform:translateX(-32px); background:transparent; color:#000; }
-.moon-icon,.sun-icon { display:none; }
-.theme-toggle[data-mode=dark] .toggle-thumb .moon-icon { display:block; }
-.theme-toggle[data-mode=dark] .toggle-thumb .sun-icon { display:none; }
-.theme-toggle[data-mode=dark] .toggle-passive .sun-icon { display:block; }
-.theme-toggle[data-mode=dark] .toggle-passive .moon-icon { display:none; }
-.theme-toggle[data-mode=light] .toggle-thumb .sun-icon { display:block; }
-.theme-toggle[data-mode=light] .toggle-thumb .moon-icon { display:none; }
-.theme-toggle[data-mode=light] .toggle-passive .moon-icon { display:block; }
-.theme-toggle[data-mode=light] .toggle-passive .sun-icon { display:none; }
-@media print { .ctrl-btn { display: none; } .tool-detail { display: block !important; } }
+.field-name {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted); margin-bottom: 4px; font-weight: 600;
+}
+.before-row {
+  border-left: 3px solid var(--accent-removed); background: var(--accent-removed-bg);
+  padding: 6px 10px; margin: 4px 0;
+}
+.after-row {
+  border-left: 3px solid var(--accent-added); background: var(--accent-added-bg);
+  padding: 6px 10px; margin: 4px 0;
+}
+.before-label { font-weight: 600; color: var(--accent-removed); }
+.after-label { font-weight: 600; color: var(--accent-added); }
+.value-block {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap; word-break: break-all; font-size: 13px; color: var(--text);
+}
+.empty { color: var(--text-muted); font-style: italic; }
+/* ---- Governance footer ---- */
+#governance {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 12px; margin-top: 32px;
+}
+#governance summary {
+  font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none;
+}
+.gov-content {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--text-muted); line-height: 1.8; padding: 8px 0;
+}
+/* ---- Print ---- */
+@media print {
+  .ctrl-btn, .theme-toggle { display: none; }
+  .tool-detail { display: block !important; }
+  details[id="governance"] { display: block; }
+  details[id="governance"] > * { display: block; }
+}
 </style>
 </head>
 <body>
-<div class="container">
-<header>
-  <h1>Alteryx Workflow Diff Report</h1>
-  <p>Generated: 2026-03-10T15:44:50.664197+00:00</p>
-  <p>/Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/RISK_Creation of TU Cohorts.yxwz vs /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/RISK_Creation of TU Cohorts_03MAR26.yxmd</p>
-  <div id="theme-toggle" class="theme-toggle" data-mode="light" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Toggle dark/light mode">
-    <div class="toggle-inner">
-      <div class="toggle-thumb">
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-title-row">
+        <span class="pulse-dot"></span>
+        <h1 class="header-title">Alteryx Workflow Diff Report</h1>
       </div>
-      <div class="toggle-passive">
-        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="7.05" y2="7.05"/><line x1="16.95" y1="16.95" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="7.05" y2="16.95"/><line x1="16.95" y1="7.05" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </div>
+      <p class="header-meta">/Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/workflow_v1.yxmd &#x2192; /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/workflow_v2.yxmd &middot; Generated: 2026-03-28T00:13:00.556674+00:00</p>
     </div>
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span id="theme-label">Dark</span>
+    </button>
   </div>
 </header>
+<div class="container">
 <section id="summary">
-  <a href="#added" onclick="expandSection('added'); return true;" class="badge badge-added">Added: 9</a>
-  <a href="#removed" onclick="expandSection('removed'); return true;" class="badge badge-removed">Removed: 8</a>
-  <a href="#modified" onclick="expandSection('modified'); return true;" class="badge badge-modified">Modified: 15</a>
-  <a href="#connections" onclick="expandSection('connections'); return true;" class="badge badge-connections">Connections: 47</a>
+  <div class="stat-cards">
+    <a href="#heading-added" onclick="expandSection('added'); return true;" class="stat-card stat-card-added">
+      <div class="stat-card-top">
+        <span class="stat-label">Added</span>
+        <span class="stat-dot"></span>
+      </div>
+      <div class="stat-count">1</div>
+      <span class="sr-only">Added: 1</span>
+    </a>
+    <a href="#heading-removed" onclick="expandSection('removed'); return true;" class="stat-card stat-card-removed">
+      <div class="stat-card-top">
+        <span class="stat-label">Removed</span>
+        <span class="stat-dot"></span>
+      </div>
+      <div class="stat-count">0</div>
+      <span class="sr-only">Removed: 0</span>
+    </a>
+    <a href="#heading-modified" onclick="expandSection('modified'); return true;" class="stat-card stat-card-modified">
+      <div class="stat-card-top">
+        <span class="stat-label">Modified</span>
+        <span class="stat-dot"></span>
+      </div>
+      <div class="stat-count">4</div>
+      <span class="sr-only">Modified: 4</span>
+    </a>
+    <a href="#heading-connections" onclick="expandSection('connections'); return true;" class="stat-card stat-card-conn">
+      <div class="stat-card-top">
+        <span class="stat-label">Connections</span>
+        <span class="stat-dot"></span>
+      </div>
+      <div class="stat-count">3</div>
+      <span class="sr-only">Connections: 3</span>
+    </a>
+  </div>
 </section>
-<section>
-  <h2 id="added">
-    Added Tools
-    <button class="ctrl-btn" onclick="expandAll('added')">Expand All</button>
-    <button class="ctrl-btn" onclick="collapseAll('added')">Collapse All</button>
-  </h2>
-
-  <div class="tool-row" id="row-added-108"
-       onclick="toggleTool(108, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 108)
+<div class="section-wrap">
+  <div class="section-header section-header-added" id="heading-added">
+    <span class="section-title">Added Tools</span>
+    <span class="count-pill count-pill-added">1</span>
+    <div class="section-actions">
+      <button class="ctrl-btn" onclick="expandAll('section-added')">Expand All</button>
+      <button class="ctrl-btn" onclick="collapseAll('section-added')">Collapse All</button>
+    </div>
   </div>
-  <div class="tool-detail" id="detail-added-108" hidden></div>
-
-  <div class="tool-row" id="row-added-109"
-       onclick="toggleTool(109, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 109)
-  </div>
-  <div class="tool-detail" id="detail-added-109" hidden></div>
-
-  <div class="tool-row" id="row-added-110"
-       onclick="toggleTool(110, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 110)
-  </div>
-  <div class="tool-detail" id="detail-added-110" hidden></div>
-
-  <div class="tool-row" id="row-added-31"
-       onclick="toggleTool(31, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Union.Union (ID: 31)
-  </div>
-  <div class="tool-detail" id="detail-added-31" hidden></div>
-
-  <div class="tool-row" id="row-added-128"
-       onclick="toggleTool(128, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Union.Union (ID: 128)
-  </div>
-  <div class="tool-detail" id="detail-added-128" hidden></div>
+  <div id="section-added">
 
   <div class="tool-row" id="row-added-6"
        onclick="toggleTool(6, 'added')">
     <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 6)
+    <span class="tool-type-name">AlteryxBasePluginsGui.Formula.Formula</span>
+    <span class="tool-id-pill">ID: 6</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-added">added</span></span>
   </div>
   <div class="tool-detail" id="detail-added-6" hidden></div>
 
-  <div class="tool-row" id="row-added-7"
-       onclick="toggleTool(7, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 7)
   </div>
-  <div class="tool-detail" id="detail-added-7" hidden></div>
-
-  <div class="tool-row" id="row-added-8"
-       onclick="toggleTool(8, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 8)
+</div>
+<div class="section-wrap">
+  <div class="section-header section-header-removed" id="heading-removed">
+    <span class="section-title">Removed Tools</span>
+    <span class="count-pill count-pill-removed">0</span>
+    <div class="section-actions">
+      <button class="ctrl-btn" onclick="expandAll('section-removed')">Expand All</button>
+      <button class="ctrl-btn" onclick="collapseAll('section-removed')">Collapse All</button>
+    </div>
   </div>
-  <div class="tool-detail" id="detail-added-8" hidden></div>
+  <div id="section-removed">
 
-  <div class="tool-row" id="row-added-10"
-       onclick="toggleTool(10, 'added')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Join.Join (ID: 10)
+  <p class="empty">No removed tools.</p>
+
   </div>
-  <div class="tool-detail" id="detail-added-10" hidden></div>
-
-</section>
-<section>
-  <h2 id="removed">
-    Removed Tools
-    <button class="ctrl-btn" onclick="expandAll('removed')">Expand All</button>
-    <button class="ctrl-btn" onclick="collapseAll('removed')">Collapse All</button>
-  </h2>
-
-  <div class="tool-row" id="row-removed-192"
-       onclick="toggleTool(192, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Message.Message (ID: 192)
+</div>
+<div class="section-wrap">
+  <div class="section-header section-header-modified" id="heading-modified">
+    <span class="section-title">Modified Tools</span>
+    <span class="count-pill count-pill-modified">4</span>
+    <div class="section-actions">
+      <button class="ctrl-btn" onclick="expandAll('section-modified')">Expand All</button>
+      <button class="ctrl-btn" onclick="collapseAll('section-modified')">Collapse All</button>
+    </div>
   </div>
-  <div class="tool-detail" id="detail-removed-192" hidden></div>
+  <div id="section-modified">
 
-  <div class="tool-row" id="row-removed-188"
-       onclick="toggleTool(188, 'removed')">
+  <div class="tool-row" id="row-modified-1"
+       onclick="toggleTool(1, 'modified')">
     <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Message.Message (ID: 188)
+    <span class="tool-type-name">AlteryxBasePluginsGui.DbFileInput.DbFileInput</span>
+    <span class="tool-id-pill">ID: 1</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-modified">1 fields</span></span>
   </div>
-  <div class="tool-detail" id="detail-removed-188" hidden></div>
-
-  <div class="tool-row" id="row-removed-187"
-       onclick="toggleTool(187, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Test.Test (ID: 187)
-  </div>
-  <div class="tool-detail" id="detail-removed-187" hidden></div>
-
-  <div class="tool-row" id="row-removed-170"
-       onclick="toggleTool(170, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Test.Test (ID: 170)
-  </div>
-  <div class="tool-detail" id="detail-removed-170" hidden></div>
-
-  <div class="tool-row" id="row-removed-191"
-       onclick="toggleTool(191, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxSpatialPluginsGui.Summarize.Summarize (ID: 191)
-  </div>
-  <div class="tool-detail" id="detail-removed-191" hidden></div>
-
-  <div class="tool-row" id="row-removed-189"
-       onclick="toggleTool(189, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxSpatialPluginsGui.Summarize.Summarize (ID: 189)
-  </div>
-  <div class="tool-detail" id="detail-removed-189" hidden></div>
-
-  <div class="tool-row" id="row-removed-186"
-       onclick="toggleTool(186, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 186)
-  </div>
-  <div class="tool-detail" id="detail-removed-186" hidden></div>
-
-  <div class="tool-row" id="row-removed-185"
-       onclick="toggleTool(185, 'removed')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Join.Join (ID: 185)
-  </div>
-  <div class="tool-detail" id="detail-removed-185" hidden></div>
-
-</section>
-<section>
-  <h2 id="modified">
-    Modified Tools
-    <button class="ctrl-btn" onclick="expandAll('modified')">Expand All</button>
-    <button class="ctrl-btn" onclick="collapseAll('modified')">Collapse All</button>
-  </h2>
-
-  <div class="tool-row" id="row-modified-131"
-       onclick="toggleTool(131, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.DbFileOutput.DbFileOutput (ID: 131)
-  </div>
-  <div class="tool-detail" id="detail-modified-131" hidden></div>
-
-  <div class="tool-row" id="row-modified-40"
-       onclick="toggleTool(40, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Formula.Formula (ID: 40)
-  </div>
-  <div class="tool-detail" id="detail-modified-40" hidden></div>
-
-  <div class="tool-row" id="row-modified-52"
-       onclick="toggleTool(52, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Formula.Formula (ID: 52)
-  </div>
-  <div class="tool-detail" id="detail-modified-52" hidden></div>
-
-  <div class="tool-row" id="row-modified-73"
-       onclick="toggleTool(73, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 73)
-  </div>
-  <div class="tool-detail" id="detail-modified-73" hidden></div>
-
-  <div class="tool-row" id="row-modified-101"
-       onclick="toggleTool(101, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 101)
-  </div>
-  <div class="tool-detail" id="detail-modified-101" hidden></div>
-
-  <div class="tool-row" id="row-modified-104"
-       onclick="toggleTool(104, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Filter.Filter (ID: 104)
-  </div>
-  <div class="tool-detail" id="detail-modified-104" hidden></div>
-
-  <div class="tool-row" id="row-modified-132"
-       onclick="toggleTool(132, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 132)
-  </div>
-  <div class="tool-detail" id="detail-modified-132" hidden></div>
-
-  <div class="tool-row" id="row-modified-138"
-       onclick="toggleTool(138, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.Formula.Formula (ID: 138)
-  </div>
-  <div class="tool-detail" id="detail-modified-138" hidden></div>
-
-  <div class="tool-row" id="row-modified-137"
-       onclick="toggleTool(137, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 137)
-  </div>
-  <div class="tool-detail" id="detail-modified-137" hidden></div>
+  <div class="tool-detail" id="detail-modified-1" hidden></div>
 
   <div class="tool-row" id="row-modified-2"
        onclick="toggleTool(2, 'modified')">
     <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.DbFileInput.DbFileInput (ID: 2)
+    <span class="tool-type-name">AlteryxBasePluginsGui.Filter.Filter</span>
+    <span class="tool-id-pill">ID: 2</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-modified">1 fields</span></span>
   </div>
   <div class="tool-detail" id="detail-modified-2" hidden></div>
 
-  <div class="tool-row" id="row-modified-3"
-       onclick="toggleTool(3, 'modified')">
+  <div class="tool-row" id="row-modified-4"
+       onclick="toggleTool(4, 'modified')">
     <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.DbFileInput.DbFileInput (ID: 3)
+    <span class="tool-type-name">AlteryxBasePluginsGui.Summarize.Summarize</span>
+    <span class="tool-id-pill">ID: 4</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-modified">1 fields</span></span>
   </div>
-  <div class="tool-detail" id="detail-modified-3" hidden></div>
+  <div class="tool-detail" id="detail-modified-4" hidden></div>
 
-  <div class="tool-row" id="row-modified-100"
-       onclick="toggleTool(100, 'modified')">
+  <div class="tool-row" id="row-modified-5"
+       onclick="toggleTool(5, 'modified')">
     <span class="chevron">&#9654;</span>
-    AlteryxSpatialPluginsGui.Summarize.Summarize (ID: 100)
+    <span class="tool-type-name">AlteryxBasePluginsGui.DbFileOutput.DbFileOutput</span>
+    <span class="tool-id-pill">ID: 5</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-modified">1 fields</span></span>
   </div>
-  <div class="tool-detail" id="detail-modified-100" hidden></div>
+  <div class="tool-detail" id="detail-modified-5" hidden></div>
 
-  <div class="tool-row" id="row-modified-103"
-       onclick="toggleTool(103, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxSpatialPluginsGui.Summarize.Summarize (ID: 103)
   </div>
-  <div class="tool-detail" id="detail-modified-103" hidden></div>
-
-  <div class="tool-row" id="row-modified-106"
-       onclick="toggleTool(106, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxSpatialPluginsGui.Summarize.Summarize (ID: 106)
+</div>
+<div class="section-wrap">
+  <div class="section-header section-header-conn" id="heading-connections">
+    <span class="section-title">Connection Changes</span>
+    <span class="count-pill count-pill-conn">3</span>
+    <div class="section-actions">
+      <button class="ctrl-btn" onclick="expandAll('section-connections')">Expand All</button>
+      <button class="ctrl-btn" onclick="collapseAll('section-connections')">Collapse All</button>
+    </div>
   </div>
-  <div class="tool-detail" id="detail-modified-106" hidden></div>
-
-  <div class="tool-row" id="row-modified-193"
-       onclick="toggleTool(193, 'modified')">
-    <span class="chevron">&#9654;</span>
-    AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect (ID: 193)
-  </div>
-  <div class="tool-detail" id="detail-modified-193" hidden></div>
-
-</section>
-<section>
-  <h2 id="connections">
-    Connection Changes
-    <button class="ctrl-btn" onclick="expandAll('connections')">Expand All</button>
-    <button class="ctrl-btn" onclick="collapseAll('connections')">Collapse All</button>
-  </h2>
+  <div id="section-connections">
 
   <div class="tool-row" id="row-connections-1"
        onclick="toggleTool(1, 'connections')">
     <span class="chevron">&#9654;</span>
-    1:Output to 11:Left
+    <span class="tool-type-name">4:Output to 5:Input</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-conn">removed</span></span>
   </div>
   <div class="tool-detail" id="detail-connections-1" hidden></div>
 
   <div class="tool-row" id="row-connections-2"
        onclick="toggleTool(2, 'connections')">
     <span class="chevron">&#9654;</span>
-    2:Output to 11:Right
+    <span class="tool-type-name">4:Output to 6:Input</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-conn">added</span></span>
   </div>
   <div class="tool-detail" id="detail-connections-2" hidden></div>
 
   <div class="tool-row" id="row-connections-3"
        onclick="toggleTool(3, 'connections')">
     <span class="chevron">&#9654;</span>
-    3:Output to 40:Input
+    <span class="tool-type-name">6:Output to 5:Input</span>
+    <span class="tool-row-right"><span class="change-badge change-badge-conn">added</span></span>
   </div>
   <div class="tool-detail" id="detail-connections-3" hidden></div>
 
-  <div class="tool-row" id="row-connections-4"
-       onclick="toggleTool(4, 'connections')">
-    <span class="chevron">&#9654;</span>
-    11:Join to 129:Input
   </div>
-  <div class="tool-detail" id="detail-connections-4" hidden></div>
-
-  <div class="tool-row" id="row-connections-5"
-       onclick="toggleTool(5, 'connections')">
-    <span class="chevron">&#9654;</span>
-    11:Left to 170:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-5" hidden></div>
-
-  <div class="tool-row" id="row-connections-6"
-       onclick="toggleTool(6, 'connections')">
-    <span class="chevron">&#9654;</span>
-    40:Output to 185:Right
-  </div>
-  <div class="tool-detail" id="detail-connections-6" hidden></div>
-
-  <div class="tool-row" id="row-connections-7"
-       onclick="toggleTool(7, 'connections')">
-    <span class="chevron">&#9654;</span>
-    52:Output to 186:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-7" hidden></div>
-
-  <div class="tool-row" id="row-connections-8"
-       onclick="toggleTool(8, 'connections')">
-    <span class="chevron">&#9654;</span>
-    73:False to 132:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-8" hidden></div>
-
-  <div class="tool-row" id="row-connections-9"
-       onclick="toggleTool(9, 'connections')">
-    <span class="chevron">&#9654;</span>
-    73:True to 191:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-9" hidden></div>
-
-  <div class="tool-row" id="row-connections-10"
-       onclick="toggleTool(10, 'connections')">
-    <span class="chevron">&#9654;</span>
-    100:Output to 187:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-10" hidden></div>
-
-  <div class="tool-row" id="row-connections-11"
-       onclick="toggleTool(11, 'connections')">
-    <span class="chevron">&#9654;</span>
-    103:Output to 187:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-11" hidden></div>
-
-  <div class="tool-row" id="row-connections-12"
-       onclick="toggleTool(12, 'connections')">
-    <span class="chevron">&#9654;</span>
-    106:Output to 187:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-12" hidden></div>
-
-  <div class="tool-row" id="row-connections-13"
-       onclick="toggleTool(13, 'connections')">
-    <span class="chevron">&#9654;</span>
-    129:True to 185:Left
-  </div>
-  <div class="tool-detail" id="detail-connections-13" hidden></div>
-
-  <div class="tool-row" id="row-connections-14"
-       onclick="toggleTool(14, 'connections')">
-    <span class="chevron">&#9654;</span>
-    130:Output to 138:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-14" hidden></div>
-
-  <div class="tool-row" id="row-connections-15"
-       onclick="toggleTool(15, 'connections')">
-    <span class="chevron">&#9654;</span>
-    138:Output to 137:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-15" hidden></div>
-
-  <div class="tool-row" id="row-connections-16"
-       onclick="toggleTool(16, 'connections')">
-    <span class="chevron">&#9654;</span>
-    175:Question to 176:Question
-  </div>
-  <div class="tool-detail" id="detail-connections-16" hidden></div>
-
-  <div class="tool-row" id="row-connections-17"
-       onclick="toggleTool(17, 'connections')">
-    <span class="chevron">&#9654;</span>
-    175:Question to 177:Question
-  </div>
-  <div class="tool-detail" id="detail-connections-17" hidden></div>
-
-  <div class="tool-row" id="row-connections-18"
-       onclick="toggleTool(18, 'connections')">
-    <span class="chevron">&#9654;</span>
-    176:Action to 1:Action
-  </div>
-  <div class="tool-detail" id="detail-connections-18" hidden></div>
-
-  <div class="tool-row" id="row-connections-19"
-       onclick="toggleTool(19, 'connections')">
-    <span class="chevron">&#9654;</span>
-    177:Action to 2:Action
-  </div>
-  <div class="tool-detail" id="detail-connections-19" hidden></div>
-
-  <div class="tool-row" id="row-connections-20"
-       onclick="toggleTool(20, 'connections')">
-    <span class="chevron">&#9654;</span>
-    185:Join to 52:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-20" hidden></div>
-
-  <div class="tool-row" id="row-connections-21"
-       onclick="toggleTool(21, 'connections')">
-    <span class="chevron">&#9654;</span>
-    185:Left to 189:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-21" hidden></div>
-
-  <div class="tool-row" id="row-connections-22"
-       onclick="toggleTool(22, 'connections')">
-    <span class="chevron">&#9654;</span>
-    186:True to 73:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-22" hidden></div>
-
-  <div class="tool-row" id="row-connections-23"
-       onclick="toggleTool(23, 'connections')">
-    <span class="chevron">&#9654;</span>
-    189:Output to 188:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-23" hidden></div>
-
-  <div class="tool-row" id="row-connections-24"
-       onclick="toggleTool(24, 'connections')">
-    <span class="chevron">&#9654;</span>
-    191:Output to 193:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-24" hidden></div>
-
-  <div class="tool-row" id="row-connections-25"
-       onclick="toggleTool(25, 'connections')">
-    <span class="chevron">&#9654;</span>
-    193:Output to 192:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-25" hidden></div>
-
-  <div class="tool-row" id="row-connections-26"
-       onclick="toggleTool(26, 'connections')">
-    <span class="chevron">&#9654;</span>
-    1:Output to 6:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-26" hidden></div>
-
-  <div class="tool-row" id="row-connections-27"
-       onclick="toggleTool(27, 'connections')">
-    <span class="chevron">&#9654;</span>
-    2:Output to 7:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-27" hidden></div>
-
-  <div class="tool-row" id="row-connections-28"
-       onclick="toggleTool(28, 'connections')">
-    <span class="chevron">&#9654;</span>
-    3:Output to 8:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-28" hidden></div>
-
-  <div class="tool-row" id="row-connections-29"
-       onclick="toggleTool(29, 'connections')">
-    <span class="chevron">&#9654;</span>
-    6:Output to 11:Left
-  </div>
-  <div class="tool-detail" id="detail-connections-29" hidden></div>
-
-  <div class="tool-row" id="row-connections-30"
-       onclick="toggleTool(30, 'connections')">
-    <span class="chevron">&#9654;</span>
-    7:Output to 10:Left
-  </div>
-  <div class="tool-detail" id="detail-connections-30" hidden></div>
-
-  <div class="tool-row" id="row-connections-31"
-       onclick="toggleTool(31, 'connections')">
-    <span class="chevron">&#9654;</span>
-    8:Output to 40:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-31" hidden></div>
-
-  <div class="tool-row" id="row-connections-32"
-       onclick="toggleTool(32, 'connections')">
-    <span class="chevron">&#9654;</span>
-    10:Join to 31:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-32" hidden></div>
-
-  <div class="tool-row" id="row-connections-33"
-       onclick="toggleTool(33, 'connections')">
-    <span class="chevron">&#9654;</span>
-    10:Left to 31:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-33" hidden></div>
-
-  <div class="tool-row" id="row-connections-34"
-       onclick="toggleTool(34, 'connections')">
-    <span class="chevron">&#9654;</span>
-    11:Join to 128:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-34" hidden></div>
-
-  <div class="tool-row" id="row-connections-35"
-       onclick="toggleTool(35, 'connections')">
-    <span class="chevron">&#9654;</span>
-    11:Left to 128:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-35" hidden></div>
-
-  <div class="tool-row" id="row-connections-36"
-       onclick="toggleTool(36, 'connections')">
-    <span class="chevron">&#9654;</span>
-    29:Output to 129:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-36" hidden></div>
-
-  <div class="tool-row" id="row-connections-37"
-       onclick="toggleTool(37, 'connections')">
-    <span class="chevron">&#9654;</span>
-    31:Output to 11:Right
-  </div>
-  <div class="tool-detail" id="detail-connections-37" hidden></div>
-
-  <div class="tool-row" id="row-connections-38"
-       onclick="toggleTool(38, 'connections')">
-    <span class="chevron">&#9654;</span>
-    40:Output to 10:Right
-  </div>
-  <div class="tool-detail" id="detail-connections-38" hidden></div>
-
-  <div class="tool-row" id="row-connections-39"
-       onclick="toggleTool(39, 'connections')">
-    <span class="chevron">&#9654;</span>
-    52:Output to 73:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-39" hidden></div>
-
-  <div class="tool-row" id="row-connections-40"
-       onclick="toggleTool(40, 'connections')">
-    <span class="chevron">&#9654;</span>
-    73:True to 132:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-40" hidden></div>
-
-  <div class="tool-row" id="row-connections-41"
-       onclick="toggleTool(41, 'connections')">
-    <span class="chevron">&#9654;</span>
-    100:Output to 108:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-41" hidden></div>
-
-  <div class="tool-row" id="row-connections-42"
-       onclick="toggleTool(42, 'connections')">
-    <span class="chevron">&#9654;</span>
-    100:Output to 138:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-42" hidden></div>
-
-  <div class="tool-row" id="row-connections-43"
-       onclick="toggleTool(43, 'connections')">
-    <span class="chevron">&#9654;</span>
-    103:Output to 109:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-43" hidden></div>
-
-  <div class="tool-row" id="row-connections-44"
-       onclick="toggleTool(44, 'connections')">
-    <span class="chevron">&#9654;</span>
-    106:Output to 110:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-44" hidden></div>
-
-  <div class="tool-row" id="row-connections-45"
-       onclick="toggleTool(45, 'connections')">
-    <span class="chevron">&#9654;</span>
-    128:Output to 29:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-45" hidden></div>
-
-  <div class="tool-row" id="row-connections-46"
-       onclick="toggleTool(46, 'connections')">
-    <span class="chevron">&#9654;</span>
-    129:True to 52:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-46" hidden></div>
-
-  <div class="tool-row" id="row-connections-47"
-       onclick="toggleTool(47, 'connections')">
-    <span class="chevron">&#9654;</span>
-    130:Output to 137:Input
-  </div>
-  <div class="tool-detail" id="detail-connections-47" hidden></div>
-
-</section>
-<script type="application/json" id="diff-data">{"added": [{"config": {"Mode": {"#text": "Simple"}, "Simple": {"Field": {"#text": "Sum_COUNT"}, "Operands": {"DateType": {"#text": "fixed"}, "EndDate": {"#text": "2026-02-24 11:42:07"}, "IgnoreTimeInDateTime": {"#text": "True"}, "Operand": {"#text": "15"}, "PeriodCount": {"#text": "0"}, "PeriodDate": {"#text": "2026-02-24 11:42:07"}, "PeriodType": {}, "StartDate": {"#text": "2026-02-24 11:42:07"}}, "Operator": {"#text": "\u003c"}}}, "tool_id": 108, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"config": {"Mode": {"#text": "Simple"}, "Simple": {"Field": {"#text": "Sum_COUNT"}, "Operands": {"DateType": {"#text": "fixed"}, "EndDate": {"#text": "2026-02-24 11:42:07"}, "IgnoreTimeInDateTime": {"#text": "True"}, "Operand": {"#text": "15"}, "PeriodCount": {"#text": "0"}, "PeriodDate": {"#text": "2026-02-24 11:42:07"}, "PeriodType": {}, "StartDate": {"#text": "2026-02-24 11:42:07"}}, "Operator": {"#text": "\u003c"}}}, "tool_id": 109, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"config": {"Mode": {"#text": "Simple"}, "Simple": {"Field": {"#text": "Sum_COUNT"}, "Operands": {"DateType": {"#text": "fixed"}, "EndDate": {"#text": "2026-02-24 11:42:07"}, "IgnoreTimeInDateTime": {"#text": "True"}, "Operand": {"#text": "15"}, "PeriodCount": {"#text": "0"}, "PeriodDate": {"#text": "2026-02-24 11:42:07"}, "PeriodType": {}, "StartDate": {"#text": "2026-02-24 11:42:07"}}, "Operator": {"#text": "\u003c"}}}, "tool_id": 110, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"config": {"ByName_ErrorMode": {"#text": "Warning"}, "ByName_OutputMode": {"#text": "All"}, "Mode": {"#text": "ByName"}, "SetOutputOrder": {"@value": "False"}}, "tool_id": 31, "tool_type": "AlteryxBasePluginsGui.Union.Union"}, {"config": {"ByName_ErrorMode": {"#text": "Warning"}, "ByName_OutputMode": {"#text": "All"}, "Mode": {"#text": "ByName"}, "SetOutputOrder": {"@value": "False"}}, "tool_id": 128, "tool_type": "AlteryxBasePluginsGui.Union.Union"}, {"config": {"CommaDecimal": {"@value": "False"}, "OrderChanged": {"@value": "False"}, "SelectFields": {"SelectField": [{"@field": "GNW_APPLICATION_NUMBER", "@selected": "False", "@size": "2147483647", "@type": "V_WString"}, {"@field": "*Unknown", "@selected": "True"}]}}, "tool_id": 6, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}, {"config": {"CommaDecimal": {"@value": "False"}, "OrderChanged": {"@value": "False"}, "SelectFields": {"SelectField": [{"@field": "TENURE", "@rename": "TENURE_CHAR", "@selected": "True"}, {"@field": "ACTUAL_LTV", "@selected": "False", "@size": "8", "@type": "Double"}, {"@field": "FUNDED_COUNT", "@selected": "False", "@size": "8", "@type": "Double"}, {"@field": "*Unknown", "@selected": "True"}]}}, "tool_id": 7, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}, {"config": {"CommaDecimal": {"@value": "False"}, "OrderChanged": {"@value": "False"}, "SelectFields": {"SelectField": [{"@field": "SAGEN_REFERENCE_NUMBER", "@selected": "True"}, {"@field": "BOR_ID", "@selected": "True"}, {"@field": "BOR_FIRST_NAME", "@selected": "True"}, {"@field": "BOR_LAST_NAME", "@selected": "True"}, {"@field": "BOR_SIN", "@selected": "True"}, {"@field": "BOR_DOB", "@selected": "True"}, {"@field": "STREET_DIRECTION", "@selected": "True"}, {"@field": "ADDR_SUFFIX", "@selected": "True"}, {"@field": "UNIT_NUM", "@selected": "True"}, {"@field": "STREET_NUM", "@selected": "True"}, {"@field": "STREET_NAME", "@selected": "True"}, {"@field": "STREET_TYPE", "@selected": "True"}, {"@field": "CITY", "@selected": "True"}, {"@field": "PROVINCE", "@selected": "True"}, {"@field": "POSTAL_CODE", "@selected": "True"}, {"@field": "CRD_SCORE_T", "@selected": "True", "@size": "8", "@type": "Double"}, {"@field": "*Unknown", "@selected": "False"}]}}, "tool_id": 8, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}, {"config": {"@joinByRecordPos": "False", "JoinInfo": [{"@connection": "Left", "Field": {"@field": "SAGEN_REFERENCE_NUMBER"}}, {"@connection": "Right", "Field": {"@field": "SAGEN_REFERENCE_NUMBER"}}], "SelectConfiguration": {"Configuration": {"@outputConnection": "Join", "CommaDecimal": {"@value": "False"}, "OrderChanged": {"@value": "False"}, "SelectFields": {"SelectField": [{"@field": "Right_SAGEN_REFERENCE_NUMBER", "@input": "Right_", "@rename": "Right_SAGEN_REFERENCE_NUMBER", "@selected": "False"}, {"@field": "Right_Right_SAGEN_REFERENCE_NUMBER", "@input": "Right_", "@rename": "Right_Right_SAGEN_REFERENCE_NUMBER", "@selected": "True"}, {"@field": "*Unknown", "@selected": "True"}]}}}}, "tool_id": 10, "tool_type": "AlteryxBasePluginsGui.Join.Join"}], "connections": [{"change_type": "removed", "dst_anchor": "Left", "dst_tool": 11, "src_anchor": "Output", "src_tool": 1, "tool_id": 1}, {"change_type": "removed", "dst_anchor": "Right", "dst_tool": 11, "src_anchor": "Output", "src_tool": 2, "tool_id": 2}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 40, "src_anchor": "Output", "src_tool": 3, "tool_id": 3}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 129, "src_anchor": "Join", "src_tool": 11, "tool_id": 11}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 170, "src_anchor": "Left", "src_tool": 11, "tool_id": 11}, {"change_type": "removed", "dst_anchor": "Right", "dst_tool": 185, "src_anchor": "Output", "src_tool": 40, "tool_id": 40}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 186, "src_anchor": "Output", "src_tool": 52, "tool_id": 52}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 132, "src_anchor": "False", "src_tool": 73, "tool_id": 73}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 191, "src_anchor": "True", "src_tool": 73, "tool_id": 73}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 187, "src_anchor": "Output", "src_tool": 100, "tool_id": 100}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 187, "src_anchor": "Output", "src_tool": 103, "tool_id": 103}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 187, "src_anchor": "Output", "src_tool": 106, "tool_id": 106}, {"change_type": "removed", "dst_anchor": "Left", "dst_tool": 185, "src_anchor": "True", "src_tool": 129, "tool_id": 129}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 138, "src_anchor": "Output", "src_tool": 130, "tool_id": 130}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 137, "src_anchor": "Output", "src_tool": 138, "tool_id": 138}, {"change_type": "removed", "dst_anchor": "Question", "dst_tool": 176, "src_anchor": "Question", "src_tool": 175, "tool_id": 175}, {"change_type": "removed", "dst_anchor": "Question", "dst_tool": 177, "src_anchor": "Question", "src_tool": 175, "tool_id": 175}, {"change_type": "removed", "dst_anchor": "Action", "dst_tool": 1, "src_anchor": "Action", "src_tool": 176, "tool_id": 176}, {"change_type": "removed", "dst_anchor": "Action", "dst_tool": 2, "src_anchor": "Action", "src_tool": 177, "tool_id": 177}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 52, "src_anchor": "Join", "src_tool": 185, "tool_id": 185}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 189, "src_anchor": "Left", "src_tool": 185, "tool_id": 185}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 73, "src_anchor": "True", "src_tool": 186, "tool_id": 186}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 188, "src_anchor": "Output", "src_tool": 189, "tool_id": 189}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 193, "src_anchor": "Output", "src_tool": 191, "tool_id": 191}, {"change_type": "removed", "dst_anchor": "Input", "dst_tool": 192, "src_anchor": "Output", "src_tool": 193, "tool_id": 193}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 6, "src_anchor": "Output", "src_tool": 1, "tool_id": 1}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 7, "src_anchor": "Output", "src_tool": 2, "tool_id": 2}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 8, "src_anchor": "Output", "src_tool": 3, "tool_id": 3}, {"change_type": "added", "dst_anchor": "Left", "dst_tool": 11, "src_anchor": "Output", "src_tool": 6, "tool_id": 6}, {"change_type": "added", "dst_anchor": "Left", "dst_tool": 10, "src_anchor": "Output", "src_tool": 7, "tool_id": 7}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 40, "src_anchor": "Output", "src_tool": 8, "tool_id": 8}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 31, "src_anchor": "Join", "src_tool": 10, "tool_id": 10}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 31, "src_anchor": "Left", "src_tool": 10, "tool_id": 10}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 128, "src_anchor": "Join", "src_tool": 11, "tool_id": 11}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 128, "src_anchor": "Left", "src_tool": 11, "tool_id": 11}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 129, "src_anchor": "Output", "src_tool": 29, "tool_id": 29}, {"change_type": "added", "dst_anchor": "Right", "dst_tool": 11, "src_anchor": "Output", "src_tool": 31, "tool_id": 31}, {"change_type": "added", "dst_anchor": "Right", "dst_tool": 10, "src_anchor": "Output", "src_tool": 40, "tool_id": 40}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 73, "src_anchor": "Output", "src_tool": 52, "tool_id": 52}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 132, "src_anchor": "True", "src_tool": 73, "tool_id": 73}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 108, "src_anchor": "Output", "src_tool": 100, "tool_id": 100}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 138, "src_anchor": "Output", "src_tool": 100, "tool_id": 100}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 109, "src_anchor": "Output", "src_tool": 103, "tool_id": 103}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 110, "src_anchor": "Output", "src_tool": 106, "tool_id": 106}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 29, "src_anchor": "Output", "src_tool": 128, "tool_id": 128}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 52, "src_anchor": "True", "src_tool": 129, "tool_id": 129}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 137, "src_anchor": "Output", "src_tool": 130, "tool_id": 130}], "modified": [{"field_diffs": [{"after": "TU Cohort Data Pull_for TU.csv", "before": "_externals\\1\\RISK_Creation of TU Cohortsl_ORD 8683.csv", "field": "File.#text"}, {"after": "True", "before": "False", "field": "Disable.#text"}], "tool_id": 131, "tool_type": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput"}, {"field_diffs": [{"after": "8", "before": "40.20", "field": "FormulaFields.FormulaField.@size"}, {"after": "Double", "before": "FixedDecimal", "field": "FormulaFields.FormulaField.@type"}], "tool_id": 40, "tool_type": "AlteryxBasePluginsGui.Formula.Formula"}, {"field_diffs": [{"after": [{"@enabled": "true", "@expression": "if [CRD_SCORE_T] \u003e= 0 and [CRD_SCORE_T] \u003c 680 then \u00270TO679\u0027\nelseif [CRD_SCORE_T] \u003e= 680 and [CRD_SCORE_T] \u003c 720 then \u0027680TO719\u0027\nelseif [CRD_SCORE_T] \u003e= 720 and [CRD_SCORE_T] \u003c 760 then \u0027720TO759\u0027\nelseif [CRD_SCORE_T] \u003e= 760 and [CRD_SCORE_T] \u003c 800 then \u0027760TO799\u0027\nelseif [CRD_SCORE_T] \u003e= 800 then \u0027GE800\u0027\nelse \u0027N/A\u0027\nendif", "@field": "CV_RANGE", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if IsEmpty([PRINT_DATE]) then [APPL_RECEIVED_DATE]\nelse [PRINT_DATE]\nendif", "@field": "DATE", "@size": "10", "@type": "Date"}, {"@enabled": "true", "@expression": "DateTimeYear([DATE])", "@field": "YEAR", "@size": "8", "@type": "Double"}, {"@enabled": "true", "@expression": "if [YEAR] \u003c= 2019 then \u0027LE2019\u0027\nelseif [YEAR] = 2020 then \u00272020\u0027\nelseif [YEAR] = 2021 then \u00272021\u0027\nelseif [YEAR] = 2022 then \u00272022\u0027\nelseif [YEAR] = 2023 then \u00272023\u0027\nelseif [YEAR] = 2024 then \u00272024\u0027\nelseif [YEAR] = 2025 then \u00272025\u0027\nelse \u0027N/A\u0027\nendif", "@field": "VINTAGE", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "IF [RRM_PROPERTY_REGION] = \u0027PACIFIC\u0027 THEN \u0027PAC\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ALBERTA\u0027 THEN \u0027ALB\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027PRAIRIES\u0027 THEN \u0027PRA\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ONTARIO\u0027 THEN \u0027ONT\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027GTA\u0027 THEN \u0027GTA\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027QUEBEC\u0027 THEN \u0027QUE\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ATLANTIC\u0027 THEN \u0027ATL\u0027\nELSE \u0027N/A\u0027\nENDIF\n", "@field": "REGION", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if [REGION]=\u0027GTA\u0027 and [OMNI_RURAL_URBAN] = \u0027Rural\u0027 then \u0027Urban\u0027\nelse [OMNI_RURAL_URBAN]\nendif", "@field": "OMNI_RURAL_URBAN", "@size": "5", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if [OMNI_RURAL_URBAN] = \u0027Urban\u0027 then \u0027U\u0027\nelseif [OMNI_RURAL_URBAN] = \u0027Rural\u0027 then \u0027R\u0027\nelse \u0027N/A\u0027\nendif", "@field": "AREA", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "IF [TENURE_CHAR] = \u0027L\u0027 THEN \u0027N/A\u0027\nELSEIF IsEmpty([TENURE_CHAR]) THEN \u0027N/A\u0027\nELSEIF [TENURE_CHAR] = \u0027-\u0027 THEN \u0027N/A\u0027\nELSE [TENURE_CHAR]\nENDIF", "@field": "TENURE", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "1", "@field": "COUNT", "@size": "8", "@type": "Double"}], "before": [{"@enabled": "true", "@expression": "if [CRD_SCORE_T] \u003e= 0 and [CRD_SCORE_T] \u003c 680 then \u00270TO679\u0027\nelseif [CRD_SCORE_T] \u003e= 680 and [CRD_SCORE_T] \u003c 720 then \u0027680TO719\u0027\nelseif [CRD_SCORE_T] \u003e= 720 and [CRD_SCORE_T] \u003c 760 then \u0027720TO759\u0027\nelseif [CRD_SCORE_T] \u003e= 760 and [CRD_SCORE_T] \u003c 800 then \u0027760TO799\u0027\nelseif [CRD_SCORE_T] \u003e= 800 then \u0027GE800\u0027\nelse Null()\nendif", "@field": "CV_RANGE", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if IsEmpty([PRINT_DATE]) then [APPL_RECEIVED_DATE]\nelseif IsNull([PRINT_DATE]) then [APPL_RECEIVED_DATE]\nelse [PRINT_DATE]\nendif", "@field": "DATE", "@size": "10", "@type": "Date"}, {"@enabled": "true", "@expression": "DateTimeYear([DATE])", "@field": "YEAR", "@size": "8", "@type": "Double"}, {"@enabled": "true", "@expression": "if [YEAR] \u003c= 2019 then \u0027LE2019\u0027\nelseif [YEAR] = 2020 then \u00272020\u0027\nelseif [YEAR] = 2021 then \u00272021\u0027\nelseif [YEAR] = 2022 then \u00272022\u0027\nelseif [YEAR] = 2023 then \u00272023\u0027\nelseif [YEAR] = 2024 then \u00272024\u0027\nelseif [YEAR] = 2025 then \u00272025\u0027\nelse Null()\nendif", "@field": "VINTAGE", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "IF [RRM_PROPERTY_REGION] = \u0027PACIFIC\u0027 THEN \u0027PAC\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ALBERTA\u0027 THEN \u0027ALB\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027PRAIRIES\u0027 THEN \u0027PRA\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ONTARIO\u0027 THEN \u0027ONT\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027GTA\u0027 THEN \u0027GTA\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027QUEBEC\u0027 THEN \u0027QUE\u0027\nELSEIF [RRM_PROPERTY_REGION] = \u0027ATLANTIC\u0027 THEN \u0027ATL\u0027\nELSE Null()\nENDIF\n", "@field": "REGION", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if [REGION]=\u0027GTA\u0027 and [OMNI_RURAL_URBAN] = \u0027Rural\u0027 then \u0027Urban\u0027\nelse [OMNI_RURAL_URBAN]\nendif", "@field": "OMNI_RURAL_URBAN", "@size": "5", "@type": "V_WString"}, {"@enabled": "true", "@expression": "if [OMNI_RURAL_URBAN] = \u0027Urban\u0027 then \u0027U\u0027\nelseif [OMNI_RURAL_URBAN] = \u0027Rural\u0027 then \u0027R\u0027\nelse Null()\nendif", "@field": "AREA", "@size": "1073741823", "@type": "V_WString"}, {"@enabled": "true", "@expression": "IF IsEmpty(TENURE) THEN Null()\nELSEIF [TENURE] = \u0027-\u0027 THEN Null()\nELSEIF [TENURE] = \u0027F\u0027 THEN \u0027F\u0027\nELSEIF [TENURE] = \u0027C\u0027 THEN \u0027C\u0027\nELSEIF TENURE = \u0027L\u0027 THEN \u0027L\u0027\nELSE Null()\nENDIF", "@field": "TENURE", "@size": "1", "@type": "V_WString"}], "field": "FormulaFields.FormulaField"}], "tool_id": 52, "tool_type": "AlteryxBasePluginsGui.Formula.Formula"}, {"field_diffs": [{"after": "[VINTAGE] != \u0027N/A\u0027 AND [REGION] != \u0027N/A\u0027 AND [AREA] != \u0027N/A\u0027 AND [TENURE] != \u0027N/A\u0027 AND [CV_RANGE] != \u0027N/A\u0027", "before": "IsNull([VINTAGE]) or IsNull([REGION]) or IsNull([AREA]) or IsNull([TENURE]) or IsNull([CV_RANGE])", "field": "Expression.#text"}], "tool_id": 73, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"field_diffs": [{"after": "[REGION] in (\u0027PAC\u0027,\u0027ALB\u0027,\u0027ONT\u0027,\u0027GTA\u0027,\u0027QUE\u0027,\u0027PRA\u0027) and [AREA]=\u0027U\u0027", "before": "[REGION] in (\u0027PAC\u0027,\u0027ALB\u0027,\u0027PRA\u0027,\u0027ONT\u0027,\u0027GTA\u0027,\u0027QUE\u0027) and [AREA]=\u0027U\u0027", "field": "Expression.#text"}], "tool_id": 101, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"field_diffs": [{"after": "[REGION] in (\u0027PAC\u0027,\u0027ALB\u0027,\u0027GTA\u0027,\u0027ONT\u0027,\u0027PRA\u0027,\u0027QUE\u0027) and [AREA]=\u0027R\u0027", "before": "[REGION] in (\u0027PAC\u0027,\u0027ALB\u0027,\u0027PRA\u0027,\u0027ONT\u0027,\u0027GTA\u0027,\u0027QUE\u0027) and [AREA]=\u0027R\u0027", "field": "Expression.#text"}], "tool_id": 104, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"field_diffs": [{"after": "YEAR", "before": "TENURE_CHAR", "field": "SelectFields.SelectField"}], "tool_id": 132, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}, {"field_diffs": [{"after": {"DontReportSubsequent": {"@value": "False"}, "Tests": {"Test": {"Connection": {"#text": "#1"}, "Name": {"#text": "Test"}, "Type": {"#text": "ExpAll"}, "Value": {"#text": "[Sum_COUNT]\u003e=15"}}}}, "before": {"FormulaFields": {"FormulaField": {"@enabled": "true", "@expression": "if isempty([UNIT_NUM]) or isnull([UNIT_NUM]) then [STREET_NUM]+\" \"+[STREET_NAME]+\" \"+[STREET_TYPE]+\" \"+[STREET_DIRECTION]\nelse [UNIT_NUM]+\" \"+\"-\"+\" \"+[STREET_NUM]+\" \"+[STREET_NAME]+\" \"+[STREET_TYPE]+\" \"+[STREET_DIRECTION]\nendif", "@field": "CIVIC_ADDRESS", "@size": "1073741823", "@type": "V_WString"}}}, "field": ""}], "tool_id": 138, "tool_type": "AlteryxBasePluginsGui.Formula.Formula"}, {"field_diffs": [{"after": {"@field": "*Unknown", "@selected": "True"}, "before": [{"@field": "BOR_SIN", "@selected": "True"}, {"@field": "BOR_LAST_NAME", "@selected": "True"}, {"@field": "BOR_FIRST_NAME", "@selected": "True"}, {"@field": "BOR_DOB", "@selected": "True"}, {"@field": "CIVIC_ADDRESS", "@selected": "True"}, {"@field": "CITY", "@selected": "True"}, {"@field": "PROVINCE", "@selected": "True"}, {"@field": "POSTAL_CODE", "@selected": "True"}, {"@field": "SAGEN_REFERENCE_NUMBER", "@selected": "True"}, {"@field": "VINTAGE", "@selected": "True"}, {"@field": "REGION", "@selected": "True"}, {"@field": "AREA", "@selected": "True"}, {"@field": "CV_RANGE", "@selected": "True"}, {"@field": "TENURE", "@selected": "True"}, {"@field": "COHORT_ID", "@selected": "True"}, {"@field": "BOR_ID", "@selected": "False"}, {"@field": "STREET_DIRECTION", "@selected": "False"}, {"@field": "ADDR_SUFFIX", "@selected": "False"}, {"@field": "UNIT_NUM", "@selected": "False"}, {"@field": "STREET_NUM", "@selected": "False"}, {"@field": "STREET_NAME", "@selected": "False"}, {"@field": "STREET_TYPE", "@selected": "False"}, {"@field": "BORROWER_COUNT", "@selected": "False"}, {"@field": "Right_Right_SAGEN_REFERENCE_NUMBER", "@selected": "False"}, {"@field": "Sum_BORROWER_COUNT", "@selected": "False"}, {"@field": "NUM_BOR", "@selected": "False"}, {"@field": "POLICY_SID", "@selected": "False"}, {"@field": "Right_POLICY_SID", "@selected": "False"}, {"@field": "*Unknown", "@selected": "False"}], "field": "SelectFields.SelectField"}, {"after": "False", "before": "True", "field": "OrderChanged.@value"}], "tool_id": 137, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}, {"field_diffs": [{"after": {}, "before": null, "field": "CachedCosmeticName"}], "tool_id": 2, "tool_type": "AlteryxBasePluginsGui.DbFileInput.DbFileInput"}, {"field_diffs": [{"after": {}, "before": null, "field": "CachedCosmeticName"}], "tool_id": 3, "tool_type": "AlteryxBasePluginsGui.DbFileInput.DbFileInput"}, {"field_diffs": [{"after": "Sum_COUNT", "before": "Count", "field": "SummarizeFields.SummarizeField"}], "tool_id": 100, "tool_type": "AlteryxSpatialPluginsGui.Summarize.Summarize"}, {"field_diffs": [{"after": "Sum_COUNT", "before": "Count", "field": "SummarizeFields.SummarizeField"}], "tool_id": 103, "tool_type": "AlteryxSpatialPluginsGui.Summarize.Summarize"}, {"field_diffs": [{"after": "Sum_COUNT", "before": "Count", "field": "SummarizeFields.SummarizeField"}], "tool_id": 106, "tool_type": "AlteryxSpatialPluginsGui.Summarize.Summarize"}, {"field_diffs": [{"after": [{"@field": "POLICY_SID", "@selected": "False"}, {"@field": "PRODUCT_LINE_OF_BUSINESS", "@selected": "True", "@size": "2147483647", "@type": "V_String"}, {"@field": "RRM_PROPERTY_REGION", "@selected": "True", "@size": "2147483647", "@type": "V_String"}, {"@field": "Right_POLICY_SID", "@selected": "False"}, {"@field": "CHANNEL", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "RRM_PROPERTY_MUNICPALITY", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "LENDER", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "SNAPSHOT_MONTH", "@selected": "False"}, {"@field": "Right_SAGEN_REFERENCE_NUMBER", "@selected": "False"}, {"@field": "TIME_MTH_SID", "@selected": "False"}, {"@field": "PROPERTY_TYPE", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "Right_LENDER_ALIAS", "@selected": "False"}, {"@field": "GNW_APPLICATION_NUMBER", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "CURRENT_OUTSTANDING_BAL_AMT", "@selected": "False", "@size": "8", "@type": "Double"}, {"@field": "MAX_CRD_SCORE_T_BUCKET", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "PRINT_YEAR", "@selected": "False"}, {"@field": "PRINT_YEAR_BUCKET", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "ACTUAL_LTV_BUCKET", "@selected": "False", "@size": "2147483647", "@type": "V_String"}, {"@field": "*Unknown", "@selected": "True"}], "before": [{"@field": "CountNull_VINTAGE", "@selected": "True", "@size": "2147483647", "@type": "V_WString"}, {"@field": "CountNull_REGION", "@selected": "True", "@size": "2147483647", "@type": "V_WString"}, {"@field": "CountNull_AREA", "@selected": "True", "@size": "2147483647", "@type": "V_WString"}, {"@field": "CountNull_TENURE", "@selected": "True", "@size": "2147483647", "@type": "V_WString"}, {"@field": "CountNull_CV_RANGE", "@selected": "True", "@size": "2147483647", "@type": "V_WString"}, {"@field": "*Unknown", "@selected": "True"}], "field": "SelectFields.SelectField"}], "tool_id": 193, "tool_type": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect"}], "removed": [{"config": {"Filter": {}, "MessageExpression": {"#text": "\"# of records with invalid dimension data:\"+\" vintage:\"+[CountNull_VINTAGE] +\" Region:\"+[CountNull_REGION]+\" Area:\"+[CountNull_AREA]+\" Tenure:\"+[CountNull_TENURE]+\" CVRange:\"+[CountNull_CV_RANGE]"}, "Priority": {"#text": "High"}, "Transient": {"#text": "True"}, "Type": {"#text": "Warning"}, "When": {"#text": "All"}}, "tool_id": 192, "tool_type": "AlteryxBasePluginsGui.Message.Message"}, {"config": {"Filter": {}, "MessageExpression": {"#text": "\"# of MI records without matching record in Score Level \"+ToString([Count])"}, "Priority": {"#text": "High"}, "Transient": {"#text": "True"}, "Type": {"#text": "Warning"}, "When": {"#text": "All"}}, "tool_id": 188, "tool_type": "AlteryxBasePluginsGui.Message.Message"}, {"config": {"DontReportSubsequent": {"@value": "False"}, "Tests": {"Test": [{"Connection": {"#text": "#1"}, "Name": {"#text": "Testing record count \u003e=15 by cohort"}, "Type": {"#text": "ExpAll"}, "Value": {"#text": "[Count]\u003e=15"}}, {"Connection": {"#text": "#2"}, "Name": {"#text": "Testing Vintage/Region/Rural record count \u003e=15 by cohort"}, "Type": {"#text": "ExpAll"}, "Value": {"#text": "[Count]\u003e=15"}}, {"Connection": {"#text": "#3"}, "Name": {"#text": "Testing Atlantic"}, "Type": {"#text": "ExpAll"}, "Value": {"#text": "[Count]\u003e=15"}}]}}, "tool_id": 187, "tool_type": "AlteryxBasePluginsGui.Test.Test"}, {"config": {"DontReportSubsequent": {"@value": "False"}, "Tests": {"Test": {"Connection": {"#text": "#1"}, "Name": {"#text": "Records in OSB and not in SL"}, "Type": {"#text": "RecCountValue"}, "Value": {"#text": "0"}}}}, "tool_id": 170, "tool_type": "AlteryxBasePluginsGui.Test.Test"}, {"config": {"SummarizeFields": {"SummarizeField": [{"@action": "CountNull", "@field": "VINTAGE", "@rename": "CountNull_VINTAGE"}, {"@action": "CountNull", "@field": "REGION", "@rename": "CountNull_REGION"}, {"@action": "CountNull", "@field": "AREA", "@rename": "CountNull_AREA"}, {"@action": "CountNull", "@field": "TENURE", "@rename": "CountNull_TENURE"}, {"@action": "CountNull", "@field": "CV_RANGE", "@rename": "CountNull_CV_RANGE"}]}}, "tool_id": 191, "tool_type": "AlteryxSpatialPluginsGui.Summarize.Summarize"}, {"config": {"SummarizeFields": {"SummarizeField": {"@action": "Count", "@field": "POLICY_SID", "@rename": "Count"}}}, "tool_id": 189, "tool_type": "AlteryxSpatialPluginsGui.Summarize.Summarize"}, {"config": {"Mode": {"#text": "Simple"}, "Simple": {"Field": {"#text": "TENURE"}, "Operands": {"DateType": {"#text": "fixed"}, "EndDate": {"#text": "2026-03-09 16:41:37"}, "IgnoreTimeInDateTime": {"#text": "True"}, "Operand": {"#text": "L"}, "PeriodCount": {"#text": "0"}, "PeriodDate": {"#text": "2026-03-09 16:41:37"}, "PeriodType": {}, "StartDate": {"#text": "2026-03-09 16:41:37"}}, "Operator": {"#text": "!="}}}, "tool_id": 186, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"config": {"@joinByRecordPos": "False", "JoinInfo": [{"@connection": "Left", "Field": {"@field": "SAGEN_REFERENCE_NUMBER"}}, {"@connection": "Right", "Field": {"@field": "SAGEN_REFERENCE_NUMBER"}}], "SelectConfiguration": {"Configuration": {"@outputConnection": "Join", "CommaDecimal": {"@value": "False"}, "OrderChanged": {"@value": "False"}, "SelectFields": {"SelectField": [{"@field": "Right_SAGEN_REFERENCE_NUMBER", "@input": "Right_", "@rename": "Right_SAGEN_REFERENCE_NUMBER", "@selected": "False"}, {"@field": "*Unknown", "@selected": "True"}]}}}}, "tool_id": 185, "tool_type": "AlteryxBasePluginsGui.Join.Join"}]}</script>
+</div>
+<script type="application/json" id="diff-data">{"added": [{"config": {"FormulaFields": {"FormulaField": {"@expression": "[TotalSales] / [AvgSales]", "@field": "SalesRatio", "@size": "8", "@type": "Double"}}}, "tool_id": 6, "tool_type": "AlteryxBasePluginsGui.Formula.Formula"}], "connections": [{"change_type": "removed", "dst_anchor": "Input", "dst_tool": 5, "src_anchor": "Output", "src_tool": 4, "tool_id": 4}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 6, "src_anchor": "Output", "src_tool": 4, "tool_id": 4}, {"change_type": "added", "dst_anchor": "Input", "dst_tool": 5, "src_anchor": "Output", "src_tool": 6, "tool_id": 6}], "modified": [{"field_diffs": [{"after": "C:\\Data\\sales_2024.csv", "before": "C:\\Data\\sales_2023.csv", "field": "File.#text"}], "tool_id": 1, "tool_type": "AlteryxBasePluginsGui.DbFileInput.DbFileInput"}, {"field_diffs": [{"after": "[Region] = \"North\" OR [Region] = \"South\"", "before": "[Region] = \"North\"", "field": "Expression.#text"}], "tool_id": 2, "tool_type": "AlteryxBasePluginsGui.Filter.Filter"}, {"field_diffs": [{"after": [{"@action": "GroupBy", "@field": "Region"}, {"@action": "Sum", "@field": "Sales", "@rename": "TotalSales"}, {"@action": "Avg", "@field": "Sales", "@rename": "AvgSales"}], "before": [{"@action": "GroupBy", "@field": "Region"}, {"@action": "Sum", "@field": "Sales", "@rename": "TotalSales"}], "field": "Fields.Field"}], "tool_id": 4, "tool_type": "AlteryxBasePluginsGui.Summarize.Summarize"}, {"field_diffs": [{"after": "C:\\Output\\regional_summary_2024.csv", "before": "C:\\Output\\north_region_summary.csv", "field": "File.#text"}], "tool_id": 5, "tool_type": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput"}], "removed": []}</script>
 <section id="graph-section">
 <h2>Workflow Graph</h2>
 
-<div id="graph-view-toggle" style="display:flex;gap:8px;margin-bottom:10px;">
+<div id="graph-view-toggle" class="graph-view-toggle">
   <button id="btn-split" class="view-toggle-btn" onclick="switchView('split')">Split View</button>
   <button id="btn-overlay" class="view-toggle-btn" onclick="switchView('overlay')">Overlay View</button>
 </div>
 
-<div id="split-view" style="display:flex;height:600px;gap:0;border:1px solid #dee2e6;border-radius:4px;overflow:hidden;">
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;border-right:1px solid #dee2e6;">Before</div>
-    <div id="split-view-left" style="flex:1;height:100%;background:#f8fafc;"></div>
+<div id="split-view" class="split-view">
+  <div class="split-pane">
+    <div class="split-header">Before</div>
+    <div id="split-view-left" class="split-graph-canvas"></div>
   </div>
-  <div style="width:280px;display:flex;flex-direction:column;border-left:1px solid #dee2e6;border-right:1px solid #dee2e6;">
-    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;position:sticky;top:0;z-index:1;">Changes</div>
-    <div id="split-change-rows" style="flex:1;overflow-y:auto;padding:4px 0;"></div>
+  <div class="split-changes-col">
+    <div class="split-changes-header">Changes</div>
+    <div id="split-change-rows" class="split-change-rows"></div>
   </div>
-  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-    <div style="padding:6px 10px;font-weight:600;font-size:0.85em;background:#f1f5f9;border-bottom:1px solid #dee2e6;">After</div>
-    <div id="split-view-right" style="flex:1;height:100%;background:#f8fafc;"></div>
+  <div class="split-pane">
+    <div class="split-header">After</div>
+    <div id="split-view-right" class="split-graph-canvas"></div>
   </div>
 </div>
 
-<div id="split-controls" style="display:flex;gap:8px;align-items:center;padding:8px 0;margin-top:4px;">
+<div id="split-controls" class="split-controls">
   <button id="fit-both-btn" class="ctrl-btn" onclick="if(networkLeft)networkLeft.fit();if(networkRight)networkRight.fit();">Fit Both</button>
   <button id="split-fullscreen-btn" class="ctrl-btn">Fullscreen</button>
-  <span style="font-size:0.8em;color:#64748b;">
-    <span style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
-    <span style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
-    <span style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
-    <span style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
+  <span class="graph-legend">
+    <span class="legend-dot legend-dot-added"></span>Added
+    <span class="legend-dot legend-dot-removed"></span>Removed
+    <span class="legend-dot legend-dot-modified"></span>Modified
+    <span class="legend-dot legend-dot-unchanged"></span>Unchanged
   </span>
 </div>
 
-<div id="diff-panel" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:#fff;border-left:1px solid #dee2e6;box-shadow:-2px 0 8px rgba(0,0,0,0.1);overflow-y:auto;transition:right 0.2s ease;z-index:1000;padding:16px;box-sizing:border-box;border-radius:8px 0 0 8px;"></div>
-<div id="graph-overlay" style="display:none;position:fixed;inset:0;z-index:999;"></div>
+<div id="diff-panel" class="diff-panel"></div>
+<div id="graph-overlay" class="graph-overlay"></div>
 
-<div id="overlay-view" style="display:none;">
-  <div id="graph-controls" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:8px 0;">
+<div id="overlay-view" class="overlay-view">
+  <div id="graph-controls" class="graph-controls">
     <button id="fit-btn" class="ctrl-btn">Fit to Screen</button>
     <button id="fullscreen-btn" class="ctrl-btn">Fullscreen</button>
     <button id="toggle-changes" class="ctrl-btn">Show Only Changes</button>
-    <span style="font-size:0.8em;color:#64748b;">
-      <span data-legend="added" style="display:inline-block;width:12px;height:12px;background:#6ee7b7;border:1px solid #059669;border-radius:50%;margin-right:3px;"></span>Added
-      <span data-legend="removed" style="display:inline-block;width:12px;height:12px;background:#fca5a5;border:1px solid #dc2626;border-radius:50%;margin:0 3px;"></span>Removed
-      <span data-legend="modified" style="display:inline-block;width:12px;height:12px;background:#fcd34d;border:1px solid #b45309;border-radius:50%;margin:0 3px;"></span>Modified
-      <span data-legend="connection" style="display:inline-block;width:12px;height:12px;background:#93c5fd;border:1px solid #1d4ed8;border-radius:50%;margin:0 3px;"></span>Connection change
-      <span data-legend="unchanged" style="display:inline-block;width:12px;height:12px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:50%;margin:0 3px;"></span>Unchanged
+    <span class="graph-legend">
+      <span data-legend="added" class="legend-dot legend-dot-added"></span>Added
+      <span data-legend="removed" class="legend-dot legend-dot-removed"></span>Removed
+      <span data-legend="modified" class="legend-dot legend-dot-modified"></span>Modified
+      <span data-legend="connection" class="legend-dot legend-dot-connection"></span>Connection change
+      <span data-legend="unchanged" class="legend-dot legend-dot-unchanged"></span>Unchanged
     </span>
   </div>
-  <div id="graph-container" style="width:100%;height:620px;border:1px solid #dee2e6;border-radius:4px;background:#f8fafc;position:relative;"></div>
+  <div id="graph-container" class="graph-container"></div>
 </div>
 
 <style>
-.view-toggle-btn { padding:6px 16px; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:0.88em; background:transparent; }
-.view-toggle-btn.active { background:#3b82f6; color:#fff; border-color:#3b82f6; }
-#diff-panel.open { right: 0 !important; }
-#diff-panel.open ~ #graph-overlay { display: block !important; }
-.panel-title { font-size:1em; font-weight:600; margin:0 0 12px; border-bottom:2px solid #eee; padding-bottom:8px; }
-.panel-field-row { margin:8px 0; }
-.panel-field-name { font-weight:600; font-size:0.82em; color:#555; margin-bottom:3px; }
-.panel-before { background:#fff5f5; border-left:3px solid #dc3545; padding:4px 8px; margin:2px 0; }
-.panel-after  { background:#f5fff5; border-left:3px solid #28a745; padding:4px 8px; margin:2px 0; }
-.panel-before-label { font-weight:600; color:#dc3545; }
-.panel-after-label  { font-weight:600; color:#28a745; }
-.value-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-all; font-size:0.88em; }
-#graph-section:fullscreen { background: #f8fafc; padding: 12px; box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; }
-#graph-section:fullscreen #graph-view-toggle { flex-shrink: 0; }
-#graph-section:fullscreen #split-view { flex: 1; height: auto !important; min-height: 0; }
-#graph-section:fullscreen #split-controls { flex-shrink: 0; display: flex !important; }
-#graph-section:fullscreen #graph-container { height: calc(100vh - 120px); }
-.split-change-row { display:flex; align-items:center; gap:6px; padding:6px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.82em; }
-.split-change-row:hover { background:#f8fafc; }
-.split-change-badge { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+/* Graph section header — matches main template section header style */
+#graph-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 10px 14px;
+  border-left: 3px solid var(--accent-conn);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 24px 0 12px;
+}
+
+.graph-view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.view-toggle-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.view-toggle-btn:hover {
+  background: var(--surface-2);
+}
+.view-toggle-btn.active {
+  background: var(--accent-conn);
+  color: #fff;
+  border-color: var(--accent-conn);
+}
+
+.split-view {
+  display: flex;
+  height: 600px;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.split-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.split-header {
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.split-graph-canvas {
+  flex: 1;
+  height: 100%;
+  background: var(--bg);
+}
+
+.split-changes-col {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.split-changes-header {
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.split-change-rows {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.split-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  margin-top: 4px;
+}
+
+.graph-legend {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 3px;
+}
+.legend-dot-added { background: #6ee7b7; border: 1px solid #059669; }
+.legend-dot-removed { background: #fca5a5; border: 1px solid #dc2626; }
+.legend-dot-modified { background: #fcd34d; border: 1px solid #b45309; }
+.legend-dot-connection { background: #93c5fd; border: 1px solid #1d4ed8; }
+.legend-dot-unchanged { background: #e2e8f0; border: 1px solid #94a3b8; }
+
+.diff-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  height: 100%;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  transition: right 0.2s ease;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+  border-radius: 8px 0 0 8px;
+  color: var(--text);
+}
+.diff-panel.open { right: 0; }
+
+.graph-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+.diff-panel.open ~ .graph-overlay { display: block; }
+
+.overlay-view { display: none; }
+
+.graph-controls {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.graph-container {
+  width: 100%;
+  height: 620px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  position: relative;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  color: var(--text);
+}
+
+.panel-field-row { margin: 8px 0; }
+
+.panel-field-name {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.panel-before {
+  background: var(--accent-removed-bg);
+  border-left: 3px solid var(--accent-removed);
+  padding: 6px 10px;
+  margin: 4px 0;
+}
+.panel-after {
+  background: var(--accent-added-bg);
+  border-left: 3px solid var(--accent-added);
+  padding: 6px 10px;
+  margin: 4px 0;
+}
+.panel-before-label { font-weight: 600; color: var(--accent-removed); }
+.panel-after-label { font-weight: 600; color: var(--accent-added); }
+.value-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.split-change-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+}
+.split-change-row:hover { background: var(--surface-2); }
+
+.split-change-badge {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.split-change-empty {
+  padding: 12px 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Fullscreen styles */
+#graph-section:fullscreen {
+  background: var(--bg);
+  padding: 12px;
+  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+#graph-section:fullscreen .graph-view-toggle { flex-shrink: 0; }
+#graph-section:fullscreen .split-view { flex: 1; height: auto; min-height: 0; }
+#graph-section:fullscreen .split-controls { flex-shrink: 0; display: flex; }
+#graph-section:fullscreen .graph-container { height: calc(100vh - 120px); }
+
+/* Responsive */
 @media (max-width: 800px) {
-  #split-view { flex-direction: column; height: auto; }
-  #split-view > div { width: 100% !important; }
+  .split-view { flex-direction: column; height: auto; }
+  .split-view > div { width: 100%; }
 }
-@media (prefers-color-scheme: dark) {
-  #graph-section:fullscreen { background: #0f172a; }
-  #graph-section:fullscreen #split-view { border-color: #334155 !important; }
-  #graph-container { background: #0f172a !important; border-color: #334155 !important; }
-  #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-  .panel-title { border-color: #334155 !important; color: #e2e8f0; }
-  .panel-field-name { color: #94a3b8 !important; }
-  .panel-before { background: #2d1518 !important; }
-  .panel-after { background: #132318 !important; }
-  .value-mono { color: #e2e8f0; }
-  #split-view-left { background: #0f172a !important; }
-  #split-view-right { background: #0f172a !important; }
-  #split-change-rows { background: #1e293b; color: #e2e8f0; }
-  .split-change-row { border-bottom-color: #334155; }
-  .split-change-row:hover { background: #334155; }
-}
-[data-theme=dark] #graph-section:fullscreen { background: #0f172a; }
-[data-theme=dark] #graph-container { background: #0f172a !important; border-color: #334155 !important; }
-[data-theme=dark] #diff-panel { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-[data-theme=dark] .panel-title { border-color: #334155 !important; color: #e2e8f0; }
-[data-theme=dark] .panel-field-name { color: #94a3b8 !important; }
-[data-theme=dark] .panel-before { background: #2d1518 !important; }
-[data-theme=dark] .panel-after { background: #132318 !important; }
-[data-theme=dark] .value-mono { color: #e2e8f0; }
-[data-theme=dark] #split-view-left { background: #0f172a !important; }
-[data-theme=dark] #split-view-right { background: #0f172a !important; }
-[data-theme=dark] #split-change-rows { background: #1e293b; color: #e2e8f0; }
-[data-theme=dark] .split-change-row { border-bottom-color: #334155; }
-[data-theme=dark] .split-change-row:hover { background: #334155; }
-[data-theme=light] #graph-container { background: #f8fafc !important; border-color: #dee2e6 !important; }
-[data-theme=light] #diff-panel { background: #fff !important; border-color: #dee2e6 !important; color: inherit !important; }
-[data-theme=light] #split-view-left { background: #f8fafc !important; }
-[data-theme=light] #split-view-right { background: #f8fafc !important; }
 </style>
 <script>
 (function() {
@@ -910,10 +725,10 @@ g.exports=a=function(){return d},g.exports.__esModule=!0,g.exports.default=g.exp
 
 
 // ── Section A: Shared data ────────────────────────────────────────────────
-var GRAPH_NODES = [{"id": 1, "label": "DbFileInput\n(1)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | connection", "x": -2000.0, "y": -188.50574712643677, "fixed": false}, {"id": 2, "label": "DbFileInput\n(2)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileInput\n(2) | modified | 1 field(s) changed", "x": -2000.0, "y": 0.0, "fixed": false}, {"id": 3, "label": "DbFileInput\n(3)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileInput\n(3) | modified | 1 field(s) changed", "x": -2000.0, "y": 188.50574712643677, "fixed": false}, {"id": 8, "label": "AlteryxSelect\n(8)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added", "x": -1811.494252873563, "y": -188.50574712643677, "fixed": false}, {"id": 6, "label": "AlteryxSelect\n(6)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added", "x": -1811.494252873563, "y": 0.0, "fixed": false}, {"id": 7, "label": "AlteryxSelect\n(7)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added", "x": -1811.494252873563, "y": 188.50574712643677, "fixed": false}, {"id": 40, "label": "Formula\n(40)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Formula\n(40) | modified | 2 field(s) changed", "x": -1622.9885057471263, "y": 0.0, "fixed": false}, {"id": 10, "label": "Join\n(10)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Join.Join | added", "x": -1434.4827586206895, "y": 0.0, "fixed": false}, {"id": 31, "label": "Union\n(31)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Union.Union | added", "x": -1245.9770114942528, "y": 0.0, "fixed": false}, {"id": 11, "label": "Join\n(11)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.Join.Join | connection", "x": -1057.4712643678158, "y": 0.0, "fixed": false}, {"id": 128, "label": "Union\n(128)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Union.Union | added", "x": -868.9655172413793, "y": -94.25287356321839, "fixed": false}, {"id": 170, "label": "Test\n(170)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Test.Test | removed", "x": -868.9655172413793, "y": 94.25287356321839, "fixed": false}, {"id": 29, "label": "AlteryxSelect\n(29)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | connection", "x": -680.4597701149426, "y": 0.0, "fixed": false}, {"id": 129, "label": "Filter\n(129)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.Filter.Filter | connection", "x": -491.95402298850576, "y": 0.0, "fixed": false}, {"id": 185, "label": "Join\n(185)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Join.Join | removed", "x": -303.44827586206895, "y": 0.0, "fixed": false}, {"id": 52, "label": "Formula\n(52)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Formula\n(52) | modified | 1 field(s) changed", "x": -114.9425287356322, "y": -94.25287356321839, "fixed": false}, {"id": 189, "label": "Summarize\n(189)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed", "x": -114.9425287356322, "y": 94.25287356321839, "fixed": false}, {"id": 186, "label": "Filter\n(186)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Filter.Filter | removed", "x": 73.56321839080458, "y": -94.25287356321839, "fixed": false}, {"id": 188, "label": "Message\n(188)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Message.Message | removed", "x": 73.56321839080458, "y": 94.25287356321839, "fixed": false}, {"id": 73, "label": "Filter\n(73)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Filter\n(73) | modified | 1 field(s) changed", "x": 262.06896551724134, "y": 0.0, "fixed": false}, {"id": 132, "label": "AlteryxSelect\n(132)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "AlteryxSelect\n(132) | modified | 1 field(s) changed", "x": 450.57471264367814, "y": -94.25287356321839, "fixed": false}, {"id": 191, "label": "Summarize\n(191)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed", "x": 450.57471264367814, "y": 94.25287356321839, "fixed": false}, {"id": 104, "label": "Filter\n(104)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Filter\n(104) | modified | 1 field(s) changed", "x": 639.080459770115, "y": -282.7586206896552, "fixed": false}, {"id": 193, "label": "AlteryxSelect\n(193)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "AlteryxSelect\n(193) | modified | 1 field(s) changed", "x": 639.080459770115, "y": -94.25287356321839, "fixed": false}, {"id": 107, "label": "Filter\n(107)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged", "x": 639.080459770115, "y": 94.25287356321839, "fixed": false}, {"id": 101, "label": "Filter\n(101)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Filter\n(101) | modified | 1 field(s) changed", "x": 639.080459770115, "y": 282.7586206896552, "fixed": false}, {"id": 192, "label": "Message\n(192)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Message.Message | removed", "x": 827.5862068965519, "y": -282.7586206896552, "fixed": false}, {"id": 105, "label": "Formula\n(105)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged", "x": 827.5862068965519, "y": -94.25287356321839, "fixed": false}, {"id": 102, "label": "Formula\n(102)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged", "x": 827.5862068965519, "y": 94.25287356321839, "fixed": false}, {"id": 94, "label": "Formula\n(94)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged", "x": 827.5862068965519, "y": 282.7586206896552, "fixed": false}, {"id": 130, "label": "Union\n(130)", "color": {"background": "#93c5fd", "border": "#1d4ed8", "highlight": {"background": "#93c5fd", "border": "#1d4ed8"}}, "status": "connection", "title": "AlteryxBasePluginsGui.Union.Union | connection", "x": 1016.0919540229885, "y": -282.7586206896552, "fixed": false}, {"id": 100, "label": "Summarize\n(100)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Summarize\n(100) | modified | 1 field(s) changed", "x": 1016.0919540229885, "y": -94.25287356321839, "fixed": false}, {"id": 106, "label": "Summarize\n(106)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Summarize\n(106) | modified | 1 field(s) changed", "x": 1016.0919540229885, "y": 94.25287356321839, "fixed": false}, {"id": 103, "label": "Summarize\n(103)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Summarize\n(103) | modified | 1 field(s) changed", "x": 1016.0919540229885, "y": 282.7586206896552, "fixed": false}, {"id": 138, "label": "Test\n(138)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Test\n(138) | modified | 1 field(s) changed", "x": 1204.5977011494253, "y": -377.01149425287355, "fixed": false}, {"id": 108, "label": "Filter\n(108)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Filter.Filter | added", "x": 1204.5977011494253, "y": -188.50574712643677, "fixed": false}, {"id": 109, "label": "Filter\n(109)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Filter.Filter | added", "x": 1204.5977011494253, "y": 0.0, "fixed": false}, {"id": 110, "label": "Filter\n(110)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Filter.Filter | added", "x": 1204.5977011494253, "y": 188.50574712643677, "fixed": false}, {"id": 187, "label": "Test\n(187)", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "status": "removed", "title": "AlteryxBasePluginsGui.Test.Test | removed", "x": 1204.5977011494253, "y": 377.01149425287355, "fixed": false}, {"id": 137, "label": "AlteryxSelect\n(137)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "AlteryxSelect\n(137) | modified | 2 field(s) changed", "x": 1393.103448275862, "y": 0.0, "fixed": false}, {"id": 131, "label": "DbFileOutput\n(131)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileOutput\n(131) | modified | 2 field(s) changed", "x": 1581.6091954022988, "y": 0.0, "fixed": false}];
-var GRAPH_EDGES = [{"id": "11-129", "from": 11, "to": 129}, {"id": "11-170", "from": 11, "to": 170}, {"id": "11-128", "from": 11, "to": 128}, {"id": "40-185", "from": 40, "to": 185}, {"id": "40-10", "from": 40, "to": 10}, {"id": "52-186", "from": 52, "to": 186}, {"id": "52-73", "from": 52, "to": 73}, {"id": "73-132", "from": 73, "to": 132}, {"id": "73-191", "from": 73, "to": 191}, {"id": "129-185", "from": 129, "to": 185}, {"id": "129-52", "from": 129, "to": 52}, {"id": "185-52", "from": 185, "to": 52}, {"id": "185-189", "from": 185, "to": 189}, {"id": "186-73", "from": 186, "to": 73}, {"id": "94-100", "from": 94, "to": 100}, {"id": "94-130", "from": 94, "to": 130}, {"id": "101-94", "from": 101, "to": 94}, {"id": "102-130", "from": 102, "to": 130}, {"id": "102-103", "from": 102, "to": 103}, {"id": "104-102", "from": 104, "to": 102}, {"id": "105-130", "from": 105, "to": 130}, {"id": "105-106", "from": 105, "to": 106}, {"id": "107-105", "from": 107, "to": 105}, {"id": "132-101", "from": 132, "to": 101}, {"id": "132-104", "from": 132, "to": 104}, {"id": "132-107", "from": 132, "to": 107}, {"id": "130-138", "from": 130, "to": 138}, {"id": "130-137", "from": 130, "to": 137}, {"id": "138-137", "from": 138, "to": 137}, {"id": "137-131", "from": 137, "to": 131}, {"id": "1-11", "from": 1, "to": 11}, {"id": "1-6", "from": 1, "to": 6}, {"id": "2-11", "from": 2, "to": 11}, {"id": "2-7", "from": 2, "to": 7}, {"id": "3-40", "from": 3, "to": 40}, {"id": "3-8", "from": 3, "to": 8}, {"id": "100-187", "from": 100, "to": 187}, {"id": "100-108", "from": 100, "to": 108}, {"id": "100-138", "from": 100, "to": 138}, {"id": "103-187", "from": 103, "to": 187}, {"id": "103-109", "from": 103, "to": 109}, {"id": "106-187", "from": 106, "to": 187}, {"id": "106-110", "from": 106, "to": 110}, {"id": "191-193", "from": 191, "to": 193}, {"id": "193-192", "from": 193, "to": 192}, {"id": "189-188", "from": 189, "to": 188}, {"id": "6-11", "from": 6, "to": 11}, {"id": "7-10", "from": 7, "to": 10}, {"id": "8-40", "from": 8, "to": 40}, {"id": "10-31", "from": 10, "to": 31}, {"id": "29-129", "from": 29, "to": 129}, {"id": "31-11", "from": 31, "to": 11}, {"id": "128-29", "from": 128, "to": 29}];
-var NODES_OLD = [{"id": 131, "label": "DbFileOutput\n(131)", "x": 2826.0, "y": 895.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput | modified"}, {"id": 11, "label": "Join\n(11)", "x": 329.0, "y": 739.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Join.Join | unchanged"}, {"id": 40, "label": "Formula\n(40)", "x": 330.0, "y": 1111.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | modified"}, {"id": 52, "label": "Formula\n(52)", "x": 894.0, "y": 727.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | modified"}, {"id": 73, "label": "Filter\n(73)", "x": 1110.0, "y": 727.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 129, "label": "Filter\n(129)", "x": 570.0, "y": 739.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 185, "label": "Join\n(185)", "x": 726.0, "y": 739.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Join.Join | removed"}, {"id": 186, "label": "Filter\n(186)", "x": 990.0, "y": 727.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | removed"}, {"id": 94, "label": "Formula\n(94)", "x": 1578.0, "y": 727.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 101, "label": "Filter\n(101)", "x": 1446.0, "y": 739.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 102, "label": "Formula\n(102)", "x": 1578.0, "y": 907.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 104, "label": "Filter\n(104)", "x": 1446.0, "y": 907.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 105, "label": "Formula\n(105)", "x": 1578.0, "y": 1099.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 107, "label": "Filter\n(107)", "x": 1446.0, "y": 1111.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 132, "label": "AlteryxSelect\n(132)", "x": 1314.0, "y": 739.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | modified"}, {"id": 130, "label": "Union\n(130)", "x": 1782.0, "y": 907.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Union.Union | unchanged"}, {"id": 138, "label": "Formula\n(138)", "x": 1890.0, "y": 907.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | modified"}, {"id": 137, "label": "AlteryxSelect\n(137)", "x": 2010.0, "y": 907.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | modified"}, {"id": 1, "label": "DbFileInput\n(1)", "x": 102.0, "y": 727.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | unchanged"}, {"id": 2, "label": "DbFileInput\n(2)", "x": 102.0, "y": 967.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 3, "label": "DbFileInput\n(3)", "x": 102.0, "y": 1207.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 100, "label": "Summarize\n(100)", "x": 1266.0, "y": 307.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 103, "label": "Summarize\n(103)", "x": 1265.0, "y": 427.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 106, "label": "Summarize\n(106)", "x": 1265.0, "y": 511.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 187, "label": "Test\n(187)", "x": 1434.0, "y": 343.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Test.Test | removed"}, {"id": 170, "label": "Test\n(170)", "x": 1434.0, "y": 247.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Test.Test | removed"}, {"id": 191, "label": "Summarize\n(191)", "x": 1266.0, "y": 187.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed"}, {"id": 192, "label": "Message\n(192)", "x": 1458.0, "y": 187.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Message.Message | removed"}, {"id": 193, "label": "AlteryxSelect\n(193)", "x": 1362.0, "y": 187.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | modified"}, {"id": 188, "label": "Message\n(188)", "x": 1362.0, "y": 103.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxBasePluginsGui.Message.Message | removed"}, {"id": 189, "label": "Summarize\n(189)", "x": 1266.0, "y": 103.0, "fixed": false, "status": "removed", "color": {"background": "#fca5a5", "border": "#dc2626", "highlight": {"background": "#fca5a5", "border": "#dc2626"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed"}, {"id": 108, "label": "Filter\n(108)", "x": 1734.0, "y": 54.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Filter.Filter | added (in new workflow)"}, {"id": 109, "label": "Filter\n(109)", "x": 1722.0, "y": 222.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Filter.Filter | added (in new workflow)"}, {"id": 110, "label": "Filter\n(110)", "x": 1722.0, "y": 402.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Filter.Filter | added (in new workflow)"}, {"id": 31, "label": "Union\n(31)", "x": 546.0, "y": 258.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Union.Union | added (in new workflow)"}, {"id": 128, "label": "Union\n(128)", "x": 690.0, "y": 78.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Union.Union | added (in new workflow)"}, {"id": 6, "label": "AlteryxSelect\n(6)", "x": 185.0, "y": 78.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added (in new workflow)"}, {"id": 7, "label": "AlteryxSelect\n(7)", "x": 185.0, "y": 258.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added (in new workflow)"}, {"id": 8, "label": "AlteryxSelect\n(8)", "x": 185.0, "y": 438.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added (in new workflow)"}, {"id": 10, "label": "Join\n(10)", "x": 438.0, "y": 258.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Join.Join | added (in new workflow)"}];
-var NODES_NEW = [{"id": 1, "label": "DbFileInput\n(1)", "x": 54.0, "y": 78.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | unchanged"}, {"id": 2, "label": "DbFileInput\n(2)", "x": 54.0, "y": 258.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 3, "label": "DbFileInput\n(3)", "x": 54.0, "y": 438.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 6, "label": "AlteryxSelect\n(6)", "x": 185.0, "y": 78.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added"}, {"id": 7, "label": "AlteryxSelect\n(7)", "x": 185.0, "y": 258.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added"}, {"id": 8, "label": "AlteryxSelect\n(8)", "x": 185.0, "y": 438.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | added"}, {"id": 10, "label": "Join\n(10)", "x": 438.0, "y": 258.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Join.Join | added"}, {"id": 11, "label": "Join\n(11)", "x": 594.0, "y": 78.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Join.Join | unchanged"}, {"id": 29, "label": "AlteryxSelect\n(29)", "x": 786.0, "y": 78.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 31, "label": "Union\n(31)", "x": 546.0, "y": 258.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Union.Union | added"}, {"id": 40, "label": "Formula\n(40)", "x": 294.0, "y": 438.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | modified"}, {"id": 52, "label": "Formula\n(52)", "x": 1002.0, "y": 78.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | modified"}, {"id": 73, "label": "Filter\n(73)", "x": 1146.0, "y": 78.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 94, "label": "Formula\n(94)", "x": 1518.0, "y": 54.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 100, "label": "Summarize\n(100)", "x": 1614.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 101, "label": "Filter\n(101)", "x": 1386.0, "y": 66.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 102, "label": "Formula\n(102)", "x": 1518.0, "y": 222.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 103, "label": "Summarize\n(103)", "x": 1614.0, "y": 222.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 104, "label": "Filter\n(104)", "x": 1386.0, "y": 234.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 105, "label": "Formula\n(105)", "x": 1518.0, "y": 402.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | unchanged"}, {"id": 106, "label": "Summarize\n(106)", "x": 1614.0, "y": 402.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | modified"}, {"id": 107, "label": "Filter\n(107)", "x": 1386.0, "y": 414.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 108, "label": "Filter\n(108)", "x": 1734.0, "y": 54.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | added"}, {"id": 109, "label": "Filter\n(109)", "x": 1722.0, "y": 222.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | added"}, {"id": 110, "label": "Filter\n(110)", "x": 1722.0, "y": 402.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | added"}, {"id": 128, "label": "Union\n(128)", "x": 690.0, "y": 78.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Union.Union | added"}, {"id": 129, "label": "Filter\n(129)", "x": 882.0, "y": 78.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | unchanged"}, {"id": 130, "label": "Union\n(130)", "x": 1854.0, "y": 282.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.Union.Union | unchanged"}, {"id": 131, "label": "DbFileOutput\n(131)", "x": 2046.0, "y": 282.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput | modified"}, {"id": 132, "label": "AlteryxSelect\n(132)", "x": 1254.0, "y": 66.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | modified"}, {"id": 137, "label": "AlteryxSelect\n(137)", "x": 1950.0, "y": 282.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | modified"}, {"id": 138, "label": "Test\n(138)", "x": 1914.0, "y": 18.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Test.Test | modified"}, {"id": 192, "label": "Message\n(192)", "x": 1458.0, "y": 187.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Message.Message | removed (was in old workflow)"}, {"id": 188, "label": "Message\n(188)", "x": 1362.0, "y": 103.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Message.Message | removed (was in old workflow)"}, {"id": 187, "label": "Test\n(187)", "x": 1434.0, "y": 343.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Test.Test | removed (was in old workflow)"}, {"id": 170, "label": "Test\n(170)", "x": 1434.0, "y": 247.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Test.Test | removed (was in old workflow)"}, {"id": 191, "label": "Summarize\n(191)", "x": 1266.0, "y": 187.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed (was in old workflow)"}, {"id": 189, "label": "Summarize\n(189)", "x": 1266.0, "y": 103.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxSpatialPluginsGui.Summarize.Summarize | removed (was in old workflow)"}, {"id": 186, "label": "Filter\n(186)", "x": 990.0, "y": 727.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Filter.Filter | removed (was in old workflow)"}, {"id": 185, "label": "Join\n(185)", "x": 726.0, "y": 739.0, "fixed": false, "status": "ghost_removed", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#fee2e2", "border": "#fca5a5"}, "title": "AlteryxBasePluginsGui.Join.Join | removed (was in old workflow)"}];
+var GRAPH_NODES = [{"id": 1, "label": "DbFileInput\n(1)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileInput\n(1) | modified | 1 field(s) changed", "x": -2000.0, "y": 0.0, "fixed": false}, {"id": 2, "label": "Filter\n(2)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Filter\n(2) | modified | 1 field(s) changed", "x": -1200.0000000000002, "y": 0.0, "fixed": false}, {"id": 3, "label": "AlteryxSelect\n(3)", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "status": "unchanged", "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged", "x": -400.0, "y": 0.0, "fixed": false}, {"id": 4, "label": "Summarize\n(4)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "Summarize\n(4) | modified | 1 field(s) changed", "x": 400.0, "y": 0.0, "fixed": false}, {"id": 6, "label": "Formula\n(6)", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "status": "added", "title": "AlteryxBasePluginsGui.Formula.Formula | added", "x": 1200.0000000000002, "y": 0.0, "fixed": false}, {"id": 5, "label": "DbFileOutput\n(5)", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "status": "modified", "title": "DbFileOutput\n(5) | modified | 1 field(s) changed", "x": 2000.0, "y": 0.0, "fixed": false}];
+var GRAPH_EDGES = [{"id": "1-2", "from": 1, "to": 2}, {"id": "2-3", "from": 2, "to": 3}, {"id": "3-4", "from": 3, "to": 4}, {"id": "4-5", "from": 4, "to": 5}, {"id": "4-6", "from": 4, "to": 6}, {"id": "6-5", "from": 6, "to": 5}];
+var NODES_OLD = [{"id": 1, "label": "DbFileInput\n(1)", "x": 54.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 2, "label": "Filter\n(2)", "x": 198.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 3, "label": "AlteryxSelect\n(3)", "x": 342.0, "y": 54.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 4, "label": "Summarize\n(4)", "x": 486.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Summarize.Summarize | modified"}, {"id": 5, "label": "DbFileOutput\n(5)", "x": 630.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput | modified"}, {"id": 6, "label": "Formula\n(6)", "x": 630.0, "y": 54.0, "fixed": false, "status": "ghost_added", "opacity": 0.25, "borderDashes": [4, 4], "color": {"background": "#d1fae5", "border": "#6ee7b7"}, "title": "AlteryxBasePluginsGui.Formula.Formula | added (in new workflow)"}];
+var NODES_NEW = [{"id": 1, "label": "DbFileInput\n(1)", "x": 54.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileInput.DbFileInput | modified"}, {"id": 2, "label": "Filter\n(2)", "x": 198.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Filter.Filter | modified"}, {"id": 3, "label": "AlteryxSelect\n(3)", "x": 342.0, "y": 54.0, "fixed": false, "status": "unchanged", "color": {"background": "#e2e8f0", "border": "#94a3b8", "highlight": {"background": "#e2e8f0", "border": "#94a3b8"}}, "title": "AlteryxBasePluginsGui.AlteryxSelect.AlteryxSelect | unchanged"}, {"id": 4, "label": "Summarize\n(4)", "x": 486.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.Summarize.Summarize | modified"}, {"id": 6, "label": "Formula\n(6)", "x": 630.0, "y": 54.0, "fixed": false, "status": "added", "color": {"background": "#6ee7b7", "border": "#059669", "highlight": {"background": "#6ee7b7", "border": "#059669"}}, "title": "AlteryxBasePluginsGui.Formula.Formula | added"}, {"id": 5, "label": "DbFileOutput\n(5)", "x": 774.0, "y": 54.0, "fixed": false, "status": "modified", "color": {"background": "#fcd34d", "border": "#b45309", "highlight": {"background": "#fcd34d", "border": "#b45309"}}, "title": "AlteryxBasePluginsGui.DbFileOutput.DbFileOutput | modified"}];
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
 // Build fast lookup: integer tool_id -> {category, data}
@@ -982,10 +797,7 @@ var DARK_COLORS = {
 };
 
 function isDark() {
-  var t = document.documentElement.getAttribute('data-theme');
-  if (t === 'dark') return true;
-  if (t === 'light') return false;
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return !document.documentElement.classList.contains('light');
 }
 
 function applyThemeColors() {
@@ -1009,13 +821,8 @@ function applyThemeColors() {
 
 applyThemeColors();
 new MutationObserver(function(ms) {
-  ms.forEach(function(m) { if (m.attributeName === 'data-theme') applyThemeColors(); });
-}).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
-if (window.matchMedia) {
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-    if (!document.documentElement.hasAttribute('data-theme')) applyThemeColors();
-  });
-}
+  ms.forEach(function(m) { if (m.attributeName === 'class') applyThemeColors(); });
+}).observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
 // ─────────────────────────────────────────────────────────────────────────
 
 // Show-only-changes toggle
@@ -1272,9 +1079,7 @@ function buildCenterPanel() {
   });
   if (entries.length === 0) {
     var empty = document.createElement('div');
-    empty.style.padding = '12px 10px';
-    empty.style.color = '#64748b';
-    empty.style.fontSize = '0.85em';
+    empty.className = 'split-change-empty';
     empty.textContent = 'No changes.';
     container.appendChild(empty);
     return;
@@ -1356,48 +1161,51 @@ switchView(currentView);
 </script>
 </section>
 
-<details id="governance" style="margin-top:32px;border-top:1px solid var(--border);padding-top:12px;">
-  <summary style="cursor:pointer;color:var(--text-muted);font-size:0.85em;padding:4px 0;user-select:none;">
-    Governance Metadata (ALCOA+)
-  </summary>
-  <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.82em;padding:8px 0;color:var(--field-label);line-height:1.8;">
-    <div><strong>File A:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/RISK_Creation of TU Cohorts.yxwz</div>
-    <div><strong>SHA-256 A:</strong> 301a2588e8d18166058a379b7b16a78523c1335e54f6230115fa20070340d0a4</div>
-    <div><strong>File B:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/RISK_Creation of TU Cohorts_03MAR26.yxmd</div>
-    <div><strong>SHA-256 B:</strong> b9d1215de4efc0246bf6d91d65012e628a3779f52df4fba80d32a320539be768</div>
-    <div><strong>Generated:</strong> 2026-03-10T15:44:50.639286+00:00</div>
+<details id="governance">
+  <summary>Governance Metadata (ALCOA+)</summary>
+  <div class="gov-content">
+    <div><strong>File A:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/workflow_v1.yxmd</div>
+    <div><strong>SHA-256 A:</strong> 05e041f8f3fe06594358a505facbcde3ecc3fd1618802b06a7c5eb522a91cf08</div>
+    <div><strong>File B:</strong> /Users/laxmikantmukkawar/Documents/Projects/alteryx_diff/examples/workflow_v2.yxmd</div>
+    <div><strong>SHA-256 B:</strong> d228b8e50a842503618b605e318052e8c68cf0e0c70752dd1dab33f284bdb5c0</div>
+    <div><strong>Generated:</strong> 2026-03-28T00:13:00.544100+00:00</div>
   </div>
 </details>
 
 <script>
 function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'light') {
+        document.documentElement.classList.add('light');
+    } else {
+        document.documentElement.classList.remove('light');
+    }
     localStorage.setItem('alteryx-diff-theme', theme);
     var toggle = document.getElementById('theme-toggle');
     if (toggle) {
-        toggle.setAttribute('data-mode', theme);
+        toggle.textContent = theme === 'dark' ? '☽ Dark' : '☀ Light';
     }
 }
 
 function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme');
-    setTheme(current === 'dark' ? 'light' : 'dark');
+    var isLight = document.documentElement.classList.contains('light');
+    setTheme(isLight ? 'dark' : 'light');
 }
 
-// On load: restore from localStorage, else detect OS preference
 (function() {
     var saved = localStorage.getItem('alteryx-diff-theme');
+    if (saved) { setTheme(saved); return; }
     var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(saved || (prefersDark ? 'dark' : 'light'));
+    setTheme(prefersDark !== false ? 'dark' : 'light');
 })();
 
 var DIFF_DATA = JSON.parse(document.getElementById('diff-data').textContent);
 
 function expandSection(sectionId) {
-    var section = document.getElementById(sectionId);
-    if (!section) return;
-    section.scrollIntoView({behavior: 'smooth'});
-    var rows = section.querySelectorAll('.tool-row');
+    var container = document.getElementById('section-' + sectionId);
+    if (!container) return;
+    var heading = document.getElementById('heading-' + sectionId);
+    if (heading) heading.scrollIntoView({behavior: 'smooth'});
+    var rows = container.querySelectorAll('.tool-row');
     for (var i = 0; i < rows.length; i++) {
         if (!rows[i].classList.contains('expanded')) rows[i].click();
     }
@@ -1494,19 +1302,19 @@ function formatVal(v) {
     return String(v);
 }
 
-function expandAll(sectionId) {
-    var section = document.getElementById(sectionId);
-    if (!section) return;
-    var rows = section.querySelectorAll('.tool-row');
+function expandAll(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var rows = container.querySelectorAll('.tool-row');
     for (var i = 0; i < rows.length; i++) {
         if (!rows[i].classList.contains('expanded')) rows[i].click();
     }
 }
 
-function collapseAll(sectionId) {
-    var section = document.getElementById(sectionId);
-    if (!section) return;
-    var rows = section.querySelectorAll('.tool-row.expanded');
+function collapseAll(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var rows = container.querySelectorAll('.tool-row.expanded');
     for (var i = 0; i < rows.length; i++) { rows[i].click(); }
 }
 </script>
