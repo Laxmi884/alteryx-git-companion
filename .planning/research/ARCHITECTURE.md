@@ -1,669 +1,687 @@
-# Architecture Research
+# Architecture Research — LLM Documentation (April 2026)
 
-**Domain:** Structured XML diff tool — CLI-first, API-evolution path
-**Researched:** 2026-02-28
-**Confidence:** MEDIUM-HIGH (pipeline patterns HIGH, graph matching MEDIUM, HTML embedding HIGH, CLI-API evolution HIGH)
-
----
-
-## Standard Architecture
-
-### System Overview
-
-```
-┌───────────────────────────────────────────────────────────────────────┐
-│                        ENTRY POINTS                                    │
-│                                                                        │
-│  ┌──────────────────────┐       ┌──────────────────────────────────┐   │
-│  │   CLI (Typer)        │       │   API (FastAPI) — Phase 3        │   │
-│  │   acd diff a b       │       │   POST /diff {file_a, file_b}    │   │
-│  └──────────┬───────────┘       └───────────────┬──────────────────┘   │
-│             │                                   │                      │
-│             └──────────────┬────────────────────┘                      │
-└──────────────────────────  │  ─────────────────────────────────────────┘
-                             │ DiffRequest (dataclass)
-                             ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                       PIPELINE CORE                                   │
-│                                                                        │
-│  ┌────────────┐   WorkflowDoc   ┌─────────────┐   WorkflowDoc (norm)  │
-│  │  Parser    │ ─────────────── │ Normalizer  │ ──────────────────    │
-│  │            │                 │             │                    │   │
-│  └────────────┘                 └─────────────┘                   │   │
-│                                                                    ▼   │
-│  ┌────────────────────────────────────────────────────────────────┐    │
-│  │                     Differ                                      │    │
-│  │   NodeMatcher ──────────────────► MatchResult                 │    │
-│  │   (bipartite Hungarian / ID-first hybrid)                      │    │
-│  │                                    │                           │    │
-│  │   EdgeDiffer ◄─────────────────────┘                          │    │
-│  │                                    │                           │    │
-│  │   DiffResult ◄─────────────────────┘                          │    │
-│  └─────────────────────────────────┬──────────────────────────────┘    │
-│                                    │ DiffResult                        │
-│                                    ▼                                   │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │                     Renderer                                     │   │
-│  │   HTMLRenderer ──────────────────────────────► report.html      │   │
-│  │   JSONRenderer ──────────────────────────────► summary.json     │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `Parser` | Load .yxmd XML, validate structure, emit `WorkflowDoc` | Normalizer |
-| `Normalizer` | Strip noise (positions, GUIDs, timestamps, whitespace), sort attributes, emit canonical `WorkflowDoc` | Differ |
-| `NodeMatcher` | Match nodes between two `WorkflowDoc` instances using ID-first then similarity fallback | Differ (sub-component) |
-| `Differ` | Produce `DiffResult` from two normalized `WorkflowDoc` instances | Renderer |
-| `HTMLRenderer` | Accept `DiffResult`, render Jinja2 template with inlined D3.js/vis.js, emit single `.html` file | Consumer (filesystem / API response) |
-| `JSONRenderer` | Accept `DiffResult`, emit machine-readable summary | Consumer |
-| `CLI entry` | Parse arguments, call pipeline, write output files | Pipeline Core only |
-| `API entry` | Parse HTTP request, call pipeline, return response body | Pipeline Core only |
+**Researched:** 2026-04-02
+**Confidence:** MEDIUM-HIGH (LangGraph patterns from official docs + community; FastAPI patterns HIGH from official docs)
 
 ---
 
-## Recommended Project Structure
+## Component Map
 
-```
-alteryx_diff/
-├── acd/                          # Main package
-│   ├── __init__.py
-│   ├── cli.py                    # Typer app — thin entry point only
-│   │
-│   ├── models/                   # Immutable data structures (frozen dataclasses)
-│   │   ├── __init__.py
-│   │   ├── workflow.py           # WorkflowDoc, AlteryxNode, AlteryxConnection
-│   │   └── diff_result.py        # DiffResult, NodeDiff, EdgeDiff, ChangeType
-│   │
-│   ├── parser/                   # Stage 1: XML → WorkflowDoc
-│   │   ├── __init__.py
-│   │   └── yxmd_parser.py        # lxml-based parser
-│   │
-│   ├── normalizer/               # Stage 2: WorkflowDoc → canonical WorkflowDoc
-│   │   ├── __init__.py
-│   │   └── normalizer.py         # Strip noise, sort, canonicalize
-│   │
-│   ├── differ/                   # Stage 3: (WorkflowDoc, WorkflowDoc) → DiffResult
-│   │   ├── __init__.py
-│   │   ├── node_matcher.py       # ID-first + similarity-based fallback matching
-│   │   ├── node_differ.py        # Config-level diff per matched pair
-│   │   └── edge_differ.py        # Connection add/remove/rewire detection
-│   │
-│   ├── renderer/                 # Stage 4: DiffResult → output
-│   │   ├── __init__.py
-│   │   ├── html_renderer.py      # Jinja2 + inlined D3/vis.js
-│   │   ├── json_renderer.py      # Machine-readable summary
-│   │   └── templates/
-│   │       └── report.html.j2    # Main Jinja2 template
-│   │
-│   ├── pipeline.py               # Orchestrates all 4 stages; entry-point-agnostic
-│   └── api/                      # Phase 3: FastAPI adapter (thin wrapper)
-│       ├── __init__.py
-│       └── routes.py
-│
-├── tests/
-│   ├── fixtures/                 # Golden .yxmd pairs + expected DiffResult snapshots
-│   │   ├── simple_add/
-│   │   ├── config_change/
-│   │   └── id_regeneration/
-│   ├── unit/
-│   │   ├── test_parser.py
-│   │   ├── test_normalizer.py
-│   │   ├── test_node_matcher.py
-│   │   └── test_differ.py
-│   ├── integration/
-│   │   └── test_pipeline.py      # Full pipeline fixture-pairs → DiffResult assertions
-│   └── snapshot/
-│       └── test_html_output.py   # HTML report snapshot tests
-│
-└── pyproject.toml
-```
+### New Components
 
-### Structure Rationale
+| Component | Path | Responsibility |
+|-----------|------|---------------|
+| `ContextBuilder` | `src/alteryx_diff/llm/context_builder.py` | Transforms `WorkflowDoc`/`DiffResult` dataclasses into token-efficient JSON dicts for LLM consumption. No raw XML ever reaches the LLM. |
+| `DocumentationGraph` | `src/alteryx_diff/llm/doc_graph.py` | LangGraph compiled graph: `analyze_topology → annotate_tools → risk_scan → assemble_doc`. Returns `WorkflowDoc` Pydantic model. |
+| `DocRenderer` | `src/alteryx_diff/renderers/doc_renderer.py` | Renders `WorkflowDoc` to Markdown (standalone) or HTML fragment (embedded in diff report). Follows same renderer protocol as `HTMLRenderer`. |
+| `llm/__init__.py` | `src/alteryx_diff/llm/__init__.py` | Optional-import guard. Raises `ImportError` with install hint if `[llm]` extras absent. |
+| `LLM router` | `app/routers/llm.py` | FastAPI router: `POST /api/llm/document` triggers background doc generation; `GET /api/llm/progress/{job_id}` streams SSE progress. |
+| `RAGAS harness` | `tests/eval/ragas_eval.py` | Faithfulness + factual grounding evaluation. Not part of the main package; dev-only. |
 
-- **`models/` before everything:** All data structures defined first. Every stage speaks the same language. No cross-stage coupling except through these types.
-- **`pipeline.py` as the single orchestrator:** CLI and API both call `pipeline.run(request)`. Neither knows the stage implementations. This is the hexagonal architecture "application service" pattern.
-- **`renderer/templates/` embedded in package:** Template lives alongside the renderer, not in a separate assets folder. Single-file HTML output is produced by inlining JS/CSS at build time inside the template itself.
-- **`tests/fixtures/` as versioned pairs:** Fixture-based testing dominates for this domain. Each subdirectory is a scenario: two `.yxmd` files + expected `DiffResult` JSON.
+### Modified Components
 
----
-
-## Architectural Patterns
-
-### Pattern 1: Immutable Pipeline with Typed Handoffs
-
-**What:** Each stage transforms its input into a new immutable data structure. No stage mutates its input. Stages communicate only through well-defined typed boundaries.
-
-**When to use:** Any multi-stage transformation pipeline where debugging "where did the data go wrong" is critical. Immutability means you can inspect each stage's output independently.
-
-**Trade-offs:** Slightly more memory than in-place mutation; Python frozen dataclasses add minimal overhead. Worth it for debuggability and testability.
-
-**Example:**
-```python
-from dataclasses import dataclass, field
-from typing import FrozenSet, Tuple
-
-@dataclass(frozen=True)
-class AlteryxNode:
-    tool_id: int
-    tool_type: str           # e.g. "DbFileInput", "Filter"
-    x: float                 # canvas position — kept for layout, not diffing
-    y: float
-    config_hash: str         # SHA-256 of normalized config XML — for fast change detection
-    config_xml: str          # full canonical config string — for diff display
-
-@dataclass(frozen=True)
-class AlteryxConnection:
-    src_tool_id: int
-    src_anchor: str          # e.g. "Output", "True", "False"
-    dst_tool_id: int
-    dst_anchor: str          # e.g. "Input"
-
-@dataclass(frozen=True)
-class WorkflowDoc:
-    path: str
-    nodes: FrozenSet[AlteryxNode]
-    connections: FrozenSet[AlteryxConnection]
-```
-
-### Pattern 2: ID-First, Similarity-Fallback Node Matching
-
-**What:** Attempt to match nodes between two `WorkflowDoc` instances by `ToolID` first (O(n) exact lookup). For unmatched nodes on either side, compute a similarity score matrix and use `scipy.optimize.linear_sum_assignment` (Hungarian algorithm, O(n³)) to find minimum-cost bipartite matching.
-
-**When to use:** Alteryx ToolIDs can regenerate on save — this is documented in the project constraints. Pure ID matching produces false add/remove pairs. Pure similarity matching is slow and inaccurate when IDs are stable. Hybrid is correct and fast for the common case.
-
-**Trade-offs:** Adds `scipy` dependency. O(n³) is fine up to 500 nodes (~500³ = 125M ops, sub-second in C). For the rare case of 500 fully-regenerated IDs, worst-case is acceptable given the 5-second SLA.
-
-**Similarity cost function:**
-```python
-def node_similarity_cost(a: AlteryxNode, b: AlteryxNode) -> float:
-    """Lower = more similar. Returns cost for Hungarian assignment."""
-    if a.tool_type != b.tool_type:
-        return 1.0  # Maximum cost — different tool types should not match
-    # Spatial proximity (normalized by canvas size ~10000 units)
-    position_cost = (abs(a.x - b.x) + abs(a.y - b.y)) / 20000.0
-    # Config similarity
-    config_cost = 0.0 if a.config_hash == b.config_hash else 0.3
-    return min(1.0, position_cost + config_cost)
-```
-
-**Example:**
-```python
-from scipy.optimize import linear_sum_assignment
-import numpy as np
-
-def match_nodes(
-    nodes_a: list[AlteryxNode],
-    nodes_b: list[AlteryxNode]
-) -> list[tuple[AlteryxNode | None, AlteryxNode | None]]:
-    # Stage 1: exact ToolID match
-    ids_a = {n.tool_id: n for n in nodes_a}
-    ids_b = {n.tool_id: n for n in nodes_b}
-    matched = []
-    unmatched_a, unmatched_b = [], []
-    for id_, node_a in ids_a.items():
-        if id_ in ids_b:
-            matched.append((node_a, ids_b[id_]))
-        else:
-            unmatched_a.append(node_a)
-    for id_, node_b in ids_b.items():
-        if id_ not in ids_a:
-            unmatched_b.append(node_b)
-    # Stage 2: similarity-based matching for unmatched
-    if unmatched_a and unmatched_b:
-        cost_matrix = np.array([
-            [node_similarity_cost(a, b) for b in unmatched_b]
-            for a in unmatched_a
-        ])
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        for r, c in zip(row_ind, col_ind):
-            if cost_matrix[r, c] < 0.8:  # Threshold: reject implausible matches
-                matched.append((unmatched_a[r], unmatched_b[c]))
-            else:
-                matched.append((unmatched_a[r], None))  # Treat as removed
-                matched.append((None, unmatched_b[c]))  # Treat as added
-    return matched
-```
-
-### Pattern 3: Canonical XML Normalization Before Hashing
-
-**What:** Before any comparison, run `lxml.etree.canonicalize()` on each node's configuration XML subtree. C14N sorts attributes alphabetically, normalizes whitespace, and removes comments. Then SHA-256 hash the result for fast equality checks.
-
-**When to use:** Always, before any config comparison. This eliminates the #1 and #2 sources of false positives: attribute reordering (Alteryx reorders attributes on save) and whitespace drift.
-
-**Trade-offs:** C14N is slightly slower than raw string comparison but negligible at 500 nodes. The hash enables O(1) change detection — only nodes with hash mismatches need full config diffing.
-
-**The normalization contract (what gets stripped vs. preserved):**
-
-| Element | Default behavior | `--include-positions` |
-|---------|-----------------|----------------------|
-| `Position` attributes (`x`, `y`) | Stripped from diff | Included |
-| Auto-generated GUIDs | Stripped | Stripped |
-| Save timestamps | Stripped | Stripped |
-| Attribute order | Sorted by C14N | Sorted by C14N |
-| Whitespace in text nodes | Normalized | Normalized |
-| Tool configuration values | Preserved | Preserved |
-
-**Example:**
-```python
-import hashlib
-from lxml import etree
-
-def canonicalize_config(config_element: etree._Element) -> str:
-    """Return canonical string of config XML, stripping position noise."""
-    # Deep copy to avoid mutating the tree
-    node = copy.deepcopy(config_element)
-    # Strip known noise attributes
-    NOISE_ATTRS = {"x", "y", "BrushColor", "lastModified", "createdAt"}
-    for el in node.iter():
-        for attr in NOISE_ATTRS:
-            el.attrib.pop(attr, None)
-    return etree.canonicalize(etree.tostring(node))
-
-def config_hash(canonical_xml: str) -> str:
-    return hashlib.sha256(canonical_xml.encode()).hexdigest()
-```
-
-### Pattern 4: Self-Contained HTML Report via Jinja2 Inlining
-
-**What:** The Jinja2 template does NOT reference external CDN URLs. All JavaScript (D3.js or vis.js) and CSS are inlined into the template at render time by reading the library files from the package and injecting them as `<script>` and `<style>` blocks. Diff data is injected as a `const DIFF_DATA = {...}` JSON literal inside a `<script>` tag.
-
-**When to use:** Required for offline-capable reports. Users who receive the HTML report via email or Git artifact must be able to open it without internet access.
-
-**Trade-offs:** Report file size increases (~200–500KB for D3.js). Acceptable for a developer tool. Use `gzip` in the API path if needed.
-
-**Example Jinja2 template pattern:**
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <style>{{ css_content }}</style>
-</head>
-<body>
-  <script>
-    const DIFF_DATA = {{ diff_json | safe }};
-  </script>
-  <script>{{ d3_js_content }}</script>
-  <script>{{ report_js_content }}</script>
-</body>
-</html>
-```
-
-**Python renderer:**
-```python
-from importlib.resources import files
-from jinja2 import Environment, PackageLoader
-import json
-
-class HTMLRenderer:
-    def __init__(self):
-        self._env = Environment(loader=PackageLoader("acd", "renderer/templates"))
-        # Load D3.js once at import time — it's static
-        self._d3_js = files("acd").joinpath("renderer/static/d3.v7.min.js").read_text()
-        self._report_css = files("acd").joinpath("renderer/static/report.css").read_text()
-        self._report_js = files("acd").joinpath("renderer/static/report.js").read_text()
-
-    def render(self, diff_result: DiffResult) -> str:
-        template = self._env.get_template("report.html.j2")
-        return template.render(
-            diff_json=json.dumps(diff_result.to_dict()),
-            d3_js_content=self._d3_js,
-            css_content=self._report_css,
-            report_js_content=self._report_js,
-        )
-```
-
-### Pattern 5: Hexagonal Core — Shared Pipeline, Swappable Entry Points
-
-**What:** The pipeline is a plain Python function (or class) that accepts a `DiffRequest` and returns a `DiffResult`. It has no knowledge of HTTP, file I/O, or CLI argument parsing. CLI and API are thin adapters that translate their input format into a `DiffRequest` and their output format from a `DiffResult`.
-
-**When to use:** From day one, even in Phase 1. It costs nothing extra to write `pipeline.run()` as a pure function and call it from `cli.py`. The payoff is Phase 3 — the FastAPI route becomes 15 lines.
-
-**The interface contract:**
-```python
-# acd/pipeline.py
-
-@dataclass
-class DiffRequest:
-    path_a: str
-    path_b: str
-    include_positions: bool = False
-    output_format: str = "html"  # "html" | "json" | "both"
-
-@dataclass
-class DiffResponse:
-    diff_result: DiffResult
-    html_report: str | None       # rendered HTML, if requested
-    json_summary: dict | None     # rendered JSON, if requested
-    error: str | None = None
-
-def run(request: DiffRequest) -> DiffResponse:
-    """Single entry point. No side effects — caller decides what to write where."""
-    try:
-        doc_a = parse(request.path_a)
-        doc_b = parse(request.path_b)
-        norm_a = normalize(doc_a, include_positions=request.include_positions)
-        norm_b = normalize(doc_b, include_positions=request.include_positions)
-        diff = diff_workflows(norm_a, norm_b)
-        return DiffResponse(
-            diff_result=diff,
-            html_report=HTMLRenderer().render(diff) if "html" in request.output_format else None,
-            json_summary=JSONRenderer().render(diff) if "json" in request.output_format else None,
-        )
-    except Exception as e:
-        return DiffResponse(diff_result=None, html_report=None, json_summary=None, error=str(e))
-```
-
-**CLI adapter (thin):**
-```python
-# acd/cli.py
-import typer
-from acd.pipeline import DiffRequest, run
-
-app = typer.Typer()
-
-@app.command()
-def diff(
-    file_a: str = typer.Argument(..., help="Path to original .yxmd"),
-    file_b: str = typer.Argument(..., help="Path to modified .yxmd"),
-    output: str = typer.Option("diff_report.html", "--output", "-o"),
-    include_positions: bool = typer.Option(False, "--include-positions"),
-):
-    response = run(DiffRequest(path_a=file_a, path_b=file_b, include_positions=include_positions))
-    if response.error:
-        typer.echo(f"Error: {response.error}", err=True)
-        raise typer.Exit(1)
-    if response.html_report:
-        Path(output).write_text(response.html_report)
-        typer.echo(f"Report written to {output}")
-```
-
-**Phase 3 API adapter (also thin):**
-```python
-# acd/api/routes.py
-from fastapi import FastAPI, UploadFile
-from acd.pipeline import DiffRequest, run
-
-app = FastAPI()
-
-@app.post("/diff")
-async def diff_endpoint(file_a: UploadFile, file_b: UploadFile):
-    # Write uploads to temp paths, call the same pipeline
-    with tempfile.NamedTemporaryFile(suffix=".yxmd") as fa, \
-         tempfile.NamedTemporaryFile(suffix=".yxmd") as fb:
-        fa.write(await file_a.read()); fa.flush()
-        fb.write(await file_b.read()); fb.flush()
-        response = run(DiffRequest(path_a=fa.name, path_b=fb.name))
-    if response.error:
-        raise HTTPException(status_code=422, detail=response.error)
-    return {"html_report": response.html_report, "summary": response.json_summary}
-```
+| Component | Path | Change |
+|-----------|------|--------|
+| `cli.py` | `src/alteryx_diff/cli.py` | Add `document` subcommand via `app.add_typer(document_app, name="document")`. |
+| `pipeline/pipeline.py` | `src/alteryx_diff/pipeline/pipeline.py` | No change to `pipeline.run()`. The LLM layer consumes `DiffResult` as input — it does not modify the pipeline. |
+| `history.py` router | `app/routers/history.py` | Add optional `?doc=true` query param that triggers background doc generation alongside the existing diff response. |
+| `pyproject.toml` | `pyproject.toml` | Add `[project.optional-dependencies] llm = [...]` group with `langchain~=0.3`, `langgraph~=1.1`, `langchain-openai`, `langchain-community` (Ollama). |
 
 ---
 
 ## Data Flow
 
-### Primary Flow: CLI Invocation
-
 ```
-User: acd diff workflow_v1.yxmd workflow_v2.yxmd
-    │
-    ▼
-cli.py: parse args → build DiffRequest
-    │
-    ▼
-pipeline.run(DiffRequest)
-    │
-    ├─ Parser.parse(path_a) → WorkflowDoc(nodes, connections, path)
-    ├─ Parser.parse(path_b) → WorkflowDoc(nodes, connections, path)
-    │
-    ├─ Normalizer.normalize(doc_a) → WorkflowDoc (noise stripped, hashes computed)
-    ├─ Normalizer.normalize(doc_b) → WorkflowDoc (noise stripped, hashes computed)
-    │
-    ├─ Differ.diff(norm_a, norm_b)
-    │       │
-    │       ├─ NodeMatcher.match() → MatchResult (pairs + unmatched)
-    │       │      Phase 1: ID lookup O(n)
-    │       │      Phase 2: Hungarian on unmatched O(n³)
-    │       │
-    │       ├─ NodeDiffer.diff_pair(a, b) per matched pair
-    │       │      config_hash match → UNCHANGED (fast path)
-    │       │      hash mismatch → canonicalize both → difflib.unified_diff → MODIFIED
-    │       │
-    │       ├─ EdgeDiffer.diff_edges(conn_a, conn_b)
-    │       │      Compare frozensets → symmetric difference → ADDED / REMOVED
-    │       │
-    │       └─ Returns DiffResult
-    │
-    ├─ HTMLRenderer.render(diff_result) → html_str
-    │
-    └─ Returns DiffResponse
-    │
-cli.py: write html_str to output path
-    │
-    ▼
-User: opens report.html in browser
-```
-
-### State That Flows Between Stages
-
-| Boundary | Data Structure | Key Fields |
-|----------|---------------|------------|
-| Parser → Normalizer | `WorkflowDoc` | `nodes: FrozenSet[AlteryxNode]`, `connections: FrozenSet[AlteryxConnection]`, raw config XML |
-| Normalizer → Differ | `WorkflowDoc` (canonical) | Same structure, but `config_xml` is C14N, `config_hash` populated, position data conditionally stripped |
-| NodeMatcher → NodeDiffer | `MatchResult` | `matched: list[tuple[AlteryxNode, AlteryxNode]]`, `added: list[AlteryxNode]`, `removed: list[AlteryxNode]` |
-| Differ → Renderer | `DiffResult` | `node_diffs: list[NodeDiff]`, `edge_diffs: list[EdgeDiff]`, `summary: DiffSummary` |
-
-### Object Model for Alteryx Workflows
-
-```
-WorkflowDoc
-├── nodes: FrozenSet[AlteryxNode]
-│   └── AlteryxNode
-│       ├── tool_id: int              # Primary key — may regenerate on Alteryx save
-│       ├── tool_type: str            # "Filter", "DbFileInput", etc. — stable
-│       ├── x: float                  # Canvas X — layout only, stripped in diff
-│       ├── y: float                  # Canvas Y — layout only, stripped in diff
-│       ├── config_hash: str          # SHA-256(canonicalize(config_xml))
-│       └── config_xml: str           # Canonical config XML string
-│
-└── connections: FrozenSet[AlteryxConnection]
-    └── AlteryxConnection
-        ├── src_tool_id: int
-        ├── src_anchor: str           # "Output", "True", "False", "Error"
-        ├── dst_tool_id: int
-        └── dst_anchor: str           # "Input"
+WorkflowDoc / DiffResult
+        |
+        v
+  ContextBuilder.build()
+        |  (structured JSON dict, no raw XML)
+        v
+  DocumentationGraph.ainvoke(state)
+  +-----------------------------------------+
+  |  analyze_topology  (sync-safe, fast)    |
+  |         |                               |
+  |         v                               |
+  |  annotate_tools  (fan-out via Send API) |
+  |  [tool_1] [tool_2] ... [tool_N]         |
+  |         | (Semaphore: max 5 concurrent) |
+  |         v  reducer merges annotations   |
+  |  risk_scan  (single LLM call)           |
+  |         |                               |
+  |  assemble_doc  (single LLM call)        |
+  +-----------------------------------------+
+        |
+        v
+  WorkflowDoc  (Pydantic model, Python-validated)
+        |
+        +---> DocRenderer.to_markdown()  -->  docs/workflow.md
+        +---> DocRenderer.to_html_fragment()  -->  embedded in diff HTML
 ```
 
 ---
 
-## Testing Strategy
+## LangGraph Async Pattern
 
-### Fixture-Based Testing (Primary Approach)
+**Confidence:** MEDIUM (ainvoke pattern confirmed via official docs mirror and community; exact v1.1 signature consistent across sources)
 
-Fixture pairs are versioned `.yxmd` files in `tests/fixtures/`. Each scenario tests one behavior. The fixture is the ground truth — assertions compare actual `DiffResult` against hand-verified expected output.
+### State Definition
 
-**Recommended fixture scenarios:**
+```python
+# src/alteryx_diff/llm/doc_graph.py
+from typing import Annotated, TypedDict
+from langgraph.graph import START, END, StateGraph
+from langgraph.types import Send
+import operator
 
-| Scenario | Tests |
-|----------|-------|
-| `no_changes/` | Parser + normalizer + differ all return zero diffs |
-| `tool_added/` | Correctly classified as ADDED |
-| `tool_removed/` | Correctly classified as REMOVED |
-| `config_change_filter/` | Filter expression change detected, positions ignored |
-| `position_only_drift/` | Zero diffs with default flags, diffs present with `--include-positions` |
-| `connection_rewire/` | Source anchor change detected |
-| `id_regeneration/` | All IDs changed, tools matched by type+position, config preserved |
-| `whitespace_only/` | Zero diffs — normalizer strips whitespace noise |
-| `attribute_reorder/` | Zero diffs — C14N sorts attributes before comparison |
-| `guid_injection/` | Zero diffs — GUID fields stripped by normalizer |
+class DocState(TypedDict):
+    context: dict                          # built by ContextBuilder
+    topology_summary: str                  # from analyze_topology
+    tool_annotations: Annotated[list[dict], operator.add]  # reducer: append
+    risk_notes: str
+    assembled_doc: str
 
-### Snapshot Testing for HTML Output
-
-Use `pytest-snapshot` to catch regression in HTML report rendering. Snapshot tests verify the full rendered HTML against a stored baseline. Update snapshots explicitly with `--snapshot-update`.
-
-### Property-Based Testing (Supplementary, for Normalizer)
-
-Use `hypothesis` to verify normalizer invariants:
-- "Any permutation of node attributes produces the same config hash" — verifies C14N correctness
-- "Stripping position attributes twice is idempotent" — verifies normalizer safety
-
-Property tests catch edge cases in canonicalization that fixture tests miss. They are supplementary, not primary.
-
-### Unit Test Boundaries
-
-| Stage | What to test | What NOT to test |
-|-------|-------------|-----------------|
-| Parser | Correct extraction of ToolID, type, x, y, config, connections from sample XML | Normalization (different stage) |
-| Normalizer | Hash stability across attribute permutations; position stripping; GUID removal | Parsing or diffing |
-| NodeMatcher | Correct match pairs for stable IDs; correct fallback for regenerated IDs; threshold rejection | Config diffing |
-| Differ | Correct ChangeType for each pair type; edge rewire detection | HTML rendering |
-| Renderer | Valid HTML output; D3 data injected correctly; no CDN references in output | Pipeline orchestration |
-
----
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Phase 1 CLI: 1-500 nodes | Single-process, in-memory, synchronous. No persistence. |
-| Phase 3 API: concurrent requests | FastAPI async endpoints + `run_in_executor` for CPU-bound pipeline stages. No shared state — each request gets a fresh pipeline execution. |
-| Phase 3 API: large workflows (1000+ nodes) | Hungarian algorithm O(n³) on 1000 fully-unmatched nodes could hit ~1B ops. Mitigation: type-group matching (only match nodes of same tool_type against each other). Reduces problem size by tool-type frequency. |
-| SaaS: multi-tenant | Add request ID, user context to `DiffRequest`. Pipeline core remains stateless. Storage of reports moves to object store (S3). API layer handles auth. |
-
-### Scaling Priorities
-
-1. **First bottleneck:** Hungarian matching on large fully-regenerated ID sets. Fix: apply type-group constraint before cost matrix construction — reduces O(n³) to O((n/k)³) where k = number of tool types.
-2. **Second bottleneck:** HTML rendering with 500 nodes — D3.js force simulation on 500 nodes is fast in-browser but the JSON embedded in the report grows. Fix: separate compact summary JSON from full config diff payload; lazy-load per-node config diff on click.
-
----
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Diffing Raw XML Text Directly
-
-**What people do:** Run `diff` or `difflib` on the raw `.yxmd` XML bytes. Ship that as the output.
-
-**Why it's wrong:** Attribute reordering, whitespace drift, and GUID injection produce massive false-positive diff output. Every Alteryx save touches 10–30% of XML lines without functional change. This is the exact problem the normalizer exists to solve.
-
-**Do this instead:** Parse → normalize (C14N) → diff the canonical representation. Never compare raw XML.
-
-### Anti-Pattern 2: Using ToolID as the Only Matching Key
-
-**What people do:** Build a dict keyed by `ToolID`, compare dict entries. If a `ToolID` is missing in one version, mark it as ADDED or REMOVED.
-
-**Why it's wrong:** Alteryx regenerates ToolIDs on some save operations. A workflow with 50 tools can change all 50 IDs while being functionally identical. Pure ID matching produces 50 false REMOVED + 50 false ADDED entries.
-
-**Do this instead:** ID-first matching with similarity-fallback. Accept the complexity of a two-phase matcher — it is the only correct approach for this domain.
-
-### Anti-Pattern 3: Position in the Diff Signal
-
-**What people do:** Include X/Y coordinates in the config hash or in the change detection logic.
-
-**Why it's wrong:** Canvas position drift (tools nudged by a few pixels when the canvas reflows) is the #1 source of false positives in Alteryx diffs. Every time a large workflow is opened and closed, positions shift.
-
-**Do this instead:** Parse positions for graph layout. Exclude them from the canonical config hash. Provide `--include-positions` as an explicit opt-in for teams that actually need it.
-
-### Anti-Pattern 4: Coupling Pipeline to Entry Point
-
-**What people do:** Write the diff logic inside the Typer command callback. When Phase 3 needs an API, duplicate the logic in the FastAPI route.
-
-**Why it's wrong:** Logic diverges. Bugs are fixed in one place but not the other. Testing requires mocking CLI invocation.
-
-**Do this instead:** `pipeline.run(DiffRequest) → DiffResponse`. CLI and API are 20-line adapters. All logic and all tests live in the pipeline.
-
-### Anti-Pattern 5: External CDN References in HTML Report
-
-**What people do:** Reference `https://cdn.jsdelivr.net/npm/d3@7/...` in the report template.
-
-**Why it's wrong:** The report fails for users without internet access. Corporate firewalls block CDN traffic. The report becomes permanently broken when the CDN URL changes or expires.
-
-**Do this instead:** Bundle D3.js (or vis.js) as a package resource and inline it into the template at render time. The report is a single, self-contained `.html` file that works offline forever.
-
----
-
-## Suggested Build Order
-
-Build order follows data flow dependencies. Each stage can be tested independently before the next is built.
-
-```
-Step 1: Models
-  Define WorkflowDoc, AlteryxNode, AlteryxConnection, DiffResult, NodeDiff, EdgeDiff
-  (No dependencies. Define these before writing a line of logic.)
-
-Step 2: Parser
-  Implement yxmd_parser.py producing WorkflowDoc from .yxmd path
-  Test: unit tests with raw XML snippets
-
-Step 3: Normalizer
-  Implement normalizer.py (C14N, noise stripping, hash computation)
-  Test: unit tests verifying hash stability across XML permutations
-
-Step 4: NodeMatcher
-  Implement ID-first + Hungarian fallback
-  Test: unit tests with controlled node sets (known IDs, known positions, known types)
-
-Step 5: Differ (NodeDiffer + EdgeDiffer)
-  Wire NodeMatcher output into full DiffResult production
-  Test: integration with fixture pairs — verify ChangeType correctness
-
-Step 6: pipeline.py
-  Wire all stages. Define DiffRequest / DiffResponse.
-  Test: full pipeline integration tests against all fixture scenarios
-
-Step 7: JSONRenderer
-  Simpler output format. Build before HTML renderer.
-  Test: snapshot tests on JSON output
-
-Step 8: HTMLRenderer + Template
-  Jinja2 template with inlined D3.js graph + color-coded summary
-  Test: snapshot tests on rendered HTML; manual browser review
-
-Step 9: CLI entry point
-  Thin Typer adapter over pipeline.run()
-  Test: Typer test runner invocation; end-to-end CLI smoke tests
+class ToolAnnotationState(TypedDict):
+    """Private state for a single annotate_tools worker."""
+    tool_context: dict
+    annotation: str
 ```
 
+### Node Definitions (Async)
+
+```python
+import asyncio
+from langchain_core.language_models import BaseChatModel
+
+_semaphore = asyncio.Semaphore(5)  # module-level; max 5 concurrent LLM calls
+
+async def analyze_topology(state: DocState) -> dict:
+    # No LLM call -- pure Python analysis of context dict
+    summary = _build_topology_summary(state["context"])
+    return {"topology_summary": summary}
+
+async def annotate_single_tool(state: ToolAnnotationState) -> dict:
+    """Worker node. Called once per tool via Send API."""
+    async with _semaphore:
+        result = await llm.ainvoke([...])
+    return {"tool_annotations": [{"tool_id": state["tool_context"]["id"],
+                                   "annotation": result.content}]}
+
+def fan_out_tools(state: DocState) -> list[Send]:
+    """Conditional edge: emit one Send per tool."""
+    return [
+        Send("annotate_single_tool", {"tool_context": tool})
+        for tool in state["context"]["tools"]
+    ]
+
+async def risk_scan(state: DocState) -> dict:
+    result = await llm.ainvoke([...])
+    return {"risk_notes": result.content}
+
+async def assemble_doc(state: DocState) -> dict:
+    result = await llm.ainvoke([...])
+    return {"assembled_doc": result.content}
+```
+
+### Graph Compilation
+
+```python
+def build_doc_graph(llm: BaseChatModel) -> CompiledGraph:
+    builder = StateGraph(DocState)
+    builder.add_node("analyze_topology", analyze_topology)
+    builder.add_node("annotate_single_tool", annotate_single_tool)
+    builder.add_node("risk_scan", risk_scan)
+    builder.add_node("assemble_doc", assemble_doc)
+
+    builder.add_edge(START, "analyze_topology")
+    builder.add_conditional_edges("analyze_topology", fan_out_tools, ["annotate_single_tool"])
+    builder.add_edge("annotate_single_tool", "risk_scan")
+    builder.add_edge("risk_scan", "assemble_doc")
+    builder.add_edge("assemble_doc", END)
+
+    return builder.compile()
+```
+
+### Async Invocation (canonical call)
+
+```python
+# Confirmed pattern: await graph.ainvoke(initial_state)
+result: DocState = await doc_graph.ainvoke({
+    "context": context_builder.build(workflow_doc),
+    "topology_summary": "",
+    "tool_annotations": [],
+    "risk_notes": "",
+    "assembled_doc": "",
+})
+```
+
+**Key facts (HIGH confidence):**
+- `ainvoke()` is the async counterpart to `invoke()`. Both accept `(state, config=None)`.
+- Node functions must be `async def` to avoid blocking the event loop during LLM calls.
+- `astream()` is available for token-level streaming from the graph directly.
+
 ---
 
-## Integration Points
+## FastAPI Integration
 
-### External Services
+### Non-Blocking HTML Response
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Alteryx Server (Phase 3) | Webhook → POST /diff endpoint | Server calls API on workflow promotion. Requires authentication layer. |
-| Git / GitHub Actions (Phase 3) | CI step calls CLI; output posted as PR comment via gh CLI | Same pipeline, different invocation. |
-| Alteryx Designer (Phase 4+, out of scope) | Plugin API — entirely different architecture | Not in scope for phases 1–3 |
+The existing `pipeline.run()` is synchronous (CPU-bound XML parsing + diffing). LangGraph graph invocations are async. These are separate concerns and must be handled differently.
 
-### Internal Boundaries
+**Pattern A: Sync pipeline from async endpoint (use `run_in_threadpool`)**
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| cli.py ↔ pipeline.py | Function call: `run(DiffRequest)` | No HTTP, no subprocess, no serialization overhead |
-| api/routes.py ↔ pipeline.py | Same function call: `run(DiffRequest)` | API adapter writes temp files, calls same function |
-| pipeline.py ↔ renderer/ | `DiffResult` dataclass | Renderer is pure function: takes `DiffResult`, returns `str` |
-| renderer/ ↔ templates/ | Jinja2 `Environment` with `PackageLoader` | Template files are package resources, not filesystem paths |
+```python
+# app/routers/history.py
+from starlette.concurrency import run_in_threadpool
+from alteryx_diff.pipeline import pipeline
+
+@router.get("/api/history/{sha}/diff")
+async def get_diff(sha: str):
+    # Offload sync pipeline.run() to thread pool -- does NOT block event loop
+    diff_result = await run_in_threadpool(pipeline.run, DiffRequest(...))
+    html = HTMLRenderer().render(diff_result)
+    return HTMLResponse(html)
+```
+
+**Why `run_in_threadpool` over `run_in_executor`:**
+- `run_in_threadpool` (from `starlette.concurrency`) is the FastAPI-idiomatic choice.
+- It uses the default executor, requires no manual executor setup, and is integrated with FastAPI's design.
+- Reserve `asyncio.get_running_loop().run_in_executor(pool, ...)` only if you need a `ProcessPoolExecutor` for CPU-bound work with separate processes.
+
+**Pattern B: Async LangGraph graph from async endpoint (direct await)**
+
+```python
+@router.post("/api/llm/document")
+async def start_doc_generation(request: DocRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    sse_queues[job_id] = asyncio.Queue()
+    background_tasks.add_task(_run_doc_graph, job_id, request)
+    return {"job_id": job_id}
+
+async def _run_doc_graph(job_id: str, request: DocRequest):
+    queue = sse_queues[job_id]
+    try:
+        result = await doc_graph.ainvoke({...})
+        await queue.put({"step": "complete", "doc": result["assembled_doc"]})
+    except Exception as e:
+        await queue.put({"step": "error", "message": str(e)})
+```
+
+**Do NOT use `asyncio.run()` inside an async endpoint.** `asyncio.run()` creates a new event loop and raises `RuntimeError: This event loop is already running` inside FastAPI's async context.
+
+### SSE Streaming for LLM Output
+
+The project already uses SSE for the file watcher (`app/routers/watch.py`). Apply the same queue-based pattern for LLM progress.
+
+**Two-endpoint pattern (proven for LLM streaming):**
+
+```python
+# app/routers/llm.py
+import asyncio
+import uuid
+from fastapi import APIRouter, BackgroundTasks
+from fastapi.responses import StreamingResponse
+import json
+
+router = APIRouter()
+_active_jobs: dict[str, asyncio.Queue] = {}
+
+@router.post("/api/llm/document")
+async def start_doc(background_tasks: BackgroundTasks, sha: str, workflow_path: str):
+    """Returns immediately with job_id. Client then opens SSE stream."""
+    job_id = str(uuid.uuid4())
+    _active_jobs[job_id] = asyncio.Queue()
+    background_tasks.add_task(_generate_doc, job_id, sha, workflow_path)
+    return {"job_id": job_id}
+
+@router.get("/api/llm/progress/{job_id}")
+async def stream_progress(job_id: str):
+    """SSE endpoint -- streams progress until 'complete' or 'error'."""
+    async def event_gen():
+        if job_id not in _active_jobs:
+            yield f'data: {json.dumps({"step": "error", "message": "job not found"})}\n\n'
+            return
+        queue = _active_jobs[job_id]
+        while True:
+            msg = await queue.get()
+            yield f'data: {json.dumps(msg)}\n\n'
+            if msg.get("step") in ("complete", "error"):
+                _active_jobs.pop(job_id, None)
+                break
+
+    return StreamingResponse(event_gen(), media_type="text/event-stream",
+                              headers={"Cache-Control": "no-cache",
+                                       "X-Accel-Buffering": "no"})
+
+async def _generate_doc(job_id: str, sha: str, workflow_path: str):
+    queue = _active_jobs.get(job_id)
+    if not queue:
+        return
+    try:
+        await queue.put({"step": "analyzing", "progress": 10})
+        context = context_builder.build(...)
+        await queue.put({"step": "annotating_tools", "progress": 30})
+        result = await doc_graph.ainvoke({"context": context, ...})
+        await queue.put({"step": "complete", "progress": 100, "doc": result["assembled_doc"]})
+    except Exception as e:
+        await queue.put({"step": "error", "message": str(e)})
+```
+
+**Client-side (React/TypeScript):**
+
+```typescript
+const es = new EventSource(`/api/llm/progress/${jobId}`);
+es.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.step === "complete") { es.close(); setDoc(msg.doc); }
+  else if (msg.step === "error") { es.close(); setError(msg.message); }
+  else { setProgress(msg.progress); }
+};
+```
+
+**Important nuance:** When combining `BackgroundTasks` + `StreamingResponse`, FastAPI closes the connection only after the background task completes, not after the streaming generator exhausts. The two-endpoint queue pattern avoids this: the client opens the SSE endpoint independently, and the background task pushes to the queue without being coupled to the HTTP response lifecycle.
+
+---
+
+## CLI Integration
+
+**Typer subcommand pattern (official docs, HIGH confidence):**
+
+```python
+# src/alteryx_diff/cli.py  (existing file -- minimal change)
+import typer
+from alteryx_diff.cli_document import document_app  # new module
+
+app = typer.Typer(name="alteryx-diff")
+app.add_typer(document_app, name="document")  # adds `alteryx-diff document`
+
+@app.command()
+def diff(
+    base: Path = typer.Argument(..., help="Base .yxmd file"),
+    head: Path = typer.Argument(..., help="Head .yxmd file"),
+    ...
+):
+    ...
+```
+
+```python
+# src/alteryx_diff/cli_document.py  (new file)
+import typer
+from pathlib import Path
+
+document_app = typer.Typer(help="Generate LLM documentation for a workflow.")
+
+@document_app.command()
+def workflow(
+    path: Path = typer.Argument(..., help="Path to .yxmd workflow file"),
+    output: Path = typer.Option(None, "--output", "-o", help="Output .md path"),
+    model: str = typer.Option("gpt-4o-mini", "--model", "-m"),
+    ollama: bool = typer.Option(False, "--ollama", help="Use local Ollama model"),
+):
+    """Generate developer documentation for a single workflow."""
+    from alteryx_diff.llm import require_llm_deps  # late import
+    require_llm_deps()
+    ...
+```
+
+This produces:
+- `alteryx-diff diff base.yxmd head.yxmd` (existing, unchanged)
+- `alteryx-diff document workflow.yxmd` (new)
+
+**Key:** `app.add_typer(document_app, name="document")` groups all document subcommands under `document`. The `name` parameter sets the CLI command group name. If `name` is omitted, commands are flattened to the top level (avoid this).
+
+---
+
+## Parallel Annotation with Rate Limiting
+
+### Send API + asyncio.Semaphore Pattern
+
+LangGraph's `Send` API enables map-reduce: fan-out over a list (one `Send` per tool), with a reducer on the receiving state key to aggregate results. `max_concurrency` in the invocation config provides a first layer of concurrency control. `asyncio.Semaphore` inside each worker node provides a second, finer-grained layer for LLM API rate limits.
+
+```python
+# Semaphore: module-level singleton, shared across all worker invocations
+_llm_semaphore = asyncio.Semaphore(5)  # max 5 simultaneous LLM calls
+
+async def annotate_single_tool(state: ToolAnnotationState) -> dict:
+    """LangGraph worker node. Invoked once per tool by Send API."""
+    async with _llm_semaphore:
+        # Only 5 of these run concurrently regardless of how many tools exist
+        result = await llm.ainvoke([
+            SystemMessage("Annotate this Alteryx tool concisely."),
+            HumanMessage(json.dumps(state["tool_context"])),
+        ])
+    return {"tool_annotations": [
+        {"tool_id": state["tool_context"]["id"], "text": result.content}
+    ]}
+
+def fan_out_to_tools(state: DocState) -> list[Send]:
+    """Conditional edge function: creates one Send per tool."""
+    return [
+        Send("annotate_single_tool", {"tool_context": tool})
+        for tool in state["context"]["tools"]
+    ]
+```
+
+```python
+# Graph construction -- conditional_edges from analyze_topology
+builder.add_conditional_edges(
+    "analyze_topology",
+    fan_out_to_tools,
+    ["annotate_single_tool"],  # destination node names the edge can target
+)
+```
+
+```python
+# Invocation with graph-level concurrency cap (belt-and-suspenders)
+result = await doc_graph.ainvoke(
+    initial_state,
+    config={"max_concurrency": 10},  # LangGraph internal cap
+)
+```
+
+**State reducer for fan-in:**
+
+```python
+from typing import Annotated
+import operator
+
+class DocState(TypedDict):
+    tool_annotations: Annotated[list[dict], operator.add]  # append, not overwrite
+```
+
+`operator.add` as the reducer means each worker's `{"tool_annotations": [...]}` return is appended to the list rather than replacing it. This is the correct LangGraph pattern for fan-out aggregation.
+
+**Two-layer rate limiting strategy:**
+1. `config={"max_concurrency": N}` — LangGraph-level cap on total concurrent node executions.
+2. `asyncio.Semaphore(5)` — LLM API-level cap inside the node; protects against bursts from multiple graph runs sharing the same process.
+
+**LangGraph does NOT natively rate-limit LLM API calls.** You must implement `asyncio.Semaphore` yourself inside the node function. `max_concurrency` in the config limits concurrent node execution at the graph level, not the API call level within nodes.
+
+---
+
+## Optional Import Pattern
+
+**Pattern (HIGH confidence — established Python community standard):**
+
+```python
+# src/alteryx_diff/llm/__init__.py
+
+def require_llm_deps() -> None:
+    """
+    Call at the entry point of any LLM feature.
+    Raises ImportError with a helpful install hint if [llm] extras are missing.
+    """
+    missing = []
+    try:
+        import langchain  # noqa: F401
+    except ImportError:
+        missing.append("langchain~=0.3")
+    try:
+        import langgraph  # noqa: F401
+    except ImportError:
+        missing.append("langgraph~=1.1")
+
+    if missing:
+        raise ImportError(
+            "LLM documentation features require optional dependencies.\n"
+            "Install them with:\n\n"
+            "    pip install 'alteryx-diff[llm]'\n\n"
+            f"Missing: {', '.join(missing)}"
+        )
+```
+
+```python
+# Usage in CLI (late import -- not at module top level)
+@document_app.command()
+def workflow(path: Path, ...):
+    from alteryx_diff.llm import require_llm_deps
+    require_llm_deps()  # Fails fast with a clear message before any work
+    from alteryx_diff.llm.doc_graph import build_doc_graph
+    ...
+```
+
+```python
+# Usage in FastAPI router (lazy check at startup)
+try:
+    from alteryx_diff.llm import require_llm_deps
+    require_llm_deps()
+    _llm_available = True
+except ImportError:
+    _llm_available = False
+
+@router.post("/api/llm/document")
+async def start_doc(...):
+    if not _llm_available:
+        raise HTTPException(503, "LLM features not installed. Add [llm] extras.")
+    ...
+```
+
+**Rules:**
+- Never import from `alteryx_diff.llm.*` at module top level in CLI or FastAPI app startup.
+- Always guard with `require_llm_deps()` before any use.
+- Use `TYPE_CHECKING` guard if type annotations reference LLM types.
+
+```python
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from alteryx_diff.llm.doc_graph import DocumentationGraph
+```
+
+---
+
+## Git Commit Strategy for Generated Docs
+
+**Recommendation: Separate follow-up commit (MEDIUM confidence)**
+
+Generated `docs/workflow.md` should be committed in a dedicated follow-up commit, not in the same commit as the `.yxmd` workflow file. Reasons:
+
+1. **Semantic separation:** The `.yxmd` commit represents a human intent (a workflow save). The doc commit is machine-generated output. Mixing them obscures the commit graph.
+2. **Auditability:** Separate commits allow the doc commit to carry `[generated]` or a conventional commit type (`docs(llm): ...`), making it filterable in `git log`.
+3. **Regeneration:** If the LLM model changes or the doc is regenerated, the diff is clean — it touches only the `docs/` file.
+4. **Rollback safety:** Reverting a workflow save does not accidentally revert auto-generated docs.
+
+**Implementation in companion app:**
+
+```
+Commit 1 (user action — synchronous):
+  src/workflows/workflow.yxmd        <- human save via "Save Version"
+  message: "feat: save workflow.yxmd"
+
+Commit 2 (app-generated — async, after LLM completes):
+  docs/workflow.md                   <- LLM-generated
+  message: "docs(llm): auto-document workflow.yxmd [generated]"
+```
+
+The companion app should:
+- Trigger doc generation in the background after a save.
+- Commit `docs/workflow.md` as a separate commit once generation completes.
+- Skip doc commit if generation fails (non-blocking; save must always succeed).
+
+**Note on "generated files should not be committed" principle:** This applies to build artifacts (`.pyc`, dist bundles). Human-readable documentation that adds governance value IS the product of the LLM feature and is committed intentionally. The `[generated]` tag in the commit message makes provenance clear.
+
+---
+
+## Build Order
+
+Dependencies flow in one direction. Build inner modules first.
+
+```
+Layer 0 (no internal deps):
+  src/alteryx_diff/llm/__init__.py          (import guard only)
+  src/alteryx_diff/llm/context_builder.py   (depends only on existing models)
+
+Layer 1 (depends on Layer 0):
+  src/alteryx_diff/llm/doc_graph.py         (depends on context_builder + LangGraph)
+  src/alteryx_diff/renderers/doc_renderer.py (depends on WorkflowDoc model)
+
+Layer 2 (depends on Layers 0-1):
+  src/alteryx_diff/cli_document.py          (depends on doc_graph + doc_renderer)
+  app/routers/llm.py                        (depends on doc_graph + SSE pattern)
+
+Layer 3 (integration):
+  src/alteryx_diff/cli.py                   (add_typer for document_app)
+  app/main.py                               (include llm router)
+  app/frontend/                             (SSE client + progress UI)
+
+Layer 4 (eval, last):
+  tests/eval/ragas_eval.py                  (depends on everything above)
+```
+
+**Dependency graph:**
+
+```
+pyproject.toml [llm] extras
+       |
+       +-- langchain~=0.3
+       +-- langgraph~=1.1
+       +-- langchain-community (Ollama)
+              |
+              v
+  llm/__init__.py (require_llm_deps guard)
+              |
+              v
+  llm/context_builder.py ---- models/ (WorkflowDoc, DiffResult)
+              |
+              v
+  llm/doc_graph.py ----------- LangGraph StateGraph + Send + Semaphore
+              |
+       +------+------+
+       v             v
+  cli_document.py  app/routers/llm.py
+       |             |
+       v             v
+  cli.py          app/main.py
+  (add_typer)     (include_router)
+```
+
+---
+
+## Key Interface Signatures
+
+### ContextBuilder
+
+```python
+# src/alteryx_diff/llm/context_builder.py
+from dataclasses import dataclass
+from alteryx_diff.models import WorkflowDoc, DiffResult
+
+@dataclass
+class ContextBuilder:
+    """
+    Transforms structured Python objects into token-efficient dicts
+    suitable for LLM consumption. Raw XML never crosses this boundary.
+    """
+    max_tools: int = 50           # cap for annotation fan-out
+    include_positions: bool = False
+
+    def build_from_workflow(self, doc: WorkflowDoc) -> dict:
+        """For `alteryx-diff document` -- single workflow intent doc."""
+        return {
+            "workflow_name": doc.name,
+            "tool_count": len(doc.tools),
+            "tools": [self._serialize_tool(t) for t in doc.tools[:self.max_tools]],
+            "connections": self._serialize_connections(doc.connections),
+            "topology": self._infer_topology(doc),
+        }
+
+    def build_from_diff(self, result: DiffResult) -> dict:
+        """For `alteryx-diff diff --doc` -- change narrative."""
+        return {
+            "summary": {
+                "added": len(result.added_tools),
+                "removed": len(result.removed_tools),
+                "modified": len(result.modified_tools),
+            },
+            "changes": [self._serialize_change(c) for c in result.changes],
+        }
+
+    def _serialize_tool(self, tool) -> dict:
+        """Use Pydantic model_dump() if tool is a Pydantic model,
+           otherwise custom dict projection to exclude XML noise."""
+        if hasattr(tool, "model_dump"):
+            return tool.model_dump(exclude={"raw_xml", "position"})
+        return {"id": tool.tool_id, "type": tool.tool_type, "config": tool.config}
+```
+
+### DocumentationGraph
+
+```python
+# src/alteryx_diff/llm/doc_graph.py
+from langchain_core.language_models import BaseChatModel
+from langgraph.graph.graph import CompiledGraph
+
+def build_doc_graph(llm: BaseChatModel) -> CompiledGraph:
+    """
+    Returns a compiled LangGraph graph.
+    Caller must: result = await graph.ainvoke(initial_state)
+    """
+    ...
+
+async def generate_documentation(
+    context: dict,
+    llm: BaseChatModel,
+) -> WorkflowDoc:
+    """
+    Convenience wrapper. Builds graph, invokes, validates output.
+    Raises ValidationError if assembled doc fails Pydantic validation.
+    Single retry on ValidationError (per v1.2 key decision).
+    """
+    graph = build_doc_graph(llm)
+    state = await graph.ainvoke({"context": context, ...})
+    try:
+        return WorkflowDoc.model_validate_json(state["assembled_doc"])
+    except ValidationError as e:
+        # Single retry with error context appended to state
+        state = await graph.ainvoke({
+            "context": context,
+            "validation_error": str(e),
+            ...
+        })
+        return WorkflowDoc.model_validate_json(state["assembled_doc"])
+```
+
+### DocRenderer
+
+```python
+# src/alteryx_diff/renderers/doc_renderer.py
+from pathlib import Path
+from alteryx_diff.models import WorkflowDoc
+
+class DocRenderer:
+    """
+    Renders WorkflowDoc to output formats.
+    Stateless; follows same renderer protocol as HTMLRenderer.
+    """
+
+    def to_markdown(self, doc: WorkflowDoc) -> str:
+        """Standalone .md file output for `alteryx-diff document` CLI."""
+        ...
+
+    def to_html_fragment(self, doc: WorkflowDoc) -> str:
+        """HTML <section> fragment for embedding in diff report."""
+        ...
+
+    def write_markdown(self, doc: WorkflowDoc, output_path: Path) -> Path:
+        """Writes .md and returns path. Used by CLI."""
+        content = self.to_markdown(doc)
+        output_path.write_text(content, encoding="utf-8")
+        return output_path
+```
 
 ---
 
 ## Sources
 
-- [xmldiff Python library — architecture and API](https://xmldiff.readthedocs.io/en/stable/api.html) — MEDIUM confidence (verified via official docs)
-- [lxml C14N canonicalization API](https://lxml.de/api.html) — HIGH confidence (official docs, confirmed attribute sorting behavior)
-- [NetworkX bipartite minimum_weight_full_matching](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.bipartite.matching.minimum_weight_full_matching.html) — HIGH confidence (official docs)
-- [NodeGit: Diffing and Merging Node Graphs (ACM SIGGRAPH 2023)](https://dl.acm.org/doi/10.1145/3618343) — MEDIUM confidence (abstract-level; full paper paywalled)
-- [FastAPI layered architecture — sqr-072 LSST pattern](https://sqr-072.lsst.io/) — HIGH confidence (detailed architecture document, verified)
-- [Pyvis HTML generation and cdn_resources inline option](https://pyvis.readthedocs.io/en/latest/tutorial.html) — MEDIUM confidence (official docs, inline option confirmed)
-- [pytest-snapshot snapshot testing](https://pypi.org/project/pytest-snapshot/) — HIGH confidence (official PyPI page)
-- [hypothesis property-based testing with pytest](https://hypothesis.works/articles/hypothesis-pytest-fixtures/) — HIGH confidence (official Hypothesis documentation)
-- [scipy.optimize.linear_sum_assignment (Hungarian algorithm)](https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.optimize.linear_sum_assignment.html) — HIGH confidence (official SciPy docs)
-- [Alteryx XML structure — Community discussion](https://community.alteryx.com/t5/Alteryx-Designer-Desktop-Discussions/XML-to-Workflow-Understanding/td-p/1160582) — MEDIUM confidence (community source, consistent with PROJECT.md constraints)
-
----
-
-*Architecture research for: Alteryx Canvas Diff (XML diff tool, CLI-first, API-evolution path)*
-*Researched: 2026-02-28*
+- LangGraph async execution (mirror): https://www.baihezi.com/mirrors/langgraph/how-tos/async/index.html
+- LangGraph Send API (DEV.to): https://dev.to/sreeni5018/leveraging-langgraphs-send-api-for-dynamic-and-parallel-workflow-execution-4pgd
+- LangGraph parallelization (Medium): https://medium.com/codetodeploy/built-with-langgraph-11-parallelization-efa2ccdba2e0
+- LangGraph map-reduce (Medium): https://medium.com/@astropomeai/implementing-map-reduce-with-langgraph-creating-flexible-branches-for-parallel-execution-b6dc44327c0e
+- LangGraph Send API (Medium): https://medium.com/ai-engineering-bootcamp/map-reduce-with-the-send-api-in-langgraph-29b92078b47d
+- FastAPI run_in_threadpool vs run_in_executor: https://sentry.io/answers/fastapi-difference-between-run-in-executor-and-run-in-threadpool/
+- FastAPI SSE + background tasks (DEV.to): https://dev.to/zachary62/build-an-llm-web-app-in-python-from-scratch-part-4-fastapi-background-tasks-sse-21g4
+- FastAPI concurrency (official): https://fastapi.tiangolo.com/async/
+- Typer subcommands (official): https://typer.tiangolo.com/tutorial/subcommands/add-typer/
+- Pydantic serialization (official): https://docs.pydantic.dev/latest/concepts/serialization/
+- Conventional Commits: https://www.conventionalcommits.org/en/v1.0.0/
+- Optional imports (Python Discuss): https://discuss.python.org/t/optional-imports-for-optional-dependencies/104760
