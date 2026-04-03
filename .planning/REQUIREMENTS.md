@@ -60,6 +60,30 @@
 - [x] **CI-03**: GitLab CI removes the placeholder test-job step that serves no purpose
 - [x] **CI-04**: CI repo has a proper README with step-by-step setup instructions for both GitHub Actions and GitLab CI
 
+## v1.2 Requirements
+
+### CORE — LLM Foundation
+
+- [ ] **CORE-01**: User can install core `alteryx-diff` without LLM deps; `pip install alteryx-diff[llm]` activates LLM features; core CLI works with zero LLM imports present
+- [ ] **CORE-02**: `ContextBuilder` transforms `WorkflowDoc`/`DiffResult` into a token-efficient JSON context dict; raw XML never passes the LLM boundary
+- [ ] **CORE-03**: `DocumentationGraph` (LangGraph ~1.1) runs a 4-node pipeline (`analyze_topology → annotate_tools → risk_scan → assemble_doc`) with single-retry on `ValidationError`
+- [ ] **CORE-04**: `DocRenderer` renders `WorkflowDoc` to a standalone Markdown `.md` file and to an HTML fragment embeddable in the diff report
+
+### CLI — Command-line Integration
+
+- [ ] **CLI-01**: User can run `alteryx-diff document <workflow.yxmd>` to generate a Markdown intent doc for a single workflow
+- [ ] **CLI-02**: User can pass `--doc` to `alteryx-diff diff` to embed an AI change narrative section in the HTML diff report output
+
+### APPAI — Companion App AI Integration
+
+- [ ] **APPAI-01**: User sees a "Business context" text field on first commit in the companion app; input is saved to `.acd/context.json` and used as LLM grounding context
+- [ ] **APPAI-02**: User sees an AI-generated change summary in the companion app diff viewer, streamed live via SSE while the LLM generates it
+
+### EVAL — Evaluation & Offline Support
+
+- [ ] **EVAL-01**: User can configure doc generation to use a local Ollama model for offline/air-gapped execution without cloud API keys
+- [ ] **EVAL-02**: Developer can run RAGAS faithfulness evaluation (`tests/eval/ragas_eval.py`) to measure LLM output grounding quality against `ContextBuilder` output
+
 ## v2 Requirements
 
 Deferred — validate core commit/history/diff loop with real users first.
@@ -132,6 +156,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Mapped to phases: 31
 - Unmapped: 0 ✓
 
+**v1.2 Coverage:**
+- v1.2 requirements: 10 total (CORE: 4, CLI: 2, APPAI: 2, EVAL: 2)
+- Traceability: updated during roadmap creation
+
 ---
 *Requirements defined: 2026-03-13*
-*Last updated: 2026-03-22 — Phase 19: APP-04b marked [x] (implemented Phase 15, app/tray.py); BRANCH-01/02/03 marked [x] (implemented Phase 17, formally verified Phase 19)*
+*v1.2 requirements added: 2026-04-03*
+*Last updated: 2026-04-03 — v1.2 LLM Documentation requirements defined*
