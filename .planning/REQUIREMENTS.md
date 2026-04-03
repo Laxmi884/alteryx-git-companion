@@ -150,6 +150,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-02 | Phase 18 | Complete |
 | CI-03 | Phase 18 | Complete |
 | CI-04 | Phase 18 | Complete |
+| CORE-01 | Phase 23 | Pending |
+| CORE-02 | Phase 23 | Pending |
+| CORE-03 | Phase 24 | Pending |
+| CORE-04 | Phase 24 | Pending |
+| EVAL-01 | Phase 24 | Pending |
+| CLI-01 | Phase 25 | Pending |
+| CLI-02 | Phase 25 | Pending |
+| APPAI-01 | Phase 26 | Pending |
+| APPAI-02 | Phase 26 | Pending |
+| EVAL-02 | Phase 27 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 31 total (APP-04 split into APP-04a + APP-04b)
@@ -158,9 +168,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **v1.2 Coverage:**
 - v1.2 requirements: 10 total (CORE: 4, CLI: 2, APPAI: 2, EVAL: 2)
-- Traceability: updated during roadmap creation
+- Mapped to phases: 10 (Phase 23: 2, Phase 24: 3, Phase 25: 2, Phase 26: 2, Phase 27: 1)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-13*
 *v1.2 requirements added: 2026-04-03*
-*Last updated: 2026-04-03 — v1.2 LLM Documentation requirements defined*
+*v1.2 traceability updated: 2026-04-03 — Phases 23-27 mapped*
+*Last updated: 2026-04-03 — v1.2 roadmap created*

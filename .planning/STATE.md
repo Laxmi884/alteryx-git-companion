@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: LLM Documentation
-status: defining_requirements
-stopped_at: Milestone v1.2 started — defining requirements
-last_updated: "2026-04-02T00:00:00.000Z"
-last_activity: 2026-04-02 - Milestone v1.2 started
+status: ready_to_plan
+stopped_at: Roadmap created — Phase 23 is next
+last_updated: "2026-04-03T00:00:00.000Z"
+last_activity: 2026-04-03 - v1.2 roadmap created (Phases 23-27)
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 23 — LLM Foundation (next up)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-02 — Milestone v1.2 started
+Status: Roadmap defined, ready to plan Phase 23
+Last activity: 2026-04-03 — v1.2 roadmap created (Phases 23-27)
 
-Progress: [░░░░░░░░░░] 0% (v1.2)
+Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
 
 ## Performance Metrics
 
@@ -48,7 +48,8 @@ Progress: [░░░░░░░░░░] 0% (v1.2)
 
 **Recent Trend:**
 
-- v1.1 not started
+- v1.1 complete (Phases 10-22)
+- v1.2 not started
 - Trend: —
 
 *Updated after each plan completion*
@@ -119,6 +120,12 @@ Recent decisions affecting current work:
 - [Roadmap v1.1]: Phase 18 (CI Polish) targets separate repo (/Users/laxmikantmukkawar/alteryx/) — independent of desktop app phases
 - [Roadmap v1.1]: System tray / auto-start (Phase 15) placed after core save/history loop (Phases 13-14) — core value validated before deployment UX
 - [Roadmap v1.1]: Branch features (Phase 17) depend on Remote (Phase 16) — need a remote to push branches to
+- [Roadmap v1.2]: Phase numbering starts at 23 — continuous from v1.1 (ended at 22)
+- [Roadmap v1.2]: CORE-01 (optional [llm] extras) is Phase 23 — import guard and pyproject.toml wiring must be first; breaking the 252-test suite is the #1 risk
+- [Roadmap v1.2]: EVAL-01 (Ollama) grouped with Phase 24 (DocumentationGraph) — langchain-ollama is an [llm] extra; Ollama config is a provider variant of the same LLM boundary
+- [Roadmap v1.2]: APPAI-01/02 are their own phase (26) — companion app frontend/backend; depend on core LLM library (Phase 23-24) and CLI (Phase 25) being built first
+- [Roadmap v1.2]: EVAL-02 (RAGAS) is Phase 27 (last) — dev-only eval harness; requires everything else working to generate samples to evaluate
+- [Roadmap v1.2]: langchain version pin is ~=1.2 (not ~=0.3 as originally noted in PROJECT.md Key Decisions) — STACK.md research confirmed 1.2.14 is current production-stable as of April 2026
 - [Phase 10-app-scaffold]: SPAStaticFiles subclass required for SPA routing — Starlette StaticFiles(html=True) doesn't fall back to index.html for unknown paths
 - [Phase 10-app-scaffold]: pytest pythonpath=['.'] added so app/ package at repo root is importable alongside src/ layout
 - [Phase 10-app-scaffold]: shadcn@latest init --defaults incompatible with Vite 8 — manual setup of components.json, lib/utils.ts, and CSS required
@@ -240,16 +247,19 @@ Recent decisions affecting current work:
 
 - Phase 16.1 inserted after Phase 16: Git history UX with push integration and git graph view (URGENT)
 - Phase 18.1 inserted after Phase 18: Creation of PR (URGENT)
+- v1.2 roadmap created 2026-04-03: Phases 23-27 defined
 
 ### Pending Todos
 
 - Validate GUID_VALUE_KEYS against real .yxmd files (tech debt from v1.0)
 - Wire JSONRenderer into CLI --json path or document _cli_json_output() schema as stable (tech debt from v1.0)
+- Update PROJECT.md Key Decisions: langchain version pin is ~=1.2 (not ~=0.3) per STACK.md research
 
 ### Blockers/Concerns
 
 - PyInstaller .exe may trigger Windows Defender SmartScreen — plan for code signing or user-facing bypass instructions in Phase 10
 - watchdog has known issues with SMB/network drives — Phase 12 must explicitly test or document fallback behavior
+- Phase 23 (CORE-01): NOT importing from alteryx_diff.llm.* at module top level anywhere in the existing codebase is the #1 risk — a single accidental top-level import will break the 252-test suite for users without [llm] extras
 
 ### Quick Tasks Completed
 
@@ -259,6 +269,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-01T23:51:05.250Z
-Stopped at: Completed 260401-rd4-PLAN.md — fix yxmd double-extension detection and no-commits push guard
+Last session: 2026-04-03T00:00:00.000Z
+Stopped at: v1.2 roadmap created — Phases 23-27 defined; ready to plan Phase 23
 Resume file: None
