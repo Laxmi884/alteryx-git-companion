@@ -406,3 +406,633 @@ Add an explicit round-trip stability test: parse a workflow, serialize it to the
 ---
 *Pitfalls research for: XML diff / graph visualization / CLI developer tool (Alteryx Canvas Diff)*
 *Researched: 2026-02-28*
+
+---
+---
+
+# Pitfalls Research — LLM Documentation Feature (April 2026)
+
+**Feature:** Optional `pip install alteryx-diff[llm]` — LangGraph-based documentation generation
+**Researched:** 2026-04-02
+**Overall confidence:** MEDIUM — GitHub issues and official docs consulted; rate limit numbers
+and token estimates should be re-verified at provider dashboards before finalizing architecture.
+
+---
+
+## Critical Pitfalls (will block shipping if not addressed)
+
+### C1 — Import guard missing: LLM code bleeds into non-LLM code path
+
+**Problem:** Any top-level import of `langchain`, `langgraph`, or `openai` in a module that
+is imported unconditionally will crash the 252-test suite (and the packaged .exe) when
+`[llm]` extras are not installed.
+
+**Symptom:** `ModuleNotFoundError: No module named 'langchain_core'` on pytest collection,
+not at feature invocation — the whole test run fails before any test runs.
+
+**Prevention:** Gate every LLM import behind a `TYPE_CHECKING` block or inside a function
+body. Use a single `_llm_available(): bool` guard at the feature entry point. Never import
+LLM deps at module level.
+
+```python
+# BAD — crashes entire test suite when langchain is absent
+from langchain_core.language_models import BaseChatModel
+
+# GOOD
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from langchain_core.language_models import BaseChatModel
+
+def get_llm() -> "BaseChatModel":
+    from langchain_core.language_models import BaseChatModel  # lazy
+    ...
+```
+
+**Phase to address:** Phase 1 (skeleton / optional extras wiring)
+
+---
+
+### C2 — asyncio.run() inside a FastAPI async endpoint raises RuntimeError
+
+**Problem:** FastAPI endpoints run inside uvicorn's already-running event loop. Calling
+`asyncio.run(graph.ainvoke(...))` inside `async def` raises
+`RuntimeError: asyncio.run() cannot be called from a running event loop`.
+
+**Symptom:** 500 error on first LLM generation request; traceback points at `asyncio.run`.
+Works fine in a standalone script but fails inside the server.
+
+**Prevention:** Use `await graph.ainvoke(...)` directly. Never wrap async LangGraph calls in
+`asyncio.run()` inside FastAPI endpoints. If a sync wrapper is unavoidable, use
+`asyncio.to_thread()` to offload it to a thread pool.
+
+**Note on nest_asyncio:** `nest_asyncio.apply()` patches asyncio to allow nested event loops
+and is a known workaround for this error. It is not a production pattern — it has performance
+implications and masks real design problems. Do not ship it.
+
+**Phase to address:** Phase 1 (FastAPI endpoint scaffolding)
+
+Sources: [langchain#8494](https://github.com/langchain-ai/langchain/issues/8494),
+[nest-asyncio PyPI](https://pypi.org/project/nest-asyncio/)
+
+---
+
+### C3 — PyInstaller .exe cannot load post-install LLM deps
+
+**Problem:** Because [llm] deps are NOT bundled in the .exe, users who install them
+post-deployment via `pip install alteryx-diff[llm]` cannot use them from the GUI. The .exe
+only knows about modules frozen at build time; it cannot load from the system Python.
+
+**Symptom:** `ModuleNotFoundError` at runtime inside the frozen .exe even though the package
+is installed in the system Python. No workaround — this is a fundamental PyInstaller
+constraint.
+
+**Prevention:** LLM features must either (a) run out-of-process (subprocess calling a system
+Python with `sys.executable -m alteryx_diff.llm_runner`) or (b) be documented as CLI-only,
+not available from the GUI .exe. Architecture decision required before any LLM UI is built.
+
+**Phase to address:** Phase 1 (architecture decision — subprocess vs. in-process)
+
+---
+
+### C4 — Context window overflow raises unhandled HTTP 400 from provider API
+
+**Problem:** LangChain does NOT silently truncate when context length is exceeded. It
+propagates the provider's error: OpenAI raises `openai.BadRequestError` (code
+`context_length_exceeded`), Ollama raises a `ValueError` from llama.cpp. Without a
+pre-flight guard, the user sees a raw traceback.
+
+**Symptom:** Unhandled exception; generation fails with no user-friendly message.
+
+**Prevention:** Estimate tokens before calling the model. If over ~75% of the context window,
+truncate or refuse with a clear error. Hard-limit the input: refuse to proceed and surface a
+friendly message rather than letting the API call fail.
+
+**Phase to address:** Phase 2 (prompt construction)
+
+Sources: [langchain#12264](https://github.com/langchain-ai/langchain/issues/12264),
+[langchain#15333](https://github.com/langchain-ai/langchain/issues/15333)
+
+---
+
+## PyInstaller Integration Pitfalls
+
+### PI1 — `lark` is a hidden import required by LangChain
+
+LangChain uses `lark` for query parsers. PyInstaller misses it because it is loaded
+dynamically via `importlib`. If LangChain is ever bundled inside the .exe, add `'lark'` to
+`hiddenimports` in `app.spec`. This is one of the most frequently reported LangChain +
+PyInstaller failures.
+
+Source: [langchain#9264](https://github.com/langchain-ai/langchain/issues/9264),
+[lark#1319](https://github.com/lark-parser/lark/issues/1319)
+
+### PI2 — LangChain data files (prompt templates, grammars) not bundled
+
+LangChain loads prompt templates and grammar files from its package data at runtime via
+`importlib.resources`. PyInstaller does not pick these up automatically. If bundling any
+LangChain code, add to `app.spec`:
+
+```python
+import langchain, langchain_core
+datas=[
+    ...
+    (langchain.__path__[0], 'langchain'),
+    (langchain_core.__path__[0], 'langchain_core'),
+]
+```
+
+Source: [langchain#15386](https://github.com/langchain-ai/langchain/issues/15386)
+
+### PI3 — Pydantic v2 required; no v1 shim available
+
+LangChain >=0.3 requires Pydantic v2 and removed the `langchain_core.pydantic_v1`
+compatibility shim. The existing codebase uses Pydantic v2 (via FastAPI) — this is
+compatible. Verify no transitive dependency pulls in a Pydantic v1 constraint when adding
+`[llm]` extras. Pin `pydantic>=2.0` explicitly in the `[llm]` optional group.
+
+Source: [langchain#27687](https://github.com/langchain-ai/langchain/issues/27687)
+
+### PI4 — httpx version conflict between openai SDK and existing dependency
+
+The core project already pins `httpx>=0.27`. The `openai` SDK and `langchain-openai` also
+pin `httpx` requirements. Verify there is no upper-bound conflict. Run `uv tree --extra llm`
+to inspect the resolved dependency tree before merging.
+
+### PI5 — Recommended strategy: do NOT bundle LLM deps in the .exe
+
+LangChain + OpenAI + LangGraph add approximately 200-400 MB to the bundle. This is
+impractical for a desktop .exe. Ship the .exe without them. Document that LLM features
+require a system Python with `pip install alteryx-diff[llm]` and are invoked via CLI
+(`acd generate-docs workflow.yxmd`). The GUI can invoke `subprocess.run([sys.executable,
+"-m", "alteryx_diff.llm_runner", ...])` to delegate LLM work to the unbundled interpreter.
+
+**Known hidden imports if LLM code is ever bundled (reference only):**
+```
+lark
+langchain_core
+langchain_community
+langchain_openai
+langchain_ollama
+langgraph
+openai
+anthropic
+tiktoken
+tiktoken_ext
+tiktoken_ext.openai_public
+```
+
+Use `collect_submodules('langchain_core')` in the spec file to catch dynamically loaded
+components. Expect the resulting .exe to be 400-600 MB larger.
+
+---
+
+## Async / Event Loop Pitfalls
+
+### AE1 — asyncio.run() in async context is always wrong
+
+Pattern to AVOID:
+```python
+@app.post("/generate-docs")
+async def generate_docs(req: Request):
+    result = asyncio.run(graph.ainvoke(state))  # WRONG — RuntimeError
+```
+
+Correct pattern:
+```python
+@app.post("/generate-docs")
+async def generate_docs(req: Request):
+    result = await graph.ainvoke(state)  # CORRECT
+```
+
+Sources: [langchain#8494](https://github.com/langchain-ai/langchain/issues/8494),
+[Medium — event loop fix](https://medium.com/@vyshali.enukonda/how-to-get-around-runtimeerror-this-event-loop-is-already-running-3f26f67e762e)
+
+### AE2 — LangGraph sync .invoke() blocks the uvicorn event loop
+
+Calling synchronous `.invoke()` (not `.ainvoke()`) inside an async FastAPI endpoint blocks
+the entire event loop for the duration of the LLM call (30-120 seconds for local models).
+All other requests queue behind it. Prevention: always use `.ainvoke()` from async context,
+or offload to `asyncio.to_thread(graph.invoke, state)`.
+
+### AE3 — SSE streaming + LangGraph: use astream_events()
+
+The existing project already uses `sse-starlette` for streaming. For streaming LLM output
+to the frontend, use LangGraph's `.astream_events()` method and yield SSE chunks. Do not
+buffer the entire response — for long workflows this kills UX (no feedback for 30+ seconds).
+
+### AE4 — Ollama HTTP calls must use the async client
+
+`langchain-ollama` uses `httpx` for HTTP transport (same library as the existing project).
+Ensure the async `httpx.AsyncClient` is used (the `.ainvoke()` code path), not the sync
+client, to avoid blocking the event loop during model inference.
+
+---
+
+## Ollama Pitfalls
+
+### OL1 — Cold start: 13-60 seconds on first request
+
+Model loading time by size and hardware class:
+- `llama3.2:3b` (~2 GB): approximately 13-20 seconds
+- `qwen2.5-coder:7b` (~4.7 GB): approximately 20-35 seconds
+- `qwen2.5-coder:14b` (~9 GB): approximately 29-45 seconds
+
+**UX pattern used by other tools:** Pre-warm by sending a minimal prompt ("hi") when the
+user first enables LLM features, before the actual generation request. Show a
+"Loading local model..." progress indicator. Ollama's `keep_alive` parameter (default:
+5 minutes) keeps the model in VRAM between calls — set it to 10m for the session.
+
+**Implementation:** Send `POST http://localhost:11434/api/generate` with
+`{"model": model_name, "prompt": "", "keep_alive": "10m"}` on feature activation.
+
+Sources: [Ollama FAQ](https://docs.ollama.com/faq),
+[Medium — preloading LLMs into RAM](https://medium.com/@rafal.kedziorski/speed-up-ollama-how-i-preload-local-llms-into-ram-for-lightning-fast-ai-experiments-291a832edd48)
+
+### OL2 — with_structured_output compatibility is model-dependent
+
+Ollama supports JSON schema enforcement (added late 2024), but enforcement quality varies:
+- **Well-supported:** `llama3.2`, `qwen2.5-coder`, `mistral`, `phi-3`
+- **Problematic:** `gpt-oss` variants, some heavily quantized builds
+- **Failure mode:** Model returns extra prose, unclosed JSON, or schema violations — the
+  Pydantic validator raises `ValidationError` or `OutputParserException`
+
+**Prevention:** Always wrap `.with_structured_output()` calls in try/except catching
+`ValidationError` and `OutputParserException`. On failure, retry once with an explicit JSON
+repair prompt. Use `method="json_schema"` (not `"function_calling"`) for Ollama — it is
+more reliable for local models.
+
+Sources: [Ollama structured outputs docs](https://docs.ollama.com/capabilities/structured-outputs),
+[langchain#25343](https://github.com/langchain-ai/langchain/issues/25343),
+[Ollama#8063](https://github.com/ollama/ollama/issues/8063)
+
+### OL3 — Ollama not running: connection refused
+
+If Ollama is not started, `langchain-ollama` raises `httpx.ConnectError: Connection refused`.
+**Prevention:** Before any Ollama call, ping `GET http://localhost:11434/api/tags`. If it
+fails, return a clear user error: "Ollama is not running. Start it with `ollama serve`." Do
+not propagate the raw httpx exception.
+
+### OL4 — Default Ollama context window may be too small
+
+Some Ollama model builds default to `num_ctx=2048` or `num_ctx=4096` regardless of the
+model's theoretical maximum. A 50-tool workflow prompt (~12,000 tokens) will silently
+overflow a 4K context window, producing garbage output without raising an exception.
+
+**Prevention:** Always explicitly set `num_ctx` when constructing the Ollama client:
+`ChatOllama(model="qwen2.5-coder:7b", num_ctx=32768)`. Verify the model's actual context
+window with `ollama show <model>` before hardcoding.
+
+### OL5 — Air-gapped / offline use case
+
+This is a core requirement (Ollama local model must work without internet). Ensure LLM
+config surfaces a clear "offline mode" that shows only Ollama as the available provider.
+OpenAI and Anthropic calls should fail fast with a user-readable message in offline mode,
+not hang on connection timeout.
+
+---
+
+## Context Window Pitfalls
+
+### CW1 — Provider raises HTTP 400, not a Python exception
+
+OpenAI raises `openai.BadRequestError` (code: `context_length_exceeded`) at 128K tokens.
+Anthropic raises `anthropic.BadRequestError`. Ollama raises a `ValueError` from llama.cpp.
+None silently truncate. LangChain propagates these as the underlying provider exception or
+as `langchain_core.exceptions.OutputParserException`.
+
+Sources: [langchain#12264](https://github.com/langchain-ai/langchain/issues/12264),
+[langchain#15333](https://github.com/langchain-ai/langchain/issues/15333)
+
+### CW2 — Token estimation for a 50-tool Alteryx workflow
+
+A 50-tool workflow, when serialized with annotations (node names, types, connections, config
+snippets), is approximately:
+- Raw XML: 40,000-80,000 characters
+- After normalization to a prompt-friendly dict: ~8,000-15,000 tokens (input)
+- Expected LLM annotations per tool: ~50-100 tokens each = 2,500-5,000 tokens (output)
+- **Total per generation:** ~10,500-20,000 tokens
+
+This fits within GPT-4o-mini (128K) and Claude Haiku (200K) context windows with room to
+spare. Ollama models with 4K-8K context windows (default for some quantized builds) will
+overflow. Verify and set `num_ctx` explicitly for Ollama (see OL4).
+
+### CW3 — LangGraph checkpointer + conversation history overflow
+
+If LangGraph is configured with a persistent checkpointer and conversation history grows
+across multiple invocations, the accumulated messages can eventually overflow the context
+window. For a stateless "generate docs" use case (no multi-turn), use a fresh graph state
+per request — do not persist conversation history between generation runs.
+
+Source: [langgraph#3717](https://github.com/langchain-ai/langgraph/issues/3717)
+
+### CW4 — Guard pattern (recommended implementation)
+
+```python
+import tiktoken
+
+def estimate_tokens(text: str, model: str = "gpt-4o-mini") -> int:
+    enc = tiktoken.encoding_for_model(model)
+    return len(enc.encode(text))
+
+MAX_INPUT_FRACTION = 0.75  # leave 25% headroom for output
+
+def guard_context(prompt: str, model_context_window: int) -> None:
+    tokens = estimate_tokens(prompt)
+    max_tokens = int(model_context_window * MAX_INPUT_FRACTION)
+    if tokens > max_tokens:
+        raise ValueError(
+            f"Workflow too large for context window: {tokens} tokens "
+            f"(max {max_tokens}). Try a smaller workflow subset."
+        )
+```
+
+For Ollama models, read `num_ctx` from the model config and pass it into this guard.
+
+---
+
+## Security Pitfalls
+
+### SEC1 — API keys in environment variables: acceptable, but use keyring
+
+Storing `ALTERYX_DIFF_LLM_API_KEY` as an environment variable is standard practice and is
+what OpenAI, Anthropic, and LangChain all recommend. The key is NOT embedded in the .exe
+binary.
+
+The project already uses `keyring` for secure credential storage (Windows Credential
+Manager / macOS Keychain). Extend this pattern to LLM API keys rather than relying solely on
+plain environment variables. Reading from keyring first, falling back to the env var, is the
+recommended pattern for desktop tools.
+
+**Prompt injection risk:** LLM agents can be socially engineered to reveal environment
+variables. For this project (no agent loop, no user-controlled input in the prompt, workflow
+XML is a trusted local file), this risk is LOW.
+
+### SEC2 — Supply chain risk: litellm PyPI packages compromised (March 2026)
+
+A supply-chain attack compromised `litellm` PyPI packages in March 2026 (TeamPCP campaign).
+The malicious package delivers a credential stealer. If the project uses `litellm` as a
+routing layer, pin exact versions and use hash verification in `uv.lock`. Prefer direct
+`langchain-openai` and `langchain-anthropic` over `litellm` as the dependency.
+
+Sources: [Sonatype — compromised litellm](https://www.sonatype.com/blog/compromised-litellm-pypi-package-delivers-multi-stage-credential-stealer),
+[Help Net Security](https://www.helpnetsecurity.com/2026/03/25/teampcp-supply-chain-attacks/)
+
+### SEC3 — PyInstaller .exe does not expose API keys in binary
+
+PyInstaller does not embed runtime environment variables from the build machine into the .exe.
+Keys set at runtime (via env var or keyring) are safe from binary inspection. Do not hardcode
+API keys in source or pass them as build arguments (they would appear in CI logs).
+
+### SEC4 — Governance label must be enforced in the renderer, not the LLM output
+
+The "AI-Assisted — Review Before Use" watermark must be applied by the Jinja2 renderer, not
+generated by the LLM (which could omit or alter it). This makes the label mandatory and
+tamper-resistant. For enterprise users, AI-generated documentation without this label may be
+treated as human-reviewed content, creating a compliance risk.
+
+---
+
+## Testing Pitfalls
+
+### TP1 — Real API calls in tests break CI and cost money
+
+Any test that instantiates a real `ChatOpenAI` or `ChatAnthropic` will fail in CI (no API
+key) and incur real costs locally. Use `FakeListChatModel` for unit tests.
+
+```python
+from langchain_community.chat_models.fake import FakeListChatModel
+
+fake_llm = FakeListChatModel(responses=['{"summary": "Test annotation", "tool_type": "Filter"}'])
+node = AnnotateToolNode(llm=fake_llm)
+result = node.run(state)
+assert result["annotations"]["tool_1"]["summary"] == "Test annotation"
+```
+
+Source: [LangChain fake model API](https://api.python.langchain.com/en/latest/community/chat_models/langchain_community.chat_models.fake.FakeListChatModel.html),
+[How to mock LangChain in unit tests](https://medium.com/@matgmc/how-to-properly-mock-langchain-llm-execution-in-unit-tests-python-76efe1b8707e)
+
+### TP2 — FakeListChatModel may not support with_structured_output cleanly
+
+If `with_structured_output` is used and the fake model returns a plain string, the Pydantic
+validator will raise. Pre-serialize fake responses as JSON matching the schema, or mock the
+structured output wrapper directly:
+
+```python
+from unittest.mock import patch, MagicMock
+
+with patch("alteryx_diff.llm.nodes.get_llm") as mock_get_llm:
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value.invoke.return_value = ToolAnnotation(
+        summary="test", tool_type="Filter"
+    )
+    mock_get_llm.return_value = mock_llm
+    result = annotate_tool(state)
+```
+
+### TP3 — Tests must pass when [llm] extras are NOT installed
+
+The 252 existing tests must continue to pass in the base environment. Add a pytest marker
+and skip condition for all LLM-dependent tests:
+
+```python
+import pytest
+
+try:
+    import langchain_core
+    HAS_LLM = True
+except ImportError:
+    HAS_LLM = False
+
+llm_only = pytest.mark.skipif(not HAS_LLM, reason="[llm] extras not installed")
+
+@llm_only
+def test_annotation_node(): ...
+```
+
+Run the test suite in two separate CI environments: (1) base deps only, (2) base + llm
+extras. Both must pass with exit code 0.
+
+### TP4 — LangGraph node tests do not need the graph runtime
+
+Test individual node functions directly — pass a state dict, assert the returned dict. Do
+not invoke the full graph for unit tests; the graph runner adds complexity without exercising
+node logic. Reserve full-graph integration tests for a separate CI job with LLM mocked.
+
+Source: [Unit Testing LangGraph — Medium](https://medium.com/@anirudhsharmakr76/unit-testing-langgraph-testing-nodes-and-flow-paths-the-right-way-34c81b445cd6)
+
+### TP5 — RAGAS faithfulness is not usable without a retrieval system
+
+RAGAS `faithfulness` metric requires a retrieved context list, a question, and an answer. It
+is designed for RAG pipelines with a retrieval step. For this project (no vector store, no
+retrieval — just workflow XML as context), RAGAS is the wrong tool.
+
+**Alternative:** Use DeepEval's `HallucinationMetric` or a simple LLM-as-judge pattern
+where a second LLM call checks whether each annotation claim is supported by the workflow
+XML. This is cheaper, simpler, and does not require a retrieval infrastructure.
+
+Source: [RAGAS faithfulness docs](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
+
+---
+
+## uv / Optional Deps Pitfalls
+
+### UV1 — uv sync resolves all optional deps even when not requested
+
+There is an active bug (reported through early 2026) where `uv sync` resolves optional
+dependency groups even when `--extra` is not specified. This can cause unnecessary build
+failures for C-extension packages (e.g., `tiktoken`) on machines without the Rust toolchain.
+
+**Prevention:** Pin exact wheels for `tiktoken` in `uv.lock`. If tiktoken fails to build
+from source on a target platform, use `--only-binary tiktoken` or provide pre-built wheels.
+
+Sources: [uv#6729](https://github.com/astral-sh/uv/issues/6729),
+[uv#17903](https://github.com/astral-sh/uv/issues/17903)
+
+### UV2 — tiktoken requires Rust (Cargo) at build time from source
+
+`tiktoken` has a Rust extension. If installed from source (not from a wheel), it requires
+the Rust toolchain. Windows CI runners may not have Rust installed by default. Ensure the
+`uv.lock` pins a pre-built wheel for `win-amd64`, or add a Rust install step to the CI
+workflow before `uv sync --extra llm`.
+
+### UV3 — Circular optional dependency resolution crash
+
+`uv sync` can crash with a `ResolutionError` on circular optional dependencies when packages
+are installed from GitHub sources. Ensure all `[llm]` deps are pinned to PyPI releases, not
+git sources.
+
+Source: [uv#14193](https://github.com/astral-sh/uv/issues/14193)
+
+---
+
+## Cost and Rate Limit Estimates
+
+### Token Cost Table
+
+| Workflow Size | Model | Est. Input Tokens | Est. Output Tokens | Est. Cost (USD) |
+|--------------|-------|-------------------|-------------------|----------------|
+| 10 tools | GPT-4o-mini | ~2,500 | ~600 | ~$0.0004 |
+| 10 tools | Claude Haiku 4.5 | ~2,500 | ~600 | ~$0.006 |
+| 50 tools | GPT-4o-mini | ~12,000 | ~3,000 | ~$0.0020 |
+| 50 tools | Claude Haiku 4.5 | ~12,000 | ~3,000 | ~$0.027 |
+| 100 tools | GPT-4o-mini | ~22,000 | ~5,500 | ~$0.0036 |
+| 100 tools | Claude Haiku 4.5 | ~22,000 | ~5,500 | ~$0.050 |
+| 50 tools (Ollama local) | qwen2.5-coder:7b | ~12,000 | ~3,000 | $0.00 |
+
+**Pricing basis (April 2026):**
+- GPT-4o-mini: $0.15/1M input, $0.60/1M output
+- Claude Haiku 4.5: $1.00/1M input, $5.00/1M output
+
+**Key finding:** GPT-4o-mini is 5-8x cheaper than Claude Haiku for this output-heavy use
+case. Ollama is free but adds 13-60 second cold-start latency and GPU/RAM requirements.
+
+Sources: [AI API pricing comparison 2026](https://intuitionlabs.ai/articles/ai-api-pricing-comparison-grok-gemini-openai-claude),
+[Claude API pricing](https://platform.claude.com/docs/en/about-claude/pricing)
+
+---
+
+## Rate Limits
+
+### RL1 — OpenAI GPT-4o-mini (Tier 1 baseline)
+
+- RPM: 500 requests/minute
+- TPM: 200,000 tokens/minute
+- TPD: 2,000,000 tokens/day
+
+At 50 tools with ~15,000 tokens per generation, a single run consumes negligible TPD quota.
+Rate limits are not a concern for single-user desktop use. For parallel per-tool annotation
+(50 calls at ~300 tokens each), 50 RPM is well within the 500 RPM limit.
+
+**Recommendation:** Add a semaphore cap of ~20 concurrent calls as a precaution. Implement
+exponential backoff with jitter on 429 responses.
+
+Source: [OpenAI rate limits 2026](https://inference.net/content/openai-rate-limits-guide/)
+
+### RL2 — Anthropic Claude Haiku 4.5 (Tier 1 — binding constraint)
+
+- RPM: 50 requests/minute (Tier 1, after first $5 spend)
+- ITPM: 50,000 input tokens/minute
+- Free tier: 5 RPM (too slow for any parallel annotation)
+
+**Critical:** At Tier 1, 50 parallel calls to Anthropic would saturate the 50 RPM limit in
+a single burst. This is the binding constraint for Claude-based annotation.
+
+**Prevention:** Cap concurrent Anthropic calls at ≤5 via a semaphore. Implement exponential
+backoff on 429. Surface a UX note: "Claude annotation may be slower due to API rate limits."
+
+Source: [Anthropic rate limits](https://platform.claude.com/docs/en/api/rate-limits),
+[Claude API quota tiers 2026](https://www.aifreeapi.com/en/posts/claude-api-quota-tiers-limits)
+
+### RL3 — Recommended concurrency pattern
+
+```python
+import asyncio
+from typing import Any
+
+# Safe for Anthropic Tier 1; increase for OpenAI or Ollama
+MAX_CONCURRENT_LLM_CALLS = 5
+
+async def annotate_all_tools(
+    tools: list[dict[str, Any]], llm: Any
+) -> list[dict[str, Any]]:
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_LLM_CALLS)
+
+    async def annotate_one(tool: dict[str, Any]) -> dict[str, Any]:
+        async with semaphore:
+            return await annotate_tool_node(tool, llm)
+
+    return await asyncio.gather(*[annotate_one(t) for t in tools])
+```
+
+---
+
+## Phase-Specific Warnings Summary
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Optional extras wiring | LLM import bleeds into base (C1) | Lazy imports, TYPE_CHECKING guard |
+| FastAPI endpoint scaffolding | asyncio.run() in async context (C2, AE1) | Always await ainvoke() |
+| PyInstaller .exe build | LLM deps not bundleable (C3, PI5) | Subprocess / CLI-only LLM path |
+| Prompt construction | Context overflow (C4, CW2) | tiktoken guard before API call |
+| Ollama integration | Cold start UX, structured output (OL1, OL2) | Pre-warm + retry on ValidationError |
+| Ollama context window | Default num_ctx too small (OL4) | Explicitly set num_ctx=32768+ |
+| Test suite | Tests fail without [llm] extras (TP3) | skipif marker + dual CI environment |
+| Cost and concurrency | Anthropic Tier 1 RPM limit (RL2) | Semaphore cap at 5 concurrent calls |
+| uv extras | tiktoken Rust build failure (UV2) | Pin wheel, --only-binary tiktoken |
+| Supply chain | litellm compromise (SEC2) | Avoid litellm; use direct provider SDKs |
+
+---
+
+## LLM Integration Sources
+
+- [langchain#9264 — lark hidden import](https://github.com/langchain-ai/langchain/issues/9264)
+- [langchain#15386 — langchain not PyInstaller friendly](https://github.com/langchain-ai/langchain/issues/15386)
+- [langchain#8494 — asyncio.run() in event loop](https://github.com/langchain-ai/langchain/issues/8494)
+- [langchain#12264 — token limit exception](https://github.com/langchain-ai/langchain/issues/12264)
+- [langchain#15333 — context length exceeded error](https://github.com/langchain-ai/langchain/issues/15333)
+- [langchain#27687 — Pydantic v2 shim removal](https://github.com/langchain-ai/langchain/issues/27687)
+- [langchain#25343 — structured output nested schemas](https://github.com/langchain-ai/langchain/issues/25343)
+- [langgraph#3717 — context overflow from checkpointer](https://github.com/langchain-ai/langgraph/issues/3717)
+- [Ollama structured outputs docs](https://docs.ollama.com/capabilities/structured-outputs)
+- [Ollama#8063 — structured output not respected](https://github.com/ollama/ollama/issues/8063)
+- [Ollama FAQ — keep_alive](https://docs.ollama.com/faq)
+- [uv#6729 — sync resolves all extras](https://github.com/astral-sh/uv/issues/6729)
+- [uv#17903 — builds extra packages when not requested](https://github.com/astral-sh/uv/issues/17903)
+- [uv#14193 — circular optional deps crash](https://github.com/astral-sh/uv/issues/14193)
+- [RAGAS faithfulness metric](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/)
+- [FakeListChatModel API](https://api.python.langchain.com/en/latest/community/chat_models/langchain_community.chat_models.fake.FakeListChatModel.html)
+- [Unit testing LangGraph nodes — Medium](https://medium.com/@anirudhsharmakr76/unit-testing-langgraph-testing-nodes-and-flow-paths-the-right-way-34c81b445cd6)
+- [How to mock LangChain in unit tests — Medium](https://medium.com/@matgmc/how-to-properly-mock-langchain-llm-execution-in-unit-tests-python-76efe1b8707e)
+- [Anthropic rate limits](https://platform.claude.com/docs/en/api/rate-limits)
+- [Claude API quota tiers 2026](https://www.aifreeapi.com/en/posts/claude-api-quota-tiers-limits)
+- [OpenAI rate limits 2026](https://inference.net/content/openai-rate-limits-guide/)
+- [AI API pricing comparison 2026](https://intuitionlabs.ai/articles/ai-api-pricing-comparison-grok-gemini-openai-claude)
+- [Sonatype — litellm supply chain attack March 2026](https://www.sonatype.com/blog/compromised-litellm-pypi-package-delivers-multi-stage-credential-stealer)
+- [nest-asyncio PyPI](https://pypi.org/project/nest-asyncio/)
+- [PyInstaller when things go wrong](https://pyinstaller.org/en/stable/when-things-go-wrong.html)
+- [Medium — preloading Ollama LLMs into RAM](https://medium.com/@rafal.kedziorski/speed-up-ollama-how-i-preload-local-llms-into-ram-for-lightning-fast-ai-experiments-291a832edd48)
+
+---
+*LLM documentation feature pitfalls research for: Alteryx Canvas Diff v1.2*
+*Researched: 2026-04-02*
