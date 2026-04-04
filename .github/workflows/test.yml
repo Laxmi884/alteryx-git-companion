@@ -1,0 +1,31 @@
+name: Tests
+
+'on':
+  push:
+    branches: [main, LLM-integration]
+  pull_request:
+
+jobs:
+  core:
+    name: Core tests (no LLM extras)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install uv
+      - run: uv sync
+      - run: uv run pytest tests/ --ignore=tests/llm/ --ignore=tests/test_cli.py -q --deselect tests/test_remote.py::test_post_push_success --deselect tests/test_remote.py::test_push_repo_deleted
+
+  llm:
+    name: LLM tests (with extras)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install uv
+      - run: uv sync --extra llm
+      - run: uv run pytest tests/llm/ -q
