@@ -110,25 +110,21 @@ def sample_diff() -> DiffResult:
 # --- build_from_workflow tests ---
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_workflow_keys(sample_doc):
     result = ContextBuilder.build_from_workflow(sample_doc)
     assert set(result.keys()) == {"workflow_name", "tool_count", "tools", "connections", "topology"}
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_workflow_name_from_filepath(sample_doc):
     result = ContextBuilder.build_from_workflow(sample_doc)
     assert result["workflow_name"] == "MyWorkflow"
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_workflow_topology_keys(sample_doc):
     result = ContextBuilder.build_from_workflow(sample_doc)
     assert set(result["topology"].keys()) == {"connections", "source_tools", "sink_tools", "branch_points"}
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_workflow_tool_serialization(sample_doc):
     result = ContextBuilder.build_from_workflow(sample_doc)
     for tool in result["tools"]:
@@ -140,13 +136,11 @@ def test_build_from_workflow_tool_serialization(sample_doc):
 # --- build_from_diff tests ---
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_diff_keys(sample_diff):
     result = ContextBuilder.build_from_diff(sample_diff)
     assert set(result.keys()) == {"summary", "changes"}
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_diff_summary_counts(sample_diff):
     result = ContextBuilder.build_from_diff(sample_diff)
     summary = result["summary"]
@@ -157,14 +151,12 @@ def test_build_from_diff_summary_counts(sample_diff):
     assert summary["edge_change_count"] == 1
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_diff_changes_categories(sample_diff):
     result = ContextBuilder.build_from_diff(sample_diff)
     changes = result["changes"]
     assert set(changes.keys()) == {"added", "removed", "modified", "edge_changes"}
 
 
-@pytest.mark.xfail(reason="ContextBuilder not yet implemented")
 def test_build_from_diff_field_diffs_are_lists(sample_diff):
     result = ContextBuilder.build_from_diff(sample_diff)
     for mod in result["changes"]["modified"]:
