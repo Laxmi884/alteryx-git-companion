@@ -66,8 +66,8 @@
 
 - [x] **CORE-01**: User can install core `alteryx-diff` without LLM deps; `pip install alteryx-diff[llm]` activates LLM features; core CLI works with zero LLM imports present
 - [x] **CORE-02**: `ContextBuilder` transforms `WorkflowDoc`/`DiffResult` into a token-efficient JSON context dict; raw XML never passes the LLM boundary
-- [ ] **CORE-03**: `DocumentationGraph` (LangGraph ~1.1) runs a 4-node pipeline (`analyze_topology → annotate_tools → risk_scan → assemble_doc`) with single-retry on `ValidationError`
-- [ ] **CORE-04**: `DocRenderer` renders `WorkflowDoc` to a standalone Markdown `.md` file and to an HTML fragment embeddable in the diff report
+- [x] **CORE-03**: `DocumentationGraph` (LangGraph ~1.1) runs a 4-node pipeline (`analyze_topology → annotate_tools → risk_scan → assemble_doc`) with single-retry on `ValidationError`
+- [x] **CORE-04**: `DocRenderer` renders `WorkflowDoc` to a standalone Markdown `.md` file and to an HTML fragment embeddable in the diff report
 
 ### CLI — Command-line Integration
 
@@ -81,7 +81,7 @@
 
 ### EVAL — Evaluation & Offline Support
 
-- [ ] **EVAL-01**: User can configure doc generation to use a local Ollama model for offline/air-gapped execution without cloud API keys
+- [x] **EVAL-01**: User can configure doc generation to use a local Ollama model for offline/air-gapped execution without cloud API keys
 - [ ] **EVAL-02**: Developer can run RAGAS faithfulness evaluation (`tests/eval/ragas_eval.py`) to measure LLM output grounding quality against `ContextBuilder` output
 
 ## v2 Requirements
@@ -152,9 +152,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CI-04 | Phase 18 | Complete |
 | CORE-01 | Phase 23 | Complete |
 | CORE-02 | Phase 23 | Complete |
-| CORE-03 | Phase 24 | Pending |
-| CORE-04 | Phase 24 | Pending |
-| EVAL-01 | Phase 24 | Pending |
+| CORE-03 | Phase 24 | Complete |
+| CORE-04 | Phase 24 | Complete |
+| EVAL-01 | Phase 24 | Complete |
 | CLI-01 | Phase 25 | Pending |
 | CLI-02 | Phase 25 | Pending |
 | APPAI-01 | Phase 26 | Pending |

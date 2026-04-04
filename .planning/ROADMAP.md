@@ -329,7 +329,7 @@ Plans:
 
 Plans:
 - [x] 24-00-PLAN.md — Wave 0: RED test stubs for WorkflowDocumentation, DocumentationGraph, DocRenderer (Wave 0)
-- [ ] 24-01-PLAN.md — WorkflowDocumentation model + strip_noise update + pyproject.toml + test infrastructure (Wave 1)
+- [x] 24-01-PLAN.md — WorkflowDocumentation model + strip_noise update + pyproject.toml + test infrastructure (Wave 1)
 - [ ] 24-02-PLAN.md — DocumentationGraph LangGraph pipeline: build_doc_graph + generate_documentation (Wave 2)
 - [ ] 24-03-PLAN.md — DocRenderer: Markdown + HTML fragment rendering (Wave 2, parallel)
 **UI hint**: no
@@ -410,7 +410,7 @@ Plans:
 | 21. Nyquist Wave-0 Remediation | v1.1 | 1/1 | Complete    | 2026-03-22 |
 | 22. HTML Report Redesign | v1.1 | 3/3 | Complete    | 2026-03-28 |
 | 23. LLM Foundation | v1.2 | 1/1 | Complete    | 2026-04-04 |
-| 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 1/4 | In Progress | - |
+| 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 2/4 | In Progress|  |
 | 25. CLI Integration | v1.2 | 0/? | Not started | - |
 | 26. Companion App AI Integration | v1.2 | 0/? | Not started | - |
 | 27. RAGAS Evaluation Harness | v1.2 | 0/? | Not started | - |
