@@ -3,7 +3,7 @@ phase: 24
 slug: documentation-graph-docrenderer-ollama
 status: draft
 nyquist_compliant: false
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -40,12 +40,12 @@ created: 2026-04-04
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 24-01-01 | 01 | 1 | D-01/D-02 | unit | `uv run pytest tests/llm/test_models.py -x -q` | ❌ W0 | ⬜ pending |
 | 24-01-02 | 01 | 1 | D-11/D-13 | unit | `uv run pytest tests/llm/test_context_builder.py -x -q` | ✅ | ⬜ pending |
-| 24-02-01 | 02 | 1 | D-07/D-09 | unit | `uv run pytest tests/llm/test_doc_graph.py -x -q` | ❌ W0 | ⬜ pending |
-| 24-02-02 | 02 | 1 | D-10 | unit | `uv run pytest tests/llm/test_doc_graph.py -x -q` | ❌ W0 | ⬜ pending |
-| 24-03-01 | 03 | 2 | D-14 | unit | `uv run pytest tests/llm/ -x -q` | ❌ W0 | ⬜ pending |
+| 24-02-01 | 02 | 2 | D-07/D-09 | unit | `uv run pytest tests/llm/test_doc_graph.py -x -q` | ✅ W0 | ⬜ pending |
+| 24-02-02 | 02 | 2 | D-10 | unit | `uv run pytest tests/llm/test_doc_graph.py -x -q` | ✅ W0 | ⬜ pending |
+| 24-03-01 | 03 | 2 | EVAL-01 | unit | `uv run pytest tests/llm/test_doc_graph.py::test_provider_agnostic -x -q` | ✅ W0 | ⬜ pending |
 | 24-03-02 | 03 | 2 | D-17 | unit | `uv run pytest tests/llm/ -x -q` | ✅ | ⬜ pending |
-| 24-04-01 | 04 | 2 | D-04 | unit | `uv run pytest tests/test_doc_renderer.py -x -q` | ❌ W0 | ⬜ pending |
-| 24-04-02 | 04 | 2 | D-04 | unit | `uv run pytest tests/test_doc_renderer.py -x -q` | ❌ W0 | ⬜ pending |
+| 24-04-01 | 03 | 2 | CORE-04 | unit | `uv run pytest tests/llm/test_doc_renderer.py -x -q` | ✅ W0 | ⬜ pending |
+| 24-04-02 | 03 | 2 | CORE-04 | unit | `uv run pytest tests/llm/test_doc_renderer.py -x -q` | ✅ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -55,7 +55,7 @@ created: 2026-04-04
 
 - [ ] `tests/llm/test_models.py` — stubs for WorkflowDocumentation and ToolNote
 - [ ] `tests/llm/test_doc_graph.py` — stubs for build_doc_graph and generate_documentation
-- [ ] `tests/test_doc_renderer.py` — stubs for DocRenderer markdown and HTML output
+- [ ] `tests/llm/test_doc_renderer.py` — stubs for DocRenderer markdown and HTML output
 
 *Existing infrastructure covers framework; only test file stubs needed.*
 
