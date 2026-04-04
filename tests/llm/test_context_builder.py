@@ -162,3 +162,27 @@ def test_build_from_diff_field_diffs_are_lists(sample_diff):
     for mod in result["changes"]["modified"]:
         for val in mod["field_diffs"].values():
             assert isinstance(val, list), f"Expected list, got {type(val)}"
+
+
+# --- strip_noise integration ---
+
+
+def test_build_from_workflow_strip_noise():
+    """build_from_workflow applies strip_noise to each tool's config."""
+    # ISO8601 timestamp in config — strip_noise replaces it with __TIMESTAMP__
+    node = AlteryxNode(
+        tool_id=ToolID(1),
+        tool_type="AlteryxBasePluginsGui.DbFileInput.DbFileInput",
+        x=0.0,
+        y=0.0,
+        config={"LastModified": "2024-03-15T14:30:00Z", "file": "data.csv"},
+    )
+    doc = WorkflowDoc(filepath="/workflows/MyWorkflow.yxmd", nodes=(node,), connections=())
+    result = ContextBuilder.build_from_workflow(doc)
+    tool_config = result["tools"][0]["config"]
+    # ISO8601 timestamp should be replaced by __TIMESTAMP__ sentinel
+    assert tool_config["LastModified"] == "__TIMESTAMP__", (
+        f"Expected __TIMESTAMP__ sentinel but got: {tool_config['LastModified']!r}"
+    )
+    # Non-noise values should be preserved
+    assert tool_config["file"] == "data.csv"

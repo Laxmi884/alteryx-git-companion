@@ -11,6 +11,7 @@ import networkx as nx
 
 from alteryx_diff.models.diff import DiffResult
 from alteryx_diff.models.workflow import WorkflowDoc
+from alteryx_diff.normalizer._strip import strip_noise
 
 
 def _compute_topology(doc: WorkflowDoc) -> dict[str, Any]:
@@ -57,7 +58,7 @@ class ContextBuilder:
             {
                 "tool_id": int(node.tool_id),
                 "tool_type": node.tool_type,
-                "config": node.config,
+                "config": strip_noise(node.config),
             }
             for node in doc.nodes
         ]
