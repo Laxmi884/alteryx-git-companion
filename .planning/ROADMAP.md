@@ -311,7 +311,10 @@ Plans:
   2. Running `pip install "alteryx-diff[llm]"` installs `langchain~=1.2`, `langgraph~=1.1`, `langchain-ollama~=1.0`, `ragas~=0.4`, and `tiktoken>=0.7` alongside the core package
   3. `from alteryx_diff.llm import require_llm_deps` raises `ImportError` with a clear install hint when `[llm]` extras are absent, and returns cleanly when they are present
   4. `ContextBuilder.build_from_workflow(doc)` returns a dict with keys `workflow_name`, `tool_count`, `tools`, `connections`, `topology` — no raw XML fields present; `ContextBuilder.build_from_diff(result)` returns a dict with `summary` and `changes` keys
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: no
 
 ### Phase 24: DocumentationGraph + DocRenderer + Ollama
@@ -322,7 +325,10 @@ Plans:
   1. `await doc_graph.ainvoke(initial_state)` completes the `analyze_topology → annotate_tools → risk_scan → assemble_doc` pipeline and returns a validated `WorkflowDoc` Pydantic model — with a single automatic retry when structured output fails `ValidationError`
   2. `DocRenderer.to_markdown(doc)` produces a standalone `.md` file; `DocRenderer.to_html_fragment(doc)` produces an HTML `<section>` fragment — both renderable without errors on a representative test workflow
   3. Passing `--ollama` (or `ChatOllama` as the LLM backend) to the documentation pipeline runs to completion without requiring any cloud API key — confirmed against a locally running Ollama instance
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: no
 
 ### Phase 25: CLI Integration
@@ -332,7 +338,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `alteryx-diff document workflow.yxmd` generates a Markdown intent doc at the default output path (or `--output` override) without errors; running the same command without `[llm]` extras installed prints a clear install-hint error and exits non-zero
   2. `alteryx-diff diff base.yxmd head.yxmd --doc` produces an HTML diff report with an AI change narrative section embedded — the section is absent when `--doc` is not passed, confirming the flag is truly opt-in
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: no
 
 ### Phase 26: Companion App AI Integration
@@ -343,7 +352,10 @@ Plans:
   1. On the first commit in a new project, user sees a "Business context" text field; entering text and saving stores it in `.acd/context.json` and subsequent LLM doc generation includes the entered context as grounding input
   2. In the diff viewer for a saved version, an AI summary panel streams live progress updates (e.g. "Analyzing topology... Annotating tools...") via SSE until the complete summary appears — no page reload required
   3. If LLM extras are not installed, the AI summary panel shows a graceful "LLM features not available" message rather than an error or blank space
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: yes
 
 ### Phase 27: RAGAS Evaluation Harness
@@ -354,7 +366,10 @@ Plans:
   1. Running `python tests/eval/ragas_eval.py` against a set of reference workflows executes without errors and prints a `faithfulness` score (0.0–1.0) for each sample
   2. The harness uses `ContextBuilder` output as `retrieved_contexts` — confirming the evaluation measures grounding against structured data, not raw XML
   3. A README or docstring in `tests/eval/ragas_eval.py` documents how to run the harness, what score threshold is acceptable (>=0.8), and how to add new test samples
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: no
 
 ---
@@ -391,7 +406,7 @@ Plans:
 | 20. Tech Debt Cleanup | v1.1 | 3/3 | Complete    | 2026-03-22 |
 | 21. Nyquist Wave-0 Remediation | v1.1 | 1/1 | Complete    | 2026-03-22 |
 | 22. HTML Report Redesign | v1.1 | 3/3 | Complete    | 2026-03-28 |
-| 23. LLM Foundation | v1.2 | 0/? | Not started | - |
+| 23. LLM Foundation | v1.2 | 0/1 | Planning | - |
 | 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 0/? | Not started | - |
 | 25. CLI Integration | v1.2 | 0/? | Not started | - |
 | 26. Companion App AI Integration | v1.2 | 0/? | Not started | - |
