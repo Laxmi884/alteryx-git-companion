@@ -50,7 +50,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 
 **Milestone Goal:** Automatically generate developer-grade workflow documentation and change narratives from the parser's structured output — anchored to parsed data, with zero hallucination tolerance via Python-side grounding validation.
 
-- [ ] **Phase 23: LLM Foundation** - Optional [llm] extras wiring + ContextBuilder (CORE-01, CORE-02)
+- [x] **Phase 23: LLM Foundation** - Optional [llm] extras wiring + ContextBuilder (CORE-01, CORE-02) (completed 2026-04-04)
 - [ ] **Phase 24: DocumentationGraph + DocRenderer + Ollama** - LangGraph pipeline + renderer + offline provider (CORE-03, CORE-04, EVAL-01)
 - [ ] **Phase 25: CLI Integration** - `document` subcommand + `diff --doc` flag (CLI-01, CLI-02)
 - [ ] **Phase 26: Companion App AI Integration** - Business context field + SSE-streamed AI summary (APPAI-01, APPAI-02)
@@ -314,7 +314,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
+- [x] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
 **UI hint**: no
 
 ### Phase 24: DocumentationGraph + DocRenderer + Ollama
@@ -406,7 +406,7 @@ Plans:
 | 20. Tech Debt Cleanup | v1.1 | 3/3 | Complete    | 2026-03-22 |
 | 21. Nyquist Wave-0 Remediation | v1.1 | 1/1 | Complete    | 2026-03-22 |
 | 22. HTML Report Redesign | v1.1 | 3/3 | Complete    | 2026-03-28 |
-| 23. LLM Foundation | v1.2 | 0/1 | Planning | - |
+| 23. LLM Foundation | v1.2 | 1/1 | Complete   | 2026-04-04 |
 | 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 0/? | Not started | - |
 | 25. CLI Integration | v1.2 | 0/? | Not started | - |
 | 26. Companion App AI Integration | v1.2 | 0/? | Not started | - |
