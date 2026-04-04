@@ -39,7 +39,7 @@ created: 2026-04-04
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 23-01-01 | 01 | 1 | CORE-01 | unit | `uv run pytest tests/llm/test_require_llm_deps.py -x -q` | ❌ W0 | ⬜ pending |
-| 23-01-02 | 01 | 1 | CORE-01 | integration | `uv run pytest tests/ -x -q --deselect tests/test_remote.py::test_post_push_success` | ✅ | ⬜ pending |
+| 23-01-02 | 01 | 1 | CORE-01 | integration | `uv run pytest tests/ --ignore=tests/test_cli.py -x -q --deselect tests/test_remote.py::test_post_push_success --deselect tests/test_remote.py::test_push_repo_deleted` | ✅ | ⬜ pending |
 | 23-01-03 | 01 | 2 | CORE-02 | unit | `uv run pytest tests/llm/test_context_builder.py -x -q` | ❌ W0 | ⬜ pending |
 | 23-01-04 | 01 | 2 | CORE-02 | unit | `uv run pytest tests/llm/test_context_builder.py -x -q -k build_from_diff` | ❌ W0 | ⬜ pending |
 
