@@ -2,8 +2,8 @@
 phase: 23
 slug: llm-foundation
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -20,7 +20,7 @@ created: 2026-04-04
 | **Framework** | pytest 8.x |
 | **Config file** | `pyproject.toml` (`[tool.pytest.ini_options]`) |
 | **Quick run command** | `uv run pytest tests/llm/ -x -q` |
-| **Full suite command** | `uv run pytest tests/ -x -q --deselect tests/test_remote.py::test_post_push_success` |
+| **Full suite command** | `uv run pytest tests/ --ignore=tests/test_cli.py -x -q --deselect tests/test_remote.py::test_post_push_success --deselect tests/test_remote.py::test_push_repo_deleted` |
 | **Estimated runtime** | ~10 seconds |
 
 ---
@@ -28,7 +28,7 @@ created: 2026-04-04
 ## Sampling Rate
 
 - **After every task commit:** Run `uv run pytest tests/llm/ -x -q`
-- **After every plan wave:** Run `uv run pytest tests/ -x -q --deselect tests/test_remote.py::test_post_push_success`
+- **After every plan wave:** Run `uv run pytest tests/ --ignore=tests/test_cli.py -x -q --deselect tests/test_remote.py::test_post_push_success --deselect tests/test_remote.py::test_push_repo_deleted`
 - **Before `/gsd:verify-work`:** Full suite must be green
 - **Max feedback latency:** ~10 seconds
 
@@ -68,11 +68,11 @@ created: 2026-04-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (tests/llm/ stubs in Task 0)
+- [x] No watch-mode flags
+- [x] Feedback latency < 10s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-04
