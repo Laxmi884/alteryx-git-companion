@@ -325,10 +325,12 @@ Plans:
   1. `await doc_graph.ainvoke(initial_state)` completes the `analyze_topology → annotate_tools → risk_scan → assemble_doc` pipeline and returns a validated `WorkflowDoc` Pydantic model — with a single automatic retry when structured output fails `ValidationError`
   2. `DocRenderer.to_markdown(doc)` produces a standalone `.md` file; `DocRenderer.to_html_fragment(doc)` produces an HTML `<section>` fragment — both renderable without errors on a representative test workflow
   3. Passing `--ollama` (or `ChatOllama` as the LLM backend) to the documentation pipeline runs to completion without requiring any cloud API key — confirmed against a locally running Ollama instance
-**Plans**: 1 plan
+**Plans**: 3 plans
 
 Plans:
-- [ ] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
+- [ ] 24-01-PLAN.md — WorkflowDocumentation model + strip_noise update + pyproject.toml + test infrastructure (Wave 1)
+- [ ] 24-02-PLAN.md — DocumentationGraph LangGraph pipeline: build_doc_graph + generate_documentation (Wave 2)
+- [ ] 24-03-PLAN.md — DocRenderer: Markdown + HTML fragment rendering (Wave 2, parallel)
 **UI hint**: no
 
 ### Phase 25: CLI Integration
@@ -407,7 +409,7 @@ Plans:
 | 21. Nyquist Wave-0 Remediation | v1.1 | 1/1 | Complete    | 2026-03-22 |
 | 22. HTML Report Redesign | v1.1 | 3/3 | Complete    | 2026-03-28 |
 | 23. LLM Foundation | v1.2 | 1/1 | Complete    | 2026-04-04 |
-| 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 0/? | Not started | - |
+| 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 0/3 | Not started | - |
 | 25. CLI Integration | v1.2 | 0/? | Not started | - |
 | 26. Companion App AI Integration | v1.2 | 0/? | Not started | - |
 | 27. RAGAS Evaluation Harness | v1.2 | 0/? | Not started | - |
