@@ -52,7 +52,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 
 - [x] **Phase 23: LLM Foundation** - Optional [llm] extras wiring + ContextBuilder (CORE-01, CORE-02) (completed 2026-04-04)
 - [x] **Phase 24: DocumentationGraph + DocRenderer + Ollama** - LangGraph pipeline + renderer + offline provider (CORE-03, CORE-04, EVAL-01) (completed 2026-04-04)
-- [ ] **Phase 25: CLI Integration** - `document` subcommand + `diff --doc` flag (CLI-01, CLI-02)
+- [x] **Phase 25: CLI Integration** - `document` subcommand + `diff --doc` flag (CLI-01, CLI-02) (completed 2026-04-05)
 - [ ] **Phase 26: Companion App AI Integration** - Business context field + SSE-streamed AI summary (APPAI-01, APPAI-02)
 - [ ] **Phase 27: RAGAS Evaluation Harness** - Faithfulness eval + end-to-end verification (EVAL-02)
 
@@ -411,6 +411,6 @@ Plans:
 | 22. HTML Report Redesign | v1.1 | 3/3 | Complete    | 2026-03-28 |
 | 23. LLM Foundation | v1.2 | 1/1 | Complete    | 2026-04-04 |
 | 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 4/4 | Complete    | 2026-04-05 |
-| 25. CLI Integration | v1.2 | 2/3 | In Progress|  |
+| 25. CLI Integration | v1.2 | 3/3 | Complete   | 2026-04-05 |
 | 26. Companion App AI Integration | v1.2 | 0/? | Not started | - |
 | 27. RAGAS Evaluation Harness | v1.2 | 0/? | Not started | - |
