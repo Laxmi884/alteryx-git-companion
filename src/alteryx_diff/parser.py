@@ -38,12 +38,29 @@ from alteryx_diff.models import (
     WorkflowDoc,
 )
 
-__all__ = ["parse"]
+__all__ = ["parse", "parse_one"]
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+
+def parse_one(path: pathlib.Path, *, filter_ui_tools: bool = True) -> WorkflowDoc:
+    """Parse a single .yxmd or .yxwz file into a WorkflowDoc.
+
+    Public single-file parse API. Use this when you need one workflow doc
+    without the two-file diff semantics of parse().
+
+    Args:
+        path: Path to an .yxmd or .yxwz file.
+        filter_ui_tools: When True (default), filter out AlteryxGuiToolkit.*
+            app-interface nodes — same default as parse().
+
+    Returns:
+        A WorkflowDoc for the parsed file.
+    """
+    return _parse_one(path, filter_ui_tools=filter_ui_tools)
 
 
 def parse(
