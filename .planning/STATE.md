@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: LLM Documentation
 status: executing
-stopped_at: Completed 24-documentation-graph-docrenderer-ollama-02-PLAN.md
-last_updated: "2026-04-05T00:28:55.477Z"
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-04-05T13:43:19.043Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 15
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
-**Current focus:** Phase 24 — documentation-graph-docrenderer-ollama
+**Current focus:** Phase 25 — cli-integration
 
 ## Current Position
 
-Phase: 24
-Plan: Not started
+Phase: 25 (cli-integration) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -110,6 +110,7 @@ Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
 | Phase 23-llm-foundation P01 | 4 | 3 tasks | 7 files |
 | Phase 24 P01 | 149 | 2 tasks | 6 files |
 | Phase 24 P02 | 7 | 1 tasks | 2 files |
+| Phase 25 P01 | 4 | 4 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -252,6 +253,8 @@ Recent decisions affecting current work:
 - [Phase 24]: DocState uses TypedDict (not Pydantic BaseModel) for LangGraph state per D-09
 - [Phase 24]: generate_documentation retry spreads initial_state as base (not previous state) to prevent stale intermediate data per Pitfall 4
 - [Phase 24]: asyncio.run() used in async LLM tests (no pytest-asyncio); consistent with test_watch.py pattern
+- [Phase 25]: generate_change_narrative uses single structured LLM call (not LangGraph) -- diff context is compact enough for single-shot
+- [Phase 25]: id=change-narrative is load-bearing in HTMLRenderer output -- Plan 03 tests assert its presence/absence
 
 ### Roadmap Evolution
 
@@ -279,6 +282,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-04T23:48:13.282Z
-Stopped at: Completed 24-documentation-graph-docrenderer-ollama-02-PLAN.md
+Last session: 2026-04-05T13:43:19.037Z
+Stopped at: Completed 25-01-PLAN.md
 Resume file: None
