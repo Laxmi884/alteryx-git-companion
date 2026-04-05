@@ -1,5 +1,5 @@
 ---
-status: partial
+status: resolved
 phase: 24-documentation-graph-docrenderer-ollama
 source: [24-VERIFICATION.md]
 started: 2026-04-04T23:55:00Z
@@ -14,7 +14,7 @@ updated: 2026-04-04T23:55:00Z
 
 ### 1. Ollama Live End-to-End Run (EVAL-01)
 expected: Pipeline completes and prints workflow name and intent. No cloud API key or network error. No `APIConnectionError` or `AuthenticationError`.
-result: [pending]
+result: approved
 
 **How to test:** Start a local Ollama instance with any model (e.g. `llama3` or `mistral`), then run:
 ```bash
@@ -40,9 +40,9 @@ print(doc.intent[:80])
 ## Summary
 
 total: 1
-passed: 0
+passed: 1
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
