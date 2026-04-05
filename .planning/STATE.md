@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: LLM Documentation
 status: executing
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-04-05T13:43:19.043Z"
+stopped_at: Completed 25-cli-integration-02-PLAN.md
+last_updated: "2026-04-05T13:45:44.714Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 15
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 25 (cli-integration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -111,6 +111,7 @@ Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
 | Phase 24 P01 | 149 | 2 tasks | 6 files |
 | Phase 24 P02 | 7 | 1 tasks | 2 files |
 | Phase 25 P01 | 4 | 4 tasks | 6 files |
+| Phase 25 P02 | 341 | 4 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -255,6 +256,8 @@ Recent decisions affecting current work:
 - [Phase 24]: asyncio.run() used in async LLM tests (no pytest-asyncio); consistent with test_watch.py pattern
 - [Phase 25]: generate_change_narrative uses single structured LLM call (not LangGraph) -- diff context is compact enough for single-shot
 - [Phase 25]: id=change-narrative is load-bearing in HTMLRenderer output -- Plan 03 tests assert its presence/absence
+- [Phase 25]: Patched generate_documentation at source module (alteryx_diff.llm.doc_graph) not at cli module due to deferred import inside document() function body (CORE-01 compliance)
+- [Phase 25]: Used sys.modules injection for langchain_ollama mock to handle environments without langchain_ollama installed
 
 ### Roadmap Evolution
 
@@ -282,6 +285,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-05T13:43:19.037Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-04-05T13:45:44.708Z
+Stopped at: Completed 25-cli-integration-02-PLAN.md
 Resume file: None
