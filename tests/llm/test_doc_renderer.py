@@ -154,3 +154,27 @@ def test_no_llm_import_at_module_level():
             assert line.startswith(" ") or line.startswith("\t"), (
                 f"Found bare top-level LLM import on line {i + 1}: {line!r}"
             )
+
+
+# ---------------------------------------------------------------------------
+# to_html_fragment_from_narrative tests
+# ---------------------------------------------------------------------------
+
+
+def test_to_html_fragment_from_narrative_embeds_id_and_body():
+    from alteryx_diff.llm.models import ChangeNarrative
+    from alteryx_diff.renderers.doc_renderer import DocRenderer
+
+    narrative = ChangeNarrative(narrative="Para one.\n\nPara two.", risks=["risk-a"])
+    html = DocRenderer().to_html_fragment_from_narrative(narrative)
+    assert 'id="change-narrative"' in html
+    assert "Para one." in html
+    assert "risk-a" in html
+
+
+def test_to_html_fragment_from_narrative_omits_risks_when_empty():
+    from alteryx_diff.llm.models import ChangeNarrative
+    from alteryx_diff.renderers.doc_renderer import DocRenderer
+
+    html = DocRenderer().to_html_fragment_from_narrative(ChangeNarrative(narrative="x"))
+    assert "narrative-risks" not in html

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from jinja2 import Environment
 
 if TYPE_CHECKING:
-    from alteryx_diff.llm.models import WorkflowDocumentation
+    from alteryx_diff.llm.models import ChangeNarrative, WorkflowDocumentation
 
 _MD_TEMPLATE = """# {{ doc.workflow_name }}
 
@@ -58,6 +58,23 @@ _HTML_TEMPLATE = """<section class="workflow-doc" id="workflow-doc">
 </section>"""
 
 
+_NARRATIVE_HTML_TEMPLATE = """<section class="change-narrative" id="change-narrative">
+  <h2>AI Change Narrative</h2>
+  <div class="narrative-body">
+  {% for para in paragraphs -%}
+  <p>{{ para | e }}</p>
+  {% endfor -%}
+  </div>
+  {% if risks -%}
+  <ul class="narrative-risks">
+  {% for risk in risks -%}
+  <li>{{ risk | e }}</li>
+  {% endfor -%}
+  </ul>
+  {%- endif %}
+</section>"""
+
+
 class DocRenderer:
     """Renders WorkflowDocumentation to Markdown or HTML fragment.
 
@@ -99,6 +116,17 @@ class DocRenderer:
         """
         template = self._env_html.from_string(_HTML_TEMPLATE)
         return template.render(doc=doc).strip()
+
+    def to_html_fragment_from_narrative(self, narrative: "ChangeNarrative") -> str:
+        """Render a ChangeNarrative to an HTML <section> fragment for embedding in the diff report.
+
+        Returns:
+            An HTML string starting with ``<section class="change-narrative" id="change-narrative">``.
+            Safe to pass as ``doc_fragment`` to ``HTMLRenderer.render()``.
+        """
+        paragraphs = [p for p in narrative.narrative.split("\n\n") if p.strip()]
+        template = self._env_html.from_string(_NARRATIVE_HTML_TEMPLATE)
+        return template.render(paragraphs=paragraphs, risks=narrative.risks).strip()
 
     def write_markdown(self, doc: "WorkflowDocumentation", output_path: Path) -> Path:
         """Write the Markdown rendering of ``doc`` to ``output_path``.
