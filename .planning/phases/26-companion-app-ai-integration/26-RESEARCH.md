@@ -663,7 +663,7 @@ The `!hasAnyCommits` block in the JSX gets a Textarea after the amber Card (per 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Business context grounding: how is it passed to `generate_change_narrative()`?**
    - What we know: `ContextBuilder.build_from_diff()` returns `{"summary": ..., "changes": ...}`. The LLM prompt in `generate_change_narrative()` passes this as `json.dumps(context, indent=2)`.

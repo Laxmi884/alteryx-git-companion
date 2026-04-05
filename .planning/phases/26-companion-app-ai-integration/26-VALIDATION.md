@@ -38,10 +38,10 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 26-01-01 | 01 | 1 | APPAI-01 | — | Business context stored in .acd/context.json | unit | `uv run pytest tests/test_context_endpoint.py -x -q` | ❌ W0 | ⬜ pending |
-| 26-01-02 | 01 | 1 | APPAI-01 | — | LLM doc generation includes business_context | unit | `uv run pytest tests/test_doc_graph.py -x -q` | ❌ W0 | ⬜ pending |
-| 26-02-01 | 02 | 2 | APPAI-02 | — | SSE endpoint streams progress events | unit | `uv run pytest tests/test_ai_summary.py -x -q` | ❌ W0 | ⬜ pending |
-| 26-02-02 | 02 | 2 | APPAI-02 | — | Graceful degradation when LLM not installed | unit | `uv run pytest tests/test_ai_summary.py::test_no_llm -x -q` | ❌ W0 | ⬜ pending |
+| 26-01-01 | 01 | 1 | APPAI-01 | — | Business context stored in .acd/context.json | unit | `uv run pytest tests/test_save.py -k business_context -x -q` | ❌ W0 | ⬜ pending |
+| 26-01-02 | 01 | 1 | APPAI-02 | — | SSE endpoint module importable and router registered | unit | `uv run pytest tests/test_ai.py -x -q` | ❌ W0 | ⬜ pending |
+| 26-02-01 | 02 | 2 | APPAI-01 | — | business_context field accepted and .acd/context.json written | unit | `uv run pytest tests/test_save.py -k business_context -x -q` | ❌ W0 | ⬜ pending |
+| 26-02-02 | 02 | 2 | APPAI-02 | — | Graceful degradation when LLM not installed | unit | `uv run pytest tests/test_ai.py -k no_extras -x -q` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,9 +49,8 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_context_endpoint.py` — stubs for APPAI-01 (business context save/load)
-- [ ] `tests/test_ai_summary.py` — stubs for APPAI-02 (SSE streaming, LLM graceful degradation)
-- [ ] `tests/test_doc_graph.py` — verify business_context inclusion in doc generation (extend existing if present)
+- [ ] `tests/test_save.py` — extended with RED stubs for APPAI-01 (business context save, 4 tests)
+- [ ] `tests/test_ai.py` — new file with RED stubs for APPAI-02 (SSE streaming, LLM graceful degradation, 5 tests)
 
 *If none: "Existing infrastructure covers all phase requirements."*
 
