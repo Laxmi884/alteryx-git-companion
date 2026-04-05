@@ -225,6 +225,22 @@ def test_diff_quiet_flag_suppresses_stderr(tmp_path: pathlib.Path) -> None:
     assert "changes detected" not in result.stderr
 
 
+def test_diff_without_doc_flag_produces_html_without_narrative_id(tmp_path: pathlib.Path) -> None:
+    """CLI-02 success criterion: --doc is opt-in; section absent without it."""
+    runner = CliRunner(mix_stderr=False)
+    out = tmp_path / "report.html"
+    path_a = tmp_path / "a.yxmd"
+    path_b = tmp_path / "b.yxmd"
+    path_a.write_bytes(MINIMAL_YXMD_A)
+    path_b.write_bytes(MINIMAL_YXMD_B)
+    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(out)])
+    # Exit code 1 is the existing convention for non-empty diff — unchanged
+    assert result.exit_code == 1
+    content = out.read_text(encoding="utf-8")
+    assert 'id="change-narrative"' not in content
+    assert "AI Change Narrative" not in content
+
+
 def test_diff_include_positions_detects_position_change(tmp_path: pathlib.Path) -> None:
     """--include-positions flag causes position-only changes to produce exit code 1."""
     path_a = tmp_path / "a.yxmd"
