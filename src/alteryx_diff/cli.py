@@ -68,6 +68,21 @@ def diff(  # noqa: B008
         "--json",
         help="Write JSON diff to stdout instead of HTML file (pipe-friendly)",
     ),
+    doc: bool = typer.Option(  # noqa: B008
+        False,
+        "--doc",
+        help="Embed an AI-generated change narrative section in the HTML report (requires [llm] extras and a configured model).",
+    ),
+    model: str | None = typer.Option(  # noqa: B008
+        None,
+        "--model",
+        help="LLM provider and model, e.g. ollama:llama3 (used only when --doc is set). Falls back to ACD_LLM_MODEL env var, then config_store.",
+    ),
+    base_url: str | None = typer.Option(  # noqa: B008
+        None,
+        "--base-url",
+        help="Override LLM endpoint URL (used only when --doc is set).",
+    ),
 ) -> None:
     """Compare two Alteryx .yxmd or .yxwz workflow/app files and report differences.
 
@@ -124,6 +139,40 @@ def diff(  # noqa: B008
             typer.echo("No differences found", err=True)
         raise typer.Exit(code=0)
 
+    # Generate AI change narrative (opt-in --doc flag, D-12 through D-17)
+    doc_fragment = ""
+    if doc and not json_output:
+        # D-10: require LLM extras
+        try:
+            from alteryx_diff.llm import require_llm_deps
+            require_llm_deps()
+        except ImportError as e:
+            typer.echo(f"Error: {e}", err=True)
+            raise typer.Exit(code=2) from None
+
+        # Reuse helpers from Plan 02
+        model_str = _resolve_model_string(model)
+        llm = _resolve_llm(model_str, base_url)
+
+        # Deferred imports — CORE-01 compliance
+        from alteryx_diff.llm.context_builder import ContextBuilder
+        from alteryx_diff.llm.doc_graph import generate_change_narrative
+        from alteryx_diff.renderers.doc_renderer import DocRenderer
+        import asyncio
+
+        narrative_context = ContextBuilder.build_from_diff(result)
+
+        if quiet:
+            narrative = asyncio.run(generate_change_narrative(narrative_context, llm))
+        else:
+            with _err_console.status("Generating change narrative...", spinner="dots"):
+                narrative = asyncio.run(generate_change_narrative(narrative_context, llm))
+
+        doc_fragment = DocRenderer().to_html_fragment_from_narrative(narrative)
+    elif doc and json_output:
+        if not quiet:
+            typer.echo("Note: --doc has no effect with --json; narrative skipped.", err=True)
+
     # Render output
     if json_output:
         json_str = _cli_json_output(result, metadata)
@@ -143,6 +192,7 @@ def diff(  # noqa: B008
             file_b=str(workflow_b.resolve()),
             graph_html=graph_html,
             metadata=metadata,  # CLI-04: governance footer in HTML report
+            doc_fragment=doc_fragment,
         )
         output.write_text(html, encoding="utf-8")
         if not quiet:
