@@ -10,7 +10,7 @@ Shipped v1.1 as a Windows desktop companion app — non-technical Alteryx analys
 
 Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
 
-## Current State — v1.2 In Progress (Phase 23 complete: 2026-04-04)
+## Current State — v1.2 In Progress (Phase 24 complete: 2026-04-05)
 
 **App:** Windows `.exe` desktop companion (PyInstaller + FastAPI + React). ~6,869 LOC app code. ~6,992 LOC test code. 252 tests (243 pass + 1 xfail). 31/31 v1.1 requirements satisfied.
 
@@ -24,6 +24,8 @@ Accurate detection of functional changes — zero false positives from layout no
 - Experiment branches (create / switch / push / PR/MR creation from app)
 - CI templates: GitHub comment dedup + inline graph PNG, GitLab MR comment dedup, setup README
 - Redesigned HTML diff report: dark-first CSS variable theming, stat cards, polished diff panels
+- LLM documentation pipeline: 4-node LangGraph graph (analyze_topology → annotate_tools → risk_scan → assemble_doc) generates WorkflowDocumentation via any BaseChatModel (Ollama, OpenAI, etc.)
+- DocRenderer: renders WorkflowDocumentation to Markdown and HTML fragment, importable without LLM extras
 
 **Known open items (not blocking):**
 - 24 human-verification items (Windows-only or live browser required)
