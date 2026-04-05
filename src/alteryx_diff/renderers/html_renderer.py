@@ -351,6 +351,7 @@ html.light .tool-row:hover { background: #f1f5f9; }
 </div>
 <script type="application/json" id="diff-data">{{ diff_data | tojson }}</script>
 {{ graph_html | safe }}
+{{ doc_fragment | safe }}
 {% if metadata %}
 <details id="governance">
   <summary>Governance Metadata (ALCOA+)</summary>
@@ -531,6 +532,7 @@ class HTMLRenderer:
         *,
         graph_html: str = "",
         metadata: dict[str, Any] | None = None,
+        doc_fragment: str = "",
     ) -> str:
         """Render result to a self-contained HTML string.
 
@@ -546,6 +548,10 @@ class HTMLRenderer:
                 appended with file paths, SHA-256 digests, and generation timestamp.
                 When ``None`` (default), the footer is omitted — zero regression risk
                 for existing callers.
+            doc_fragment: Optional HTML fragment (typically from
+                ``DocRenderer.to_html_fragment_from_narrative``) embedded after the
+                graph and before the governance metadata. When empty (default), the
+                HTML report is unchanged — zero regression risk.
 
         Returns:
             A self-contained HTML string with all CSS and JavaScript inline.
@@ -567,6 +573,7 @@ class HTMLRenderer:
             diff_data=self._build_diff_data(result),
             graph_html=graph_html,
             metadata=metadata,
+            doc_fragment=doc_fragment,
         )
 
     def _build_diff_data(self, result: DiffResult) -> dict[str, Any]:
