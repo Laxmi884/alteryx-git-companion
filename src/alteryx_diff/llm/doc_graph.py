@@ -20,7 +20,7 @@ from alteryx_diff.llm.models import ToolNote, WorkflowDocumentation
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
 
-__all__ = ["build_doc_graph", "generate_documentation", "DocState"]
+__all__ = ["build_doc_graph", "generate_documentation", "generate_change_narrative", "DocState"]
 
 
 class DocState(TypedDict):
@@ -257,3 +257,43 @@ async def generate_documentation(
         retry_state: DocState = {**initial_state, "validation_error": str(e)}
         state = await graph.ainvoke(retry_state)
         return WorkflowDocumentation.model_validate_json(state["raw_doc_json"])
+
+
+async def generate_change_narrative(
+    context: dict,
+    llm: BaseChatModel,
+) -> "ChangeNarrative":
+    """Generate a change narrative for a diff using a single structured LLM call.
+
+    Unlike generate_documentation(), this does not use a LangGraph multi-node
+    pipeline — the input context is already a compact summary+changes dict, so
+    a single structured_output call is sufficient.
+
+    Args:
+        context: ContextBuilder.build_from_diff() output dict with {summary, changes}.
+        llm: Any LangChain BaseChatModel.
+
+    Returns:
+        A validated ChangeNarrative instance.
+    """
+    from alteryx_diff.llm.models import ChangeNarrative
+
+    system_msg = SystemMessage(
+        content=(
+            "Only describe changes present in the provided diff context. "
+            "Do not invent tools, IDs, or behaviors. "
+            "Be concrete about what was added, removed, or modified."
+        )
+    )
+    human_msg = HumanMessage(
+        content=(
+            "Diff context:\n"
+            f"{json.dumps(context, indent=2)}\n\n"
+            "Provide:\n"
+            "1. A 2-4 paragraph narrative explaining the functional impact of these changes.\n"
+            "2. A list of production/risk concerns (may be empty if none apply)."
+        )
+    )
+    structured_llm = llm.with_structured_output(ChangeNarrative, method="json_schema")
+    result: ChangeNarrative = await structured_llm.ainvoke([system_msg, human_msg])
+    return result
