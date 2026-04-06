@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1-9 (shipped 2026-03-07)
-- 🚧 **v1.1 Alteryx Git Companion** — Phases 10-18 (in progress)
+- ✅ **v1.1 Alteryx Git Companion** — Phases 10-22 (shipped 2026-04-02)
+- 🚧 **v1.2 LLM Documentation** — Phases 23-27 (in progress)
 
 ## Phases
 
@@ -24,9 +25,38 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 
 </details>
 
-### 🚧 v1.1 Alteryx Git Companion (In Progress)
+<details>
+<summary>✅ v1.1 Alteryx Git Companion (Phases 10-22) — SHIPPED 2026-04-02</summary>
 
-**Milestone Goal:** Make Git-based version control accessible to non-technical Alteryx analysts via a desktop companion app (local web server, system tray, auto-start) and polished CI integration.
+- [x] Phase 10: App Scaffold (3/3 plans) — completed 2026-03-13
+- [x] Phase 11: Onboarding and Project Management (5/5 plans) — completed 2026-03-14
+- [x] Phase 12: File Watcher (5/5 plans) — completed 2026-03-14
+- [x] Phase 13: Save Version (4/4 plans) — completed 2026-03-14
+- [x] Phase 14: History and Diff Viewer (4/4 plans) — completed 2026-03-15
+- [x] Phase 15: System Tray and Auto-start (5/5 plans) — completed 2026-03-15
+- [x] Phase 16: Remote Auth and Push (5/5 plans) — completed 2026-03-15
+- [x] Phase 16.1: Git History UX + Graph View (4/4 plans) — completed 2026-03-15
+- [x] Phase 17: Branch Management (5/5 plans) — completed 2026-03-15
+- [x] Phase 18: CI Polish (3/3 plans) — completed 2026-03-15
+- [x] Phase 18.1: Creation of PR (3/4 plans) — completed 2026-03-22
+- [x] Phase 19: Close Audit Gaps (1/1 plans) — completed 2026-03-22
+- [x] Phase 20: Tech Debt Cleanup (3/3 plans) — completed 2026-03-22
+- [x] Phase 21: Nyquist Wave-0 Remediation (1/1 plans) — completed 2026-03-22
+- [x] Phase 22: HTML Report Redesign (3/3 plans) — completed 2026-03-28
+
+</details>
+
+### 🚧 v1.2 LLM Documentation (In Progress)
+
+**Milestone Goal:** Automatically generate developer-grade workflow documentation and change narratives from the parser's structured output — anchored to parsed data, with zero hallucination tolerance via Python-side grounding validation.
+
+- [x] **Phase 23: LLM Foundation** - Optional [llm] extras wiring + ContextBuilder (CORE-01, CORE-02) — completed 2026-04-04
+- [x] **Phase 24: DocumentationGraph + DocRenderer + Ollama** - LangGraph pipeline + renderer + offline provider (CORE-03, CORE-04, EVAL-01) — completed 2026-04-05
+- [x] **Phase 25: CLI Integration** - `document` subcommand + `diff --doc` flag (CLI-01, CLI-02) — completed 2026-04-05
+- [x] **Phase 26: Companion App AI Integration** - Business context field + SSE-streamed AI summary (APPAI-01, APPAI-02) — verified 2026-04-06
+- [ ] **Phase 27: RAGAS Evaluation Harness** - Faithfulness eval + end-to-end verification (EVAL-02)
+
+**v1.2 Execution Order:** 23 → 24 → 25 → 26 → 27
 
 ## Phase Details
 
@@ -271,6 +301,54 @@ Plans:
 - [x] 22-03-PLAN.md — Integration tests + regenerate examples/diff_report.html
 
 
+---
+
+## v1.2 LLM Documentation — Phase Details
+
+### Phase 23: LLM Foundation
+**Goal**: The `alteryx-diff` package has optional `[llm]` extras wired in `pyproject.toml` and a `ContextBuilder` that transforms structured workflow data into token-efficient LLM context — without ever passing raw XML to the LLM boundary
+**Depends on**: Phase 22 (v1.2 starts from shipped v1.1)
+**Requirements**: CORE-01, CORE-02
+**Success Criteria** (what must be TRUE):
+  1. Running `pip install alteryx-diff` (no extras) installs successfully and `alteryx-diff diff` works with zero LLM imports loaded
+  2. Running `pip install "alteryx-diff[llm]"` installs `langchain~=1.2`, `langgraph~=1.1`, `langchain-ollama~=1.0`, `ragas~=0.4`, and `tiktoken>=0.7`
+  3. `from alteryx_diff.llm import require_llm_deps` raises `ImportError` with a clear install hint when `[llm]` extras are absent
+  4. `ContextBuilder.build_from_workflow(doc)` returns a dict with keys `workflow_name`, `tool_count`, `tools`, `connections`, `topology` — no raw XML fields
+**Plans**: 1/1 complete — VERIFIED 2026-04-04
+
+Plans:
+- [x] 23-01-PLAN.md — Package extras + import guard + ContextBuilder + CI pipeline
+
+### Phase 24: DocumentationGraph + DocRenderer + Ollama
+**Goal**: A LangGraph 4-node pipeline generates structured workflow documentation from `ContextBuilder` output, a `DocRenderer` writes it to Markdown and HTML fragment, and a local Ollama model can be used as the LLM backend for offline execution
+**Depends on**: Phase 23
+**Requirements**: CORE-03, CORE-04, EVAL-01
+**Success Criteria** (what must be TRUE):
+  1. `await doc_graph.ainvoke(initial_state)` completes the `analyze_topology → annotate_tools → risk_scan → assemble_doc` pipeline and returns a validated `WorkflowDoc` Pydantic model
+  2. `DocRenderer.to_markdown(doc)` produces a standalone `.md` file; `DocRenderer.to_html_fragment(doc)` produces an HTML `<section>` fragment
+  3. Passing `--ollama` to the documentation pipeline runs to completion without requiring any cloud API key
+**Plans**: 4/4 complete — VERIFIED 2026-04-05
+
+Plans:
+- [x] 24-00-PLAN.md — Wave 0: RED test stubs for WorkflowDocumentation, DocumentationGraph, DocRenderer
+- [x] 24-01-PLAN.md — WorkflowDocumentation model + strip_noise update + pyproject.toml + test infrastructure
+- [x] 24-02-PLAN.md — DocumentationGraph LangGraph pipeline: build_doc_graph + generate_documentation
+- [x] 24-03-PLAN.md — DocRenderer: Markdown + HTML fragment rendering (Wave 2, parallel)
+
+### Phase 25: CLI Integration
+**Goal**: Developers can generate workflow documentation from the command line — either as a standalone Markdown doc for a single workflow, or as an AI change narrative embedded in an HTML diff report
+**Depends on**: Phase 24
+**Requirements**: CLI-01, CLI-02
+**Success Criteria** (what must be TRUE):
+  1. `alteryx-diff document workflow.yxmd` generates a Markdown intent doc without errors; running without `[llm]` extras prints a clear install-hint error and exits non-zero
+  2. `alteryx-diff diff base.yxmd head.yxmd --doc` produces an HTML diff report with an AI change narrative section embedded; section absent without `--doc`
+**Plans**: 3/3 complete — VERIFIED 2026-04-05
+
+Plans:
+- [x] 25-01-PLAN.md — generate_change_narrative() + ChangeNarrative model + doc_graph integration
+- [x] 25-02-PLAN.md — `document` subcommand + `diff --doc` flag + CLI integration
+- [x] 25-03-PLAN.md — Multi-command regression tests + diff --doc end-to-end verification
+
 ### Phase 26: Companion App AI Integration
 
 **Goal**: Add two AI features to the companion app — a one-shot business context field on first commit persisted to `.acd/context.json`, and an on-demand SSE AI change summary panel in the diff viewer
@@ -289,9 +367,25 @@ Plans:
 - [x] 26-03-PLAN.md — Backend: app/routers/ai.py SSE endpoint + server.py registration (CORE-01 compliant)
 - [x] 26-04-PLAN.md — Frontend: useAISummary hook + DiffViewer AI summary panel (5 states)
 
+### Phase 27: RAGAS Evaluation Harness
+**Goal**: Developers can measure the faithfulness of LLM-generated documentation against `ContextBuilder` output using a repeatable RAGAS evaluation script — providing an objective quality gate before deploying model or prompt changes
+**Depends on**: Phase 26
+**Requirements**: EVAL-02
+**Success Criteria** (what must be TRUE):
+  1. Running `python tests/eval/ragas_eval.py` against a set of reference workflows executes without errors and prints a `faithfulness` score (0.0–1.0) for each sample
+  2. The harness uses `ContextBuilder` output as `retrieved_contexts` — confirming the evaluation measures grounding against structured data, not raw XML
+  3. A README or docstring in `tests/eval/ragas_eval.py` documents how to run the harness, what score threshold is acceptable (>=0.8), and how to add new test samples
+**Plans**: 0 plans — NOT STARTED
+
+Plans:
+- [ ] 27-01-PLAN.md — RAGAS eval harness: ragas_eval.py + ContextBuilder integration + sample fixtures + README
+
+---
+
 ## Progress
 
 **Execution Order:** 10 → 11 → 12 → 13 → 14 → 15 → 16 → 16.1 → 17 → 18 (Phase 18 independent)
+**v1.2 Execution Order:** 23 → 24 → 25 → 26 → 27
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -304,19 +398,23 @@ Plans:
 | 7. HTML Report | v1.0 | 2/2 | Complete | 2026-03-06 |
 | 8. Visual Graph | v1.0 | 3/3 | Complete | 2026-03-07 |
 | 9. CLI Entry Point | v1.0 | 3/3 | Complete | 2026-03-07 |
-| 10. App Scaffold | v1.1 | 3/3 | Complete    | 2026-03-13 |
-| 11. Onboarding and Project Management | 5/5 | Complete    | 2026-03-14 | - |
-| 12. File Watcher | 5/5 | Complete    | 2026-03-14 | - |
-| 13. Save Version | 4/4 | Complete    | 2026-03-14 | - |
-| 14. History and Diff Viewer | 4/4 | Complete    | 2026-03-15 | - |
-| 15. System Tray and Auto-start | 5/5 | Complete    | 2026-03-15 | - |
-| 16. Remote Auth and Push | 5/5 | Complete    | 2026-03-15 | - |
-| 16.1. Git History UX + Graph View | 4/4 | Complete    | 2026-03-15 | - |
-| 17. Branch Management | 5/5 | Complete    | 2026-03-15 | - |
-| 18. CI Polish | 3/3 | Complete    | 2026-03-15 | - |
-| 18.1. Creation of PR | 3/4 | Complete    | 2026-03-22 |
-| 19. Close Audit Gaps | 1/1 | Complete    | 2026-03-22 | — |
-| 20. Tech Debt Cleanup | 3/3 | Complete    | 2026-03-22 | — |
-| 21. Nyquist Wave-0 Remediation | 1/1 | Complete    | 2026-03-22 | — |
-| 22. HTML Report Redesign | 0/? | 3/3 | Complete    | 2026-03-28 |
+| 10. App Scaffold | v1.1 | 3/3 | Complete | 2026-03-13 |
+| 11. Onboarding and Project Management | v1.1 | 5/5 | Complete | 2026-03-14 |
+| 12. File Watcher | v1.1 | 5/5 | Complete | 2026-03-14 |
+| 13. Save Version | v1.1 | 4/4 | Complete | 2026-03-14 |
+| 14. History and Diff Viewer | v1.1 | 4/4 | Complete | 2026-03-15 |
+| 15. System Tray and Auto-start | v1.1 | 5/5 | Complete | 2026-03-15 |
+| 16. Remote Auth and Push | v1.1 | 5/5 | Complete | 2026-03-15 |
+| 16.1. Git History UX + Graph View | v1.1 | 4/4 | Complete | 2026-03-15 |
+| 17. Branch Management | v1.1 | 5/5 | Complete | 2026-03-15 |
+| 18. CI Polish | v1.1 | 3/3 | Complete | 2026-03-15 |
+| 18.1. Creation of PR | v1.1 | 3/4 | Complete | 2026-03-22 |
+| 19. Close Audit Gaps | v1.1 | 1/1 | Complete | 2026-03-22 |
+| 20. Tech Debt Cleanup | v1.1 | 3/3 | Complete | 2026-03-22 |
+| 21. Nyquist Wave-0 Remediation | v1.1 | 1/1 | Complete | 2026-03-22 |
+| 22. HTML Report Redesign | v1.1 | 3/3 | Complete | 2026-03-28 |
+| 23. LLM Foundation | v1.2 | 1/1 | Complete | 2026-04-04 |
+| 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 4/4 | Complete | 2026-04-05 |
+| 25. CLI Integration | v1.2 | 3/3 | Complete | 2026-04-05 |
 | 26. Companion App AI Integration | v1.2 | 4/4 | Verified (human_needed) | 2026-04-06 |
+| 27. RAGAS Evaluation Harness | v1.2 | 0/1 | Not started | — |
