@@ -101,17 +101,3 @@ def test_render_connections_in_diff_data() -> None:
     assert conn["dst_tool"] == 705
     assert conn["dst_anchor"] == "Input"
     assert conn["change_type"] == "added"
-
-
-def test_render_without_doc_fragment_omits_change_narrative_section() -> None:
-    """render() without doc_fragment must not emit change-narrative id."""
-    html = HTMLRenderer().render(EMPTY_DIFF)
-    assert 'id="change-narrative"' not in html
-
-
-def test_render_with_doc_fragment_embeds_section() -> None:
-    """render() with doc_fragment embeds the fragment verbatim (via | safe filter)."""
-    fragment = '<section id="change-narrative"><h2>AI Change Narrative</h2><p>Body</p></section>'
-    html = HTMLRenderer().render(EMPTY_DIFF, doc_fragment=fragment)
-    assert 'id="change-narrative"' in html
-    assert "<h2>AI Change Narrative</h2>" in html

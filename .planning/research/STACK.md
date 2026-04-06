@@ -1,308 +1,175 @@
-# Stack Research — LLM Documentation (April 2026)
+# Stack Research
 
-**Project:** Alteryx Git Companion v1.2 — LLM-powered workflow documentation
-**Researched:** 2026-04-02
-**Confidence:** MEDIUM-HIGH (versions verified from PyPI; API patterns cross-referenced across multiple sources)
-
-> This document supplements the original STACK.md (v1.0 XML diff stack) with LLM-specific additions for the v1.2 milestone.
+**Domain:** Python CLI tool — XML diff, graph analysis, interactive HTML report generation
+**Researched:** 2026-02-28
+**Confidence:** HIGH (all critical choices verified against PyPI current versions and official docs)
 
 ---
 
-## CRITICAL VERSION ALERT
+## Recommended Stack
 
-The PROJECT.md Key Decisions table states `langchain~=0.3 + langgraph~=1.1` with the rationale "langchain>=1.2 does not exist." **This is incorrect as of April 2026.** The current production-stable version is `langchain==1.2.14`. See the Confirmed Library Versions section below.
+### Core Technologies
 
-**Action required:** The version pin in pyproject.toml should target `langchain~=1.2`, not `langchain~=0.3`. The PROJECT.md Key Decisions rationale note is stale and should be updated.
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| Python | 3.11+ | Runtime | NetworkX 3.6.1 requires >=3.11; aligns with modern type hint features used by Typer. Do not target 3.10 — it is excluded by current NetworkX. |
+| lxml | 6.0.2 | XML parsing, normalization, canonicalization | C-based (libxml2), 5–20x faster than stdlib ElementTree for large files. Provides C14N 1.0/2.0 via `method="c14n2"` for stable attribute-ordered serialization — critical for hash-based normalization. Only library that supports both XPath and canonical serialization in a single dependency. |
+| networkx | 3.6.1 | Directed graph model for workflow connections | Industry standard for Python graph analysis. DiGraph + topological_sort is the correct primitive for Alteryx DAG representation. Node/edge attributes carry tool metadata for diff annotation. |
+| Typer | 0.24.1 | CLI interface | Built on Click underneath, but uses Python type hints for argument declaration — zero boilerplate for this project's 3–5 flags. Auto-generates help text and shell completion. Actively maintained (Feb 2026 release). |
+| Jinja2 | 3.1.6 | HTML report templating | Standard Python HTML templating. Handles embedding large inline JS blobs cleanly via `{{ variable \| safe }}`. No framework lock-in. Works without a web server — renders to a static file. |
+| pyvis | 0.3.2 | Interactive graph visualization in HTML | Wraps vis.js Network. Python-side node/edge construction, exports to HTML. Use `cdn_resources='in_line'` to produce single-file output with vis.js embedded (critical for offline use). Last released Feb 2023 — mature/stable but not actively developed. Sufficient for this use case. |
+| pytest | 9.0.2 | Testing | Standard. Use parametrize + fixture pairs for golden-file XML diff testing. |
+| uv | latest | Package management, virtual environments | 10–100x faster than pip. Manages pyproject.toml, lockfile (uv.lock), and Python version via `.python-version`. The 2025 standard for new Python CLI projects. |
 
----
+### Supporting Libraries
 
-## Confirmed Library Versions
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| hashlib | stdlib | SHA-256 hashing of normalized tool config blobs | Always — no additional dependency. Use `hashlib.sha256(canonical_xml_bytes).hexdigest()` to fingerprint each tool's config subtree for O(n) change detection. |
+| deepdiff | 8.6.1 | Structured diff of Python dicts/objects | Use for the config-level diff layer: convert each tool's config XML subtree to a dict, then run DeepDiff to get field-level changes (added/removed/modified keys). Do NOT use as the primary XML diff engine — see Alternatives. |
+| xml.etree.ElementTree | stdlib | Fallback validation only | Do not use for primary parsing. Use only as a zero-dependency validator in error-handling paths if lxml is unavailable (unlikely). |
+| rich | latest | Terminal output formatting | For CLI progress/error messages with color. Optional — add only if UX polish is desired in Phase 1. |
+| pytest-cov | latest | Code coverage | Dev dependency. Run with `uv run pytest --cov=alteryx_diff`. |
 
-| Library | Current Version | Release Date | Source |
-|---------|----------------|--------------|--------|
-| langchain | **1.2.14** | Mar 31, 2026 | PyPI |
-| langchain-core | **1.2.24** | Apr 1, 2026 | PyPI |
-| langchain-community | **0.4.1** | 2026 | PyPI |
-| langgraph | **1.1.4** | Mar 31, 2026 | PyPI |
-| langchain-ollama | **1.0.1** | Dec 12, 2025 | PyPI |
-| ragas | **0.4.3** | Jan 13, 2026 | PyPI |
+### Development Tools
 
-**Confidence:** HIGH — all versions fetched directly from PyPI pages.
-
-**Sources:**
-- https://pypi.org/project/langchain/
-- https://pypi.org/project/langgraph/
-- https://pypi.org/project/langchain-ollama/
-- https://pypi.org/project/ragas/
-
----
-
-## Recommended LLM Stack
-
-| Technology | Version Pin | Purpose | Why |
-|------------|-------------|---------|-----|
-| langchain | `~=1.2` | Core LLM abstraction layer (chat models, LCEL chains, structured output) | Stable production release (1.0 milestone shipped late 2025); `with_structured_output` still present on `BaseChatModel`; LCEL pipe operator retained |
-| langchain-core | `~=1.2` (transitive) | Base interfaces (Runnable, BaseChatModel, messages) | Pulled in by langchain; pin major only |
-| langgraph | `~=1.1` | `DocumentationGraph` StateGraph pipeline | 1.1.4 is current stable; `StateGraph` + `START`/`END` API is unchanged from 1.0 to 1.1 |
-| langchain-ollama | `~=1.0` | Offline/air-gapped LLM execution via local Ollama | 1.0.1 supports `with_structured_output` with `method='json_schema'` (default since 0.3); good Pydantic v2 support |
-| ragas | `~=0.4` | Faithfulness evaluation harness | 0.4.3 current; use `SingleTurnSample` + `EvaluationDataset` API (legacy `evaluate()` call deprecated in 0.4, removed in 1.0) |
-| tiktoken | `>=0.7` | Token budget estimation for non-Ollama providers | Lightweight; used by langchain-core internally |
-
-**What NOT to add:**
-- `langchain-openai` — only add if/when cloud provider integration is scoped. Not needed for Ollama-only v1.2.
-- `langchain-classic` — the backward-compat shim for old 0.3 patterns. Do not depend on this; use 1.x native patterns.
-- `langsmith` — tracing/observability SDK; out of scope for v1.2.
+| Tool | Purpose | Notes |
+|------|---------|-------|
+| uv | Venv + dependency management | `uv init`, `uv add lxml networkx typer jinja2 pyvis deepdiff`, `uv add --dev pytest pytest-cov` |
+| ruff | Linting + formatting | Fast, replaces flake8 + black + isort. Add to `[tool.ruff]` in pyproject.toml. |
+| mypy | Static type checking | Enforce type hints. Works cleanly with Typer's type-hint-first design. |
+| pyproject.toml | Project manifest | PEP 621 standard. Defines entry points, dependencies, tool config. Single source of truth. |
 
 ---
 
-## LangGraph StateGraph Pattern
+## Decision Rationale by Question
 
-**Confidence:** HIGH — verified against official LangGraph docs (https://docs.langchain.com/oss/python/langgraph/graph-api) which returned working code.
+### XML Parsing: lxml wins decisively
 
-This is the exact import and pattern for a linear 4-node `DocumentationGraph` using `langgraph>=1.0`:
+**Use lxml 6.0.2, not xml.etree, not xmltodict.**
 
-```python
-from typing_extensions import TypedDict
-from langgraph.graph import StateGraph, START, END
+- `xml.etree`: Pure Python path is 5–20x slower; no C14N canonicalization; limited XPath. For 500-tool Alteryx workflows (~1–5 MB XML), this becomes the bottleneck.
+- `xmltodict 1.0.4`: Converts XML to dicts. Explicitly documented to NOT preserve attribute order, multiple top-level comments, or mixed content. Its own docs say "for exact fidelity, use a full XML library such as lxml." Fatal for diff accuracy.
+- `lxml 6.0.2`: C-based, XPath 1.0, C14N 2.0 (`etree.canonicalize()` or `method="c14n2"`). The canonicalize step sorts attributes lexicographically and normalizes whitespace — this solves the attribute-reordering false-positive problem in Alteryx XMLs without custom code.
 
-# --- State definition (TypedDict only — Pydantic models NOT supported in v1.x StateGraph) ---
-class DocumentationState(TypedDict):
-    context: str            # Built by ContextBuilder, passed in at invoke() time
-    topology_notes: str     # Output of analyze_topology node
-    tool_annotations: str   # Output of annotate_tools node
-    risk_notes: str         # Output of risk_scan node
-    final_doc: str          # Output of assemble_doc node
+**Confidence: HIGH** — Verified against lxml 6.0.2 PyPI page and lxml.de docs.
 
-# --- Node functions (each receives full state, returns partial update dict) ---
-def analyze_topology(state: DocumentationState) -> dict:
-    # Call LLM here, return partial state update
-    return {"topology_notes": "..."}
+### Hashing/Normalization: lxml C14N + hashlib
 
-def annotate_tools(state: DocumentationState) -> dict:
-    return {"tool_annotations": "..."}
+**Use lxml's `etree.canonicalize()` to produce a stable byte representation, then `hashlib.sha256()` to fingerprint each tool config subtree.**
 
-def risk_scan(state: DocumentationState) -> dict:
-    return {"risk_notes": "..."}
+Do NOT implement custom attribute sorting or whitespace stripping — lxml C14N handles both per the W3C spec. The canonical form produces byte-identical output for semantically identical XML regardless of attribute order or whitespace formatting — exactly what is needed to eliminate Alteryx false positives.
 
-def assemble_doc(state: DocumentationState) -> dict:
-    return {"final_doc": "..."}
+Workflow:
+1. Parse tool `<Node>` subtree with lxml
+2. Strip position attributes (CenterPoint X/Y) before canonicalization unless `--include-positions` flag is set
+3. `etree.canonicalize(from_node, strip_text=True)` — returns bytes
+4. `hashlib.sha256(canonical_bytes).hexdigest()` — use as tool fingerprint
+5. Compare fingerprints between old/new workflow to classify unchanged/modified tools
 
-# --- Build and compile ---
-builder = StateGraph(DocumentationState)
+**Confidence: HIGH** — C14N attribute sorting behavior verified against lxml docs and W3C C14N spec.
 
-builder.add_node("analyze_topology", analyze_topology)
-builder.add_node("annotate_tools", annotate_tools)
-builder.add_node("risk_scan", risk_scan)
-builder.add_node("assemble_doc", assemble_doc)
+### Diff Computation: Custom pipeline (not xmldiff, not difflib)
 
-builder.add_edge(START, "analyze_topology")
-builder.add_edge("analyze_topology", "annotate_tools")
-builder.add_edge("annotate_tools", "risk_scan")
-builder.add_edge("risk_scan", "assemble_doc")
-builder.add_edge("assemble_doc", END)
+**Use a custom two-layer diff engine: hashlib fingerprints for tool-level detection, then DeepDiff for config-level detail.**
 
-graph = builder.compile()
+- `difflib`: Line-based text diff. Produces raw line hunks from XML text. Zero semantic understanding of tools or connections. Wrong abstraction level for this problem.
+- `xmldiff 2.7.0`: XML-specific structured diff. Outputs edit operations (insert, delete, rename, move). Sound algorithm ("Change Detection in Hierarchically Structured Information" paper). But outputs raw XML patch operations, not "tool X's field Y changed from A to B" — requires significant post-processing to map to the Alteryx object model. Last active update: 2023. Python 3.11 support is listed as max — needs verification before using.
+- `deepdiff 8.6.1`: Works on Python dicts/objects. After converting each tool's config XML to a dict (via `lxml`), DeepDiff produces human-readable field-level changes. Released Sep 2025 — actively maintained.
+- **Custom pipeline** (recommended): Parse → normalize → fingerprint per tool → classify (added/removed/modified) → for modified tools, run DeepDiff on dict representation to get field-level detail. This gives exact control over what counts as a change and avoids fighting xmldiff's edit-operation abstraction.
 
-# --- Invoke ---
-result = graph.invoke({"context": "<ContextBuilder output here>"})
-final_markdown = result["final_doc"]
-```
+**Confidence: HIGH** for architecture decision; MEDIUM for DeepDiff dict representation approach (well-established pattern, not verified against an Alteryx-specific reference).
 
-**Key constraints:**
-- State must be `TypedDict`. Pydantic `BaseModel` is NOT supported for `StateGraph` state in langchain 1.x — this is a breaking change from some pre-1.0 patterns. Use `TypedDict` for graph state; use Pydantic for structured LLM output.
-- `.compile()` is mandatory before `.invoke()`.
-- Nodes return partial dicts; LangGraph merges them into the state.
-- For async: use `await graph.ainvoke(...)` (all nodes become `async def`).
+### Graph Analysis: networkx 3.6.1
 
----
+**Use networkx DiGraph.** It is the right choice in 2025.
 
-## Structured Output Pattern
+- Nodes = Alteryx tools (ToolID, type, config hash)
+- Edges = connections (FromToolID → ToToolID, with anchor metadata)
+- `nx.topological_sort()` for ordered rendering
+- Node/edge attributes carry diff status (added/removed/modified) — passes directly into pyvis node colors
 
-**Confidence:** HIGH — verified from reference docs and confirmed active in March 2026 usage reports.
+**Constraint:** NetworkX 3.6.1 requires Python >=3.11. This drives the Python version floor.
 
-`with_structured_output` is still the canonical pattern in langchain 1.2.x. It exists on `BaseChatModel` in `langchain-core`. The `create_agent` abstraction is for agent loops; for a linear pipeline like `DocumentationGraph`, use `with_structured_output` directly.
+**Confidence: HIGH** — Verified against networkx 3.6.1 PyPI page and official docs.
 
-```python
-from pydantic import BaseModel, Field
-from langchain_ollama import ChatOllama
+### Graph Visualization: pyvis 0.3.2 with `cdn_resources='in_line'`
 
-# --- Define output schema with Pydantic v2 ---
-class WorkflowSummary(BaseModel):
-    """Structured summary of an Alteryx workflow."""
-    purpose: str = Field(description="One-sentence description of what this workflow does")
-    input_sources: list[str] = Field(description="Data sources consumed by this workflow")
-    output_targets: list[str] = Field(description="Data targets produced by this workflow")
-    tool_count: int = Field(description="Total number of tools in the workflow")
-    risk_flags: list[str] = Field(description="Potential data quality or logic risks, if any")
+**Use pyvis with `cdn_resources='in_line'`.**
 
-# --- Bind structured output to model ---
-model = ChatOllama(model="llama3.1", temperature=0)
-structured_model = model.with_structured_output(WorkflowSummary)
+- `pyvis` wraps vis.js Network — the most natural fit for workflow canvas visualization (node positions, directed edges, hover events)
+- `cdn_resources='in_line'` embeds vis.js JavaScript directly in the HTML output, making the report a single self-contained file (no CDN dependency, works offline)
+- DO NOT use `cdn_resources='local'` — there is a documented bug where it still loads from CDN despite the setting
+- DO NOT use `cdn_resources='remote'` — requires internet connection at report view time
 
-# Basic invocation
-result: WorkflowSummary = structured_model.invoke(
-    "Analyze this workflow context and produce a structured summary:\n\n{context}"
-)
-print(result.purpose)   # dot-access on Pydantic model
+**D3.js alternative:** Would require 300–500 lines of JavaScript embedded in Jinja2 template. D3 has no built-in graph layout — you'd need d3-force or dagre-d3. High-effort, high-flexibility. Not justified for Phase 1 when pyvis delivers 80% of the result in 10% of the code. Phase 3+ (SaaS UI) can revisit D3.
 
-# --- With retry on ValidationError (PROJECT.md: single-retry pattern) ---
-from langchain_core.exceptions import OutputParserException
+**vis.js directly:** pyvis IS a vis.js wrapper. Using vis.js directly from Python would require generating raw JSON and JavaScript — essentially rebuilding pyvis. Not beneficial.
 
-structured_model_with_raw = model.with_structured_output(
-    WorkflowSummary,
-    include_raw=True,   # Returns {"raw": AIMessage, "parsed": WorkflowSummary, "parsing_error": ...}
-)
+**pyvis maintenance concern:** Last PyPI release was Feb 2023. However, the underlying vis.js library (vis-network) remains maintained, and pyvis's feature set is complete for this use case. The risk is low for a Phase 1 CLI tool.
 
-raw_result = structured_model_with_raw.invoke("...")
-if raw_result["parsing_error"]:
-    # Single retry with explicit JSON instruction in prompt
-    result = structured_model.invoke("Return valid JSON matching the schema. " + "...")
-else:
-    result = raw_result["parsed"]
-```
+**Confidence: MEDIUM** — pyvis `in_line` behavior verified via GitHub issues; maintenance status and vis.js dependency verified.
 
-**Pydantic v2 specifics:** `BaseModel` from `pydantic` works directly. No `v1` compat shim needed. `Field(description=...)` populates the JSON schema `description` field which Ollama passes to the model.
+### HTML Templating: Jinja2 3.1.6
 
----
+**Use Jinja2.** No contest.
 
-## Ollama Integration
+- Standard Python HTML templating — used by Flask, Django, Ansible, Pelican
+- Handles embedding large pyvis HTML output blob, inline CSS, and per-tool diff sections without escaping issues
+- `{{ graph_html | safe }}` pattern for embedding raw HTML from pyvis
+- Filters for conditional CSS classes (`{{ 'modified' if tool.status == 'modified' else '' }}`)
+- No server required — renders to a static `.html` file
 
-**Confidence:** HIGH — verified from `langchain-ollama` reference docs and PyPI.
+**Confidence: HIGH** — Verified against Jinja2 3.1.6 PyPI page and official docs.
 
-### Basic setup
+### CLI: Typer 0.24.1
 
-```python
-from langchain_ollama import ChatOllama
+**Use Typer, not Click, not argparse.**
 
-# For structured output, use json_schema method (default since langchain-ollama 0.3.0)
-model = ChatOllama(
-    model="llama3.1",       # or "llama3.2", "mistral", "deepseek-r1:14b"
-    temperature=0,          # Required for deterministic structured output
-    # method defaults to 'json_schema' in 1.0.x — do not override unless debugging
-)
-```
+- Typer is Click under the hood — all Click capabilities are available if needed
+- Type hint-first: `def diff(file_a: Path, file_b: Path, include_positions: bool = False, output: Path = Path("diff.html"))` — the entire CLI is defined by the function signature
+- Auto-generates `--help`, shell completion, and validation (file must exist, etc.) from type annotations
+- Released Feb 2026 — actively maintained
+- Click (38.7% ecosystem adoption) is the alternative if Typer's abstraction causes friction, but for this 3–5 argument CLI, Typer is strictly less code
+- argparse: stdlib but verbose and manual. No type hint integration. No autocompletion. Not justified for a greenfield project.
 
-### Structured output with ChatOllama
+**Confidence: HIGH** — Verified against Typer 0.24.1 PyPI page and Typer official docs.
 
-The `with_structured_output` signature on `ChatOllama`:
+### Testing: pytest 9.0.2 with golden-file fixtures
 
-```python
-ChatOllama.with_structured_output(
-    schema: dict | type,
-    *,
-    method: Literal['function_calling', 'json_mode', 'json_schema'] = 'json_schema',
-    include_raw: bool = False,
-)
-```
+**Use pytest with parametrized golden-file tests.**
 
-`json_schema` is the recommended default. Ollama passes the Pydantic schema directly to the model as a format constraint, making structured output highly reliable even with models that don't support tool calling.
+Pattern for XML diff tools:
+1. `tests/fixtures/` — directory of `.yxmd` file pairs (`before.yxmd`, `after.yxmd`)
+2. `tests/expected/` — expected diff output as JSON (the object model, not HTML)
+3. `@pytest.mark.parametrize` over fixture pairs
+4. Assert diff engine output matches expected JSON exactly
+5. Separate test suite for HTML rendering (assert structure, not pixel equality)
 
-### Known issues and limitations
+Do NOT test HTML output byte-for-byte — pyvis output is non-deterministic (physics seed). Test the diff object model, not the rendered artifact.
 
-| Issue | Severity | Mitigation |
-|-------|----------|------------|
-| Not all models support tool calling | Medium | Use `method='json_schema'` (default) instead of `function_calling` |
-| `json_mode` requires schema in prompt too | Medium | Use `json_schema` method to avoid this; `json_schema` does NOT require manual prompt engineering |
-| Output is null when function calling fails | High | Always set `method='json_schema'` explicitly if you hit null outputs |
-| Ollama must be running locally | Low | Document setup requirement; not bundled in the exe |
-| Token limit differences by model | Low | Use token budget guard before invoking |
+**Confidence: HIGH** — pytest 9.0.2 PyPI verified. Pattern is standard for diff tools.
 
-**Recommendation:** Pin `method='json_schema'` explicitly in code even though it is the default. Prevents silent regression if default changes.
+### Packaging: uv + pyproject.toml
 
----
-
-## RAGAS for Factual Grounding
-
-**Confidence:** MEDIUM — API patterns verified from PyPI and docs search; exact 0.4 API confirmed from multiple sources but full reference docs returned 403.
-
-### What RAGAS provides
-
-RAGAS 0.4.3 includes these metrics relevant to the grounding requirement:
-
-| Metric | What it measures | Requires vector store? |
-|--------|-----------------|----------------------|
-| `Faithfulness` | Are all claims in the LLM response inferable from the provided context? Score 0-1. | No — only needs response + retrieved_contexts |
-| `FactualCorrectness` | Factual accuracy against a reference answer | No — needs response + reference |
-| `LLMContextRecall` | Did the LLM use all relevant context? | No — needs response + context |
-
-### Usage pattern without a vector store
-
-The grounding harness for v1.2 needs to check that the LLM's documentation output is faithful to the `ContextBuilder` output. This is a pure faithfulness check — no retrieval step involved.
-
-```python
-from ragas import evaluate
-from ragas.metrics import Faithfulness
-from ragas.dataset_schema import SingleTurnSample, EvaluationDataset
-from langchain_ollama import ChatOllama
-from ragas.llms import LangchainLLMWrapper
-
-# --- Build samples from generated docs ---
-# context_str = ContextBuilder output (what we gave the LLM)
-# generated_doc = LLM output (what we want to evaluate)
-
-sample = SingleTurnSample(
-    user_input="Document this Alteryx workflow",   # The prompt sent to the LLM
-    response=generated_doc,                        # The LLM's output
-    retrieved_contexts=[context_str],              # The ContextBuilder output used as context
-)
-
-dataset = EvaluationDataset(samples=[sample])
-
-# --- Use local Ollama as evaluator LLM (avoids cloud dependency) ---
-evaluator_llm = LangchainLLMWrapper(
-    ChatOllama(model="llama3.1", temperature=0)
-)
-
-# --- Run evaluation ---
-results = evaluate(
-    dataset=dataset,
-    metrics=[Faithfulness()],
-    llm=evaluator_llm,
-)
-
-faithfulness_score = results["faithfulness"]  # float 0.0 to 1.0
-# Threshold for v1.2: reject if faithfulness_score < 0.8
-```
-
-### API deprecation note
-
-The older `SingleTurnSample.single_turn_ascore()` method is deprecated in ragas 0.4 and removed in 1.0. Use the `evaluate()` function with `EvaluationDataset` as shown above.
-
----
-
-## Optional Dependency Pattern (uv)
-
-**Confidence:** HIGH — verified against uv official docs (https://docs.astral.sh/uv/concepts/projects/dependencies/).
-
-### pyproject.toml syntax
+**Use uv with pyproject.toml. No requirements.txt.**
 
 ```toml
 [project]
 name = "alteryx-diff"
-version = "1.2.0"
+version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    # Core dependencies (always installed)
     "lxml>=6.0.2",
     "networkx>=3.6.1",
     "typer>=0.24.1",
     "jinja2>=3.1.6",
+    "pyvis>=0.3.2",
     "deepdiff>=8.6.1",
-    "scipy>=1.17.1",
-    "fastapi>=0.115",
-    "pystray",
-    "keyring",
 ]
 
-[project.optional-dependencies]
-llm = [
-    "langchain~=1.2",
-    "langchain-core~=1.2",
-    "langgraph~=1.1",
-    "langchain-ollama~=1.0",
-    "ragas~=0.4",
-    "tiktoken>=0.7",
-]
+[project.scripts]
+acd = "alteryx_diff.cli:app"
 
 [tool.uv]
 dev-dependencies = [
@@ -313,149 +180,120 @@ dev-dependencies = [
 ]
 ```
 
-### Sync commands
+**Confidence: HIGH** — uv workflow verified against astral.sh docs and Real Python guide.
+
+---
+
+## Installation
 
 ```bash
-# Core only (no LLM deps):
-uv sync
+# Initialize project
+uv init alteryx-diff
+cd alteryx-diff
 
-# Core + LLM deps:
-uv sync --extra llm
+# Core runtime dependencies
+uv add lxml networkx typer jinja2 pyvis deepdiff
 
-# Install from PyPI (end-user):
-pip install alteryx-diff           # core only
-pip install "alteryx-diff[llm]"    # with LLM features
-```
+# Dev dependencies
+uv add --dev pytest pytest-cov ruff mypy
 
-### Key gotchas
+# Run CLI during development
+uv run acd workflow_v1.yxmd workflow_v2.yxmd
 
-1. **Conflicting optional deps:** If two extras have conflicting requirements, uv's resolver will fail unless you declare them with `[tool.uv.conflicts]`. For v1.2 there is only one extra (`llm`), so no conflict handling needed.
-
-2. **Optional deps appear in published metadata:** They are NOT local-only. When the package is published to PyPI, the `[llm]` extra is advertised as a public extra. This is correct behavior for an installable package.
-
-3. **Dev dependencies are separate from optional deps:** Do NOT put pytest or ruff in `[project.optional-dependencies]`. Dev deps belong in `[tool.uv.dev-dependencies]` or `[dependency-groups]`. Using `[project.optional-dependencies]` for dev tools causes them to appear in published package metadata.
-
-4. **Guard in code:** The `alteryx_diff/llm/` module must guard imports behind `try/except ImportError` so that the core CLI exits gracefully when LLM deps are not installed:
-
-```python
-try:
-    from langchain_ollama import ChatOllama
-    from langgraph.graph import StateGraph
-    LLM_AVAILABLE = True
-except ImportError:
-    LLM_AVAILABLE = False
+# Run tests
+uv run pytest --cov=alteryx_diff
 ```
 
 ---
 
-## Token Budget Management
+## Alternatives Considered
 
-**Confidence:** MEDIUM — `count_tokens_approximately` function verified from LangChain reference docs; tiktoken usage pattern is widely established.
-
-### Recommended approach: two-tier
-
-**Tier 1 — Fast pre-check (no model call):** Use `langchain_core.messages.utils.count_tokens_approximately` for a quick budget check before invoking the LLM. This avoids a network call and is sufficient for guard-railing.
-
-```python
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.messages.utils import count_tokens_approximately
-
-def check_token_budget(messages: list, max_tokens: int = 8000) -> bool:
-    """Return True if messages are within budget."""
-    estimated = count_tokens_approximately(messages)
-    return estimated <= max_tokens
-
-# Usage before LLM call:
-messages = [
-    SystemMessage(content=system_prompt),
-    HumanMessage(content=context_str),
-]
-if not check_token_budget(messages, max_tokens=6000):
-    # Truncate context_str before proceeding
-    raise ValueError(f"Context too large: ~{count_tokens_approximately(messages)} tokens")
-```
-
-**Function signature:**
-```python
-count_tokens_approximately(
-    messages: Iterable[MessageLikeRepresentation],
-    *,
-    chars_per_token: float = 4.0,          # Conservative estimate
-    extra_tokens_per_message: float = 3.0,
-    count_name: bool = True,
-    tokens_per_image: int = 85,
-    use_usage_metadata_scaling: bool = False,
-    tools: list | None = None,
-) -> int
-```
-
-Returns an `int` — approximate token count. The `chars_per_token=4.0` default is conservative (slightly overestimates). For Ollama/Llama3, this is a reasonable approximation.
-
-**Tier 2 — Accurate count (model-specific, only if needed):** Use `tiktoken` directly for OpenAI-compatible models. For Ollama/Llama3, tiktoken with `o200k_base` encoding is a reasonable approximation but may differ by 1–3 tokens per message due to Llama's custom special tokens.
-
-```python
-import tiktoken
-
-def count_tokens_tiktoken(text: str, model: str = "gpt-4o") -> int:
-    enc = tiktoken.encoding_for_model(model)
-    return len(enc.encode(text))
-```
-
-**Recommendation for v1.2:** Use `count_tokens_approximately` for the `ContextBuilder` budget guard (the `ContextBuilder`'s job is to keep context under the limit). Do not add tiktoken as a hard dependency unless a cloud provider integration is added later.
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| XML parsing | lxml 6.0.2 | xml.etree (stdlib) | 5–20x slower; no C14N canonicalization; limited XPath |
+| XML parsing | lxml 6.0.2 | xmltodict 1.0.4 | Explicitly does not preserve attribute order or XML nuances — self-disqualified for diff fidelity |
+| Diff computation | Custom + DeepDiff | xmldiff 2.7.0 | Outputs raw edit operations (insert/delete/rename), not field-level changes; requires significant post-processing; Python 3.11 support uncertain |
+| Diff computation | Custom + DeepDiff | difflib (stdlib) | Line-based text diff, no semantic understanding of XML structure |
+| Graph viz | pyvis 0.3.2 (in_line) | D3.js embedded via Jinja2 | 300–500 lines of custom JavaScript; no built-in graph layout; high effort for equivalent output |
+| Graph viz | pyvis 0.3.2 (in_line) | vis.js directly | pyvis IS the Python wrapper for vis.js; using vis.js directly means rebuilding pyvis |
+| Graph viz | pyvis 0.3.2 (in_line) | Plotly/Bokeh | General-purpose charting libs, not graph network libraries; awkward fit for node+edge workflow canvas |
+| CLI | Typer 0.24.1 | Click | Click is Typer's foundation; use Click directly only if Typer's type-hint abstraction causes friction |
+| CLI | Typer 0.24.1 | argparse | Verbose, manual, no type hint integration, no autocompletion |
+| Package mgmt | uv | Poetry | uv is 10–100x faster; simpler lockfile semantics; Poetry has slower resolver and more complex config |
+| Package mgmt | uv | pip + venv | No lockfile, manual env management, no Python version pinning |
 
 ---
 
-## What NOT to Add
+## What NOT to Use
 
-| Library | Why Excluded | If Needed Later |
-|---------|-------------|-----------------|
-| `openai` / `langchain-openai` | Cloud provider; out of scope for offline-first v1.2 | Add as separate optional extra `[project.optional-dependencies] openai = [...]` |
-| `anthropic` / `langchain-anthropic` | Same as above | Same pattern |
-| `langsmith` | Tracing/observability SDK; adds external API dependency; out of scope | Add to dev extras only if adopting LangSmith for evaluation |
-| `langchain-classic` | Backward-compat shim for pre-1.0 patterns; indicates code using deprecated APIs | Use native 1.x patterns instead |
-| `chromadb` / `faiss-cpu` | Vector stores; RAGAS does NOT require them for faithfulness evaluation | Only if retrieval-augmented features are added |
-| `sentence-transformers` | Embedding models; not needed for text-only doc generation | Only if semantic search over workflow history is added |
-| `celery` / `redis` | Task queues; doc generation is synchronous in v1.2 | If async job queue is added in v1.3+ |
-| `pydantic-settings` | Config management; langchain 1.x uses it internally but no need to expose it | Only if adding complex config surface |
-
-**Core principle:** The `[llm]` optional group should be installable in an air-gapped environment given a local PyPI mirror or pre-downloaded wheels, because the exe targets air-gapped corporate Alteryx environments. Avoid any dependency that phones home on import or requires external API keys to function.
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `xml.etree.ElementTree` as primary parser | Pure Python, no C14N, no XPath 1.0 — misses attribute normalization and is 5–20x slower | `lxml 6.0.2` |
+| `xmltodict` | Self-documented as not preserving attribute order or XML nuances — will produce false positives in Alteryx XML | `lxml 6.0.2` |
+| `xmldiff` as primary diff engine | Edit-operation abstraction (insert/delete/rename) does not map cleanly to "tool X field Y changed from A to B"; Python 3.11 support uncertain | Custom pipeline with DeepDiff |
+| `difflib` for XML diff | Line-based text diff produces meaningless output for structured XML | Custom pipeline |
+| `pyvis cdn_resources='local'` | Documented bug: still loads from CDN despite the setting name | `cdn_resources='in_line'` |
+| `pyvis cdn_resources='remote'` | Requires internet at report-viewing time; breaks offline use | `cdn_resources='in_line'` |
+| `requirements.txt` | No lockfile semantics, no Python version pinning, manual maintenance | `pyproject.toml` + `uv.lock` |
+| Python < 3.11 | NetworkX 3.6.1 requires `>=3.11`; dropping to 3.10 means pinning to an older NetworkX | Python 3.11+ |
 
 ---
 
-## Migration Notes: langchain 0.3 → 1.2
+## Stack Patterns by Variant
 
-If any implementation was started against `langchain~=0.3`, these are the changes needed:
+**If Phase 3 API service layer is added:**
+- Wrap the same `parse → normalize → diff → render` pipeline in a FastAPI endpoint
+- Typer CLI and FastAPI route both call the same core library functions — no rearchitecting
+- Add `fastapi>=0.115` and `uvicorn>=0.34` to dependencies at that point
+- Because lxml, networkx, deepdiff, and Jinja2 have no web framework dependency, the transition is a thin adapter layer
 
-| Change Area | Old (0.3) | New (1.2) | Impact |
-|-------------|-----------|-----------|--------|
-| StateGraph state type | Could use Pydantic BaseModel | Must use `TypedDict` | Rewrite state class |
-| `with_structured_output` | Existed on BaseChatModel | Still exists on BaseChatModel | No change needed |
-| LCEL pipe operator `\|` | Supported | Still supported | No change needed |
-| Legacy chains (LLMChain etc.) | In `langchain` package | Moved to `langchain-classic` | Avoid; use LCEL instead |
-| Python version | `>=3.9` | `>=3.10` | Project already requires `>=3.11`, no impact |
-| `create_agent` | N/A | New abstraction for agent loops | Not relevant for linear pipeline |
+**If Alteryx workflows exceed 500 tools (Phase 3+ scale):**
+- Switch from full in-memory lxml tree to lxml's iterparse (SAX-style streaming) for parsing
+- NetworkX DiGraph handles 10K+ nodes without issue
+- pyvis may render slowly for 500+ nodes — consider switching to D3.js with WebWorker-based layout for large graphs
+- deepdiff performance on large dicts is acceptable up to ~1000 keys; beyond that, profile before committing
+
+**If self-contained HTML size becomes a concern:**
+- pyvis in_line mode embeds the full vis.js bundle (~800KB minified)
+- Alternative: write custom Jinja2 template that inlines only the vis-network UMD module and passes graph data as JSON
+- This reduces the embedded JS to ~300KB and gives full control over the HTML structure
+
+---
+
+## Version Compatibility
+
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| networkx 3.6.1 | Python >=3.11, !=3.14.1 | Hard floor — drives Python version requirement for the whole project |
+| lxml 6.0.2 | Python 3.8–3.14 | More permissive than networkx; networkx sets the floor |
+| typer 0.24.1 | click >=8.0 | Typer installs click as a transitive dependency; do not separately pin click |
+| pyvis 0.3.2 | Python 3.x | No hard Python version constraint documented; works on 3.11 |
+| deepdiff 8.6.1 | Python 3.8+ | No conflict with other deps |
+| jinja2 3.1.6 | Python 3.7+ | No conflict with other deps |
+| pytest 9.0.2 | Python 3.8+ | Dev only; no runtime conflict |
 
 ---
 
 ## Sources
 
-- langchain PyPI — https://pypi.org/project/langchain/ (version 1.2.14, Mar 31, 2026)
-- langchain-core PyPI — https://pypi.org/project/langchain-core/
-- langgraph PyPI — https://pypi.org/project/langgraph/ (version 1.1.4, Mar 31, 2026)
-- langchain-ollama PyPI — https://pypi.org/project/langchain-ollama/ (version 1.0.1, Dec 12, 2025)
-- ragas PyPI — https://pypi.org/project/ragas/ (version 0.4.3, Jan 13, 2026)
-- LangGraph Graph API docs — https://docs.langchain.com/oss/python/langgraph/graph-api
-- ChatOllama.with_structured_output reference — https://reference.langchain.com/python/langchain-ollama/chat_models/ChatOllama/with_structured_output
-- count_tokens_approximately reference — https://reference.langchain.com/python/langchain-core/messages/utils/count_tokens_approximately
-- LangChain v1 migration guide — https://docs.langchain.com/oss/python/migrate/langchain-v1
-- LangChain 1.0 GA announcement — https://changelog.langchain.com/announcements/langchain-1-0-now-generally-available
-- uv optional dependencies docs — https://docs.astral.sh/uv/concepts/projects/dependencies/
-- Ollama structured outputs — https://ollama.com/blog/structured-outputs
-- RAGAS faithfulness docs — https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/
-- RAGAS evaluation guide — https://docs.ragas.io/en/stable/getstarted/rag_eval/
-- tiktoken token counting — https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
+- lxml 6.0.2 — https://pypi.org/project/lxml/ (verified current version Sep 2025)
+- lxml C14N documentation — https://lxml.de/api.html (C14N 1.0 and 2.0 support, attribute sorting behavior)
+- lxml performance benchmarks — https://lxml.de/performance.html (5–20x faster than stdlib ElementTree)
+- networkx 3.6.1 — https://pypi.org/project/networkx/ (Python >=3.11 requirement verified)
+- networkx topological sort — https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.topological_sort.html
+- deepdiff 8.6.1 — https://pypi.org/project/deepdiff/ (Sep 2025 release verified)
+- deepdiff docs — https://zepworks.com/deepdiff/current/diff.html
+- typer 0.24.1 — https://pypi.org/project/typer/ (Feb 2026 release verified)
+- jinja2 3.1.6 — https://pypi.org/project/Jinja2/ (current version verified)
+- pyvis 0.3.2 — https://pypi.org/project/pyvis/ (last release Feb 2023)
+- pyvis cdn_resources bug — https://github.com/WestHealth/pyvis/issues/228 (local CDN bug, in_line workaround)
+- xmltodict 1.0.4 — https://pypi.org/project/xmltodict/ (explicitly discourages use for exact fidelity)
+- xmldiff 2.7.0 — https://pypi.org/project/xmldiff/
+- pytest 9.0.2 — https://pypi.org/project/pytest/ (Dec 2025 release verified)
+- uv documentation — https://docs.astral.sh/uv/concepts/projects/config/
+- typer vs click vs argparse comparison — https://codecut.ai/comparing-python-command-line-interface-tools-argparse-click-and-typer/
 
 ---
 
-*Stack research for: Alteryx Git Companion v1.2 — LLM Documentation Generation*
-*Researched: 2026-04-02*
+*Stack research for: Alteryx Canvas Diff (ACD) — Python CLI XML diff tool*
+*Researched: 2026-02-28*
