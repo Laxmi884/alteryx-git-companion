@@ -286,3 +286,95 @@ def test_discard_endpoint(client, tmp_path):
     assert resp.status_code == 200
     assert resp.json() == {"ok": True}
     mock_clear.assert_called_once_with("proj-1")
+
+
+# ---------------------------------------------------------------------------
+# APPAI-01: business context persistence (Phase 26)
+# ---------------------------------------------------------------------------
+
+
+def test_commit_body_accepts_business_context_field():
+    """APPAI-01: CommitBody must accept an optional business_context field."""
+    from app.routers.save import CommitBody
+
+    body = CommitBody(
+        project_id="p1",
+        folder="/tmp/x",
+        files=["workflow.yxmd"],
+        message="m",
+        business_context="Monthly customer billing pipeline",
+    )
+    assert body.business_context == "Monthly customer billing pipeline"
+
+
+def test_commit_with_business_context_writes_context_json(tmp_path):
+    """APPAI-01: non-empty business_context must be persisted to .acd/context.json."""
+    import json
+    from fastapi.testclient import TestClient
+    from app.server import app
+
+    repo = _make_git_repo(tmp_path)
+    workflow = repo / "workflow.yxmd"
+    workflow.write_text("v2")
+
+    client = TestClient(app)
+    res = client.post(
+        "/api/save/commit",
+        json={
+            "project_id": "p1",
+            "folder": str(repo),
+            "files": ["workflow.yxmd"],
+            "message": "Change",
+            "business_context": "Monthly customer billing pipeline",
+        },
+    )
+    assert res.status_code == 200
+    ctx_path = repo / ".acd" / "context.json"
+    assert ctx_path.exists(), ".acd/context.json must be created when business_context is provided"
+    data = json.loads(ctx_path.read_text(encoding="utf-8"))
+    assert data == {"business_context": "Monthly customer billing pipeline"}
+
+
+def test_commit_without_business_context_does_not_write_context_json(tmp_path):
+    """APPAI-01: omitted business_context must NOT create .acd/context.json."""
+    from fastapi.testclient import TestClient
+    from app.server import app
+
+    repo = _make_git_repo(tmp_path)
+    (repo / "workflow.yxmd").write_text("v2")
+
+    client = TestClient(app)
+    res = client.post(
+        "/api/save/commit",
+        json={
+            "project_id": "p1",
+            "folder": str(repo),
+            "files": ["workflow.yxmd"],
+            "message": "Change",
+        },
+    )
+    assert res.status_code == 200
+    assert not (repo / ".acd" / "context.json").exists()
+
+
+def test_commit_with_empty_business_context_does_not_write_context_json(tmp_path):
+    """APPAI-01: empty-string business_context must NOT create .acd/context.json (D-02)."""
+    from fastapi.testclient import TestClient
+    from app.server import app
+
+    repo = _make_git_repo(tmp_path)
+    (repo / "workflow.yxmd").write_text("v2")
+
+    client = TestClient(app)
+    res = client.post(
+        "/api/save/commit",
+        json={
+            "project_id": "p1",
+            "folder": str(repo),
+            "files": ["workflow.yxmd"],
+            "message": "Change",
+            "business_context": "",
+        },
+    )
+    assert res.status_code == 200
+    assert not (repo / ".acd" / "context.json").exists()
