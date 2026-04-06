@@ -30,13 +30,18 @@ No new LLM pipeline logic. No CI integration. No new app features. Consumes Phas
 
 ### LLM Provider
 
-- **D-04:** A single `ACD_LLM_MODEL` env var configures both:
-  - The documentation-generation LLM (subject of evaluation)
-  - The RAGAS critic LLM (faithfulness/relevancy judge)
+- **D-04:** Two env vars, same `provider:model_name` format as Phase 25:
+  - `ACD_LLM_MODEL` — the documentation-generation LLM (subject of evaluation)
+  - `RAGAS_CRITIC_MODEL` — the RAGAS critic LLM (faithfulness/relevancy judge); defaults to `ACD_LLM_MODEL` if not set
 
-  Same pattern as Phase 25 CLI (`ACD_LLM_MODEL=ollama:llama3` or `openai:gpt-4o`). No separate RAGAS-specific config.
+  Using a stronger, independent model as the critic avoids self-grading bias (a model judging its own output). OpenRouter makes this zero-friction — one `OPENROUTER_API_KEY`, just swap the model name:
+  ```
+  ACD_LLM_MODEL=openrouter:mistralai/mistral-7b-instruct
+  RAGAS_CRITIC_MODEL=openrouter:openai/gpt-4o
+  ```
+  Falls back gracefully to single-model mode (e.g., fully offline Ollama) when `RAGAS_CRITIC_MODEL` is not set.
 
-- **D-05:** Script prints a clear error and exits non-zero if `ACD_LLM_MODEL` is not set, with an example: `export ACD_LLM_MODEL=ollama:llama3`.
+- **D-05:** Script prints a clear error and exits non-zero if `ACD_LLM_MODEL` is not set, with an example. Includes a note that `RAGAS_CRITIC_MODEL` is optional but recommended for independent evaluation.
 
 ### Metrics
 

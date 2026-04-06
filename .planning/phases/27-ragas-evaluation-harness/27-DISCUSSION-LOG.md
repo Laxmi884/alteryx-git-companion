@@ -21,7 +21,8 @@
 ### LLM provider setup
 | Decision | Choice | Reason |
 |----------|--------|--------|
-| Provider config | Single ACD_LLM_MODEL env var | Consistent with Phase 25 CLI pattern; drives both documentation LLM and RAGAS critic |
+| Provider config | Two env vars: ACD_LLM_MODEL + RAGAS_CRITIC_MODEL | Avoids self-grading bias; OpenRouter makes this zero-friction (one API key, swap model name) |
+| Fallback | RAGAS_CRITIC_MODEL defaults to ACD_LLM_MODEL | Single-model mode preserved for offline Ollama use |
 
 ### Metrics scope
 | Decision | Choice | Reason |
