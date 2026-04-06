@@ -270,6 +270,25 @@ Plans:
 - [x] 22-02-PLAN.md — Rewrite _GRAPH_FRAGMENT_TEMPLATE: remove inline styles and !important, add CSS variable classes
 - [x] 22-03-PLAN.md — Integration tests + regenerate examples/diff_report.html
 
+
+### Phase 26: Companion App AI Integration
+
+**Goal**: Add two AI features to the companion app — a one-shot business context field on first commit persisted to `.acd/context.json`, and an on-demand SSE AI change summary panel in the diff viewer
+**Depends on**: Phase 25 (generate_change_narrative, ContextBuilder)
+**Requirements**: APPAI-01, APPAI-02
+**Success Criteria** (what must be TRUE):
+  1. User sees a "Business context" Textarea on first commit; input persisted to `.acd/context.json` and merged into LLM context on subsequent AI calls
+  2. User can trigger an on-demand AI change summary in the diff viewer; summary streams live via SSE with 3 progress steps (Analyzing topology, Annotating tools, Assessing risks) followed by result
+  3. When LLM extras are not installed, AI panel shows muted unavailable message (no crash, no modal)
+  4. CORE-01: `app/routers/ai.py` imports all LLM modules inside `event_generator()` only — module imports cleanly without `[llm]` extras
+**Plans**: 4/4 plans complete — VERIFIED 2026-04-06
+
+Plans:
+- [x] 26-01-PLAN.md — Wave 0 RED test scaffold (test_ai.py, test_save.py business_context tests)
+- [x] 26-02-PLAN.md — Backend: CommitBody.business_context + .acd/context.json write; Frontend: Business context Textarea in ChangesPanel
+- [x] 26-03-PLAN.md — Backend: app/routers/ai.py SSE endpoint + server.py registration (CORE-01 compliant)
+- [x] 26-04-PLAN.md — Frontend: useAISummary hook + DiffViewer AI summary panel (5 states)
+
 ## Progress
 
 **Execution Order:** 10 → 11 → 12 → 13 → 14 → 15 → 16 → 16.1 → 17 → 18 (Phase 18 independent)
@@ -300,3 +319,4 @@ Plans:
 | 20. Tech Debt Cleanup | 3/3 | Complete    | 2026-03-22 | — |
 | 21. Nyquist Wave-0 Remediation | 1/1 | Complete    | 2026-03-22 | — |
 | 22. HTML Report Redesign | 0/? | 3/3 | Complete    | 2026-03-28 |
+| 26. Companion App AI Integration | v1.2 | 4/4 | Verified (human_needed) | 2026-04-06 |
