@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -18,6 +20,7 @@ class CommitBody(BaseModel):
     folder: str
     files: list[str]
     message: str
+    business_context: str | None = None  # APPAI-01 (D-02: optional)
 
 
 class UndoBody(BaseModel):
@@ -42,6 +45,15 @@ def commit_version(body: CommitBody) -> dict:
         git_ops.git_commit_files(body.folder, body.files, body.message)
     except subprocess.CalledProcessError as exc:
         raise HTTPException(status_code=500, detail=str(exc.stderr)) from exc
+    # APPAI-01 (D-03): persist optional business context to .acd/context.json.
+    # Empty-string / None both skip the write (D-02 implementer discretion).
+    if body.business_context:
+        acd_dir = Path(body.folder) / ".acd"
+        acd_dir.mkdir(parents=True, exist_ok=True)
+        (acd_dir / "context.json").write_text(
+            json.dumps({"business_context": body.business_context}),
+            encoding="utf-8",
+        )
     watcher_manager.clear_count(body.project_id)
     return {"ok": True}
 
