@@ -37,6 +37,7 @@ export function ChangesPanel({
 }: ChangesPanelProps) {
   const [checkedFiles, setCheckedFiles] = useState<string[]>(changedFiles)
   const [commitMessage, setCommitMessage] = useState('')
+  const [businessContext, setBusinessContext] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
 
@@ -63,9 +64,11 @@ export function ChangesPanel({
           folder: projectPath,
           files: checkedFiles,
           message: commitMessage,
+          business_context: businessContext || null,
         }),
       })
       if (res.ok) {
+        setBusinessContext('')
         await onSaved()
       }
     } finally {
@@ -115,15 +118,34 @@ export function ChangesPanel({
       </div>
 
       {!hasAnyCommits && (
-        <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950">
-          <CardContent className="pt-4">
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              <strong>First version save</strong> &mdash; This will save{' '}
-              {checkedFiles.length} workflow{checkedFiles.length !== 1 ? 's' : ''} as your starting
-              point.
+        <>
+          <Card className="border-amber-400 bg-amber-50 dark:bg-amber-950">
+            <CardContent className="pt-4">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                <strong>First version save</strong> &mdash; This will save{' '}
+                {checkedFiles.length} workflow{checkedFiles.length !== 1 ? 's' : ''} as your starting
+                point.
+              </p>
+            </CardContent>
+          </Card>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="business-context" className="text-sm font-medium">
+              Business context
+            </label>
+            <Textarea
+              id="business-context"
+              placeholder="Describe what these workflows do and who uses them (optional)"
+              value={businessContext}
+              onChange={(e) => setBusinessContext(e.target.value)}
+              data-testid={`business-context-${businessContext ? 'filled' : 'empty'}`}
+              rows={3}
+              className="resize-none"
+            />
+            <p className="text-xs text-muted-foreground">
+              Saved once to help the AI understand your project.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </>
       )}
 
       <div className="flex flex-col gap-2">
