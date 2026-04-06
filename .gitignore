@@ -11,3 +11,5 @@ dist/
 build/
 file_version_info.txt
 *.egg-info/
+.env
+tests/eval/.env

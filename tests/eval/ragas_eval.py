@@ -4,12 +4,18 @@ Measures faithfulness and answer relevancy of LLM-generated workflow
 documentation against ContextBuilder output using RAGAS v0.4.
 
 Usage:
-    export ACD_LLM_MODEL=openrouter:mistralai/mistral-7b-instruct
+    # Option A — .env file (recommended, no exporting needed):
+    #   Create tests/eval/.env with:
+    #     ACD_LLM_MODEL=openrouter:anthropic/claude-sonnet-4-5
+    #     RAGAS_CRITIC_MODEL=openrouter:openai/gpt-4o
+    #     OPENROUTER_API_KEY=your-key
+    #   Then just: python tests/eval/ragas_eval.py
+
+    # Option B — environment variables:
+    export ACD_LLM_MODEL=openrouter:anthropic/claude-sonnet-4-5
+    export RAGAS_CRITIC_MODEL=openrouter:openai/gpt-4o
     export OPENROUTER_API_KEY=your-key
     python tests/eval/ragas_eval.py
-
-Optional (recommended for independent evaluation):
-    export RAGAS_CRITIC_MODEL=openrouter:openai/gpt-4o
 
 Threshold: faithfulness >= 0.8 is considered passing.
 Scores are reported per-sample and as a mean. The script does NOT
@@ -261,7 +267,20 @@ def main() -> None:
 
     All LLM and RAGAS imports happen inside this function so the module is
     importable without [llm] extras installed (per Pitfall 5).
+
+    Loads tests/eval/.env automatically if python-dotenv is installed, so you
+    don't need to export variables manually before each run.
     """
+    try:
+        from dotenv import load_dotenv
+
+        _env_file = pathlib.Path(__file__).parent / ".env"
+        if _env_file.exists():
+            load_dotenv(_env_file)
+            print(f"Loaded env from {_env_file}")
+    except ImportError:
+        pass  # python-dotenv not installed — fall back to shell env vars
+
     from alteryx_diff.llm import require_llm_deps
 
     require_llm_deps()
