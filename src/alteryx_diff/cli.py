@@ -68,6 +68,21 @@ def diff(  # noqa: B008
         "--json",
         help="Write JSON diff to stdout instead of HTML file (pipe-friendly)",
     ),
+    doc: bool = typer.Option(  # noqa: B008
+        False,
+        "--doc",
+        help="Embed an AI-generated change narrative section in the HTML report (requires [llm] extras and a configured model).",
+    ),
+    model: str | None = typer.Option(  # noqa: B008
+        None,
+        "--model",
+        help="LLM provider and model, e.g. ollama:llama3 (used only when --doc is set). Falls back to ACD_LLM_MODEL env var, then config_store.",
+    ),
+    base_url: str | None = typer.Option(  # noqa: B008
+        None,
+        "--base-url",
+        help="Override LLM endpoint URL (used only when --doc is set).",
+    ),
 ) -> None:
     """Compare two Alteryx .yxmd or .yxwz workflow/app files and report differences.
 
@@ -124,6 +139,40 @@ def diff(  # noqa: B008
             typer.echo("No differences found", err=True)
         raise typer.Exit(code=0)
 
+    # Generate AI change narrative (opt-in --doc flag, D-12 through D-17)
+    doc_fragment = ""
+    if doc and not json_output:
+        # D-10: require LLM extras
+        try:
+            from alteryx_diff.llm import require_llm_deps
+            require_llm_deps()
+        except ImportError as e:
+            typer.echo(f"Error: {e}", err=True)
+            raise typer.Exit(code=2) from None
+
+        # Reuse helpers from Plan 02
+        model_str = _resolve_model_string(model)
+        llm = _resolve_llm(model_str, base_url)
+
+        # Deferred imports — CORE-01 compliance
+        from alteryx_diff.llm.context_builder import ContextBuilder
+        from alteryx_diff.llm.doc_graph import generate_change_narrative
+        from alteryx_diff.renderers.doc_renderer import DocRenderer
+        import asyncio
+
+        narrative_context = ContextBuilder.build_from_diff(result)
+
+        if quiet:
+            narrative = asyncio.run(generate_change_narrative(narrative_context, llm))
+        else:
+            with _err_console.status("Generating change narrative...", spinner="dots"):
+                narrative = asyncio.run(generate_change_narrative(narrative_context, llm))
+
+        doc_fragment = DocRenderer().to_html_fragment_from_narrative(narrative)
+    elif doc and json_output:
+        if not quiet:
+            typer.echo("Note: --doc has no effect with --json; narrative skipped.", err=True)
+
     # Render output
     if json_output:
         json_str = _cli_json_output(result, metadata)
@@ -143,6 +192,7 @@ def diff(  # noqa: B008
             file_b=str(workflow_b.resolve()),
             graph_html=graph_html,
             metadata=metadata,  # CLI-04: governance footer in HTML report
+            doc_fragment=doc_fragment,
         )
         output.write_text(html, encoding="utf-8")
         if not quiet:
@@ -158,6 +208,151 @@ def diff(  # noqa: B008
             )
 
     raise typer.Exit(code=1)
+
+
+def _resolve_model_string(cli_model: str | None) -> str:
+    """Resolve model preference via D-04 fallback chain.
+
+    Order: (1) --model flag, (2) ACD_LLM_MODEL env var, (3) config_store['llm_model'],
+    (4) raise typer.Exit(code=2) with clear install-hint error.
+
+    Returns:
+        A model string in 'provider:model_name' form.
+    """
+    import os
+    if cli_model:
+        return cli_model
+    env_model = os.environ.get("ACD_LLM_MODEL")
+    if env_model:
+        return env_model
+    try:
+        from app.services.config_store import load_config
+        cfg = load_config()
+        stored = cfg.get("llm_model")
+        if stored:
+            return stored
+    except Exception:
+        pass  # config_store unavailable — fall through to error
+    typer.echo(
+        "Error: No LLM model configured. Use --model provider:model_name "
+        "(e.g. --model ollama:llama3) or set ACD_LLM_MODEL environment variable.",
+        err=True,
+    )
+    raise typer.Exit(code=2)
+
+
+def _resolve_llm(model_str: str, base_url: str | None) -> "Any":  # noqa: F821
+    """Build a BaseChatModel instance from a 'provider:model_name' string.
+
+    D-01: provider is prefix before first ':'. D-02: API keys from env only.
+    D-03: base_url overrides default endpoint for ollama/openai-compatible hosts.
+
+    Raises:
+        typer.Exit: On unknown provider with clear error message.
+    """
+    import os
+    provider, _, model_name = model_str.partition(":")
+    if not model_name:
+        typer.echo(
+            f"Error: --model must be 'provider:model_name', got {model_str!r}. "
+            "Example: --model ollama:llama3",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    if provider == "ollama":
+        from langchain_ollama import ChatOllama
+        kwargs: dict = {"model": model_name, "temperature": 0}
+        if base_url:
+            kwargs["base_url"] = base_url
+        return ChatOllama(**kwargs)
+    if provider in ("openai", "openrouter"):
+        from langchain_openai import ChatOpenAI
+        kwargs = {"model": model_name, "temperature": 0}
+        if provider == "openrouter":
+            kwargs["base_url"] = base_url or "https://openrouter.ai/api/v1"
+            kwargs["api_key"] = os.environ.get("OPENROUTER_API_KEY", "")
+        else:
+            kwargs["api_key"] = os.environ.get("OPENAI_API_KEY", "")
+            if base_url:
+                kwargs["base_url"] = base_url
+        return ChatOpenAI(**kwargs)
+    typer.echo(
+        f"Error: Unknown provider {provider!r}. Use one of: ollama, openai, openrouter.",
+        err=True,
+    )
+    raise typer.Exit(code=2)
+
+
+@app.command()
+def document(  # noqa: B008
+    workflow: pathlib.Path = typer.Argument(  # noqa: B008
+        ..., help="Path to an .yxmd or .yxwz workflow file"
+    ),
+    output: pathlib.Path | None = typer.Option(  # noqa: B008
+        None, "--output", "-o",
+        help="Output path for the generated Markdown doc. Defaults to {workflow_dir}/{stem}-doc.md next to the input file.",
+    ),
+    model: str | None = typer.Option(  # noqa: B008
+        None, "--model",
+        help="LLM provider and model, e.g. ollama:llama3 or openrouter:mistralai/mistral-7b-instruct. Falls back to ACD_LLM_MODEL env var, then config_store.",
+    ),
+    base_url: str | None = typer.Option(  # noqa: B008
+        None, "--base-url",
+        help="Override the default endpoint URL (useful for remote Ollama or OpenAI-compatible hosts).",
+    ),
+    filter_ui_tools: bool = typer.Option(  # noqa: B008
+        True, "--no-filter-ui-tools",
+        help="Include AlteryxGuiToolkit.* app-interface nodes (filtered by default).",
+    ),
+    quiet: bool = typer.Option(  # noqa: B008
+        False, "--quiet", "-q",
+        help="Suppress spinner and status messages.",
+    ),
+) -> None:
+    """Generate a Markdown intent doc for a single Alteryx workflow using an LLM."""
+    # D-10: require LLM extras FIRST. Any failure exits with install hint.
+    try:
+        from alteryx_diff.llm import require_llm_deps
+        require_llm_deps()
+    except ImportError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2) from None
+
+    # Resolve file
+    if not workflow.exists():
+        typer.echo(f"Error: Workflow file not found: {workflow}", err=True)
+        raise typer.Exit(code=2)
+
+    # Resolve model + build LLM (deferred imports inside _resolve_llm)
+    model_str = _resolve_model_string(model)
+    llm = _resolve_llm(model_str, base_url)
+
+    # Deferred imports — must be inside function body (CORE-01)
+    from alteryx_diff.parser import parse_one
+    from alteryx_diff.llm.context_builder import ContextBuilder
+    from alteryx_diff.llm.doc_graph import generate_documentation
+    from alteryx_diff.renderers.doc_renderer import DocRenderer
+    import asyncio
+
+    # Parse workflow and build context
+    doc = parse_one(workflow, filter_ui_tools=filter_ui_tools)
+    context = ContextBuilder.build_from_workflow(doc)
+
+    # Run LLM pipeline with spinner (D-11)
+    if quiet:
+        workflow_doc = asyncio.run(generate_documentation(context, llm))
+    else:
+        with _err_console.status("Generating documentation...", spinner="dots"):
+            workflow_doc = asyncio.run(generate_documentation(context, llm))
+
+    # Resolve output path (D-08 default, D-09 override)
+    if output is None:
+        output = workflow.parent / f"{workflow.stem}-doc.md"
+
+    # Write Markdown
+    written_path = DocRenderer().write_markdown(workflow_doc, output)
+    if not quiet:
+        typer.echo(f"Documentation written to {written_path}", err=True)
 
 
 def _file_sha256(path: pathlib.Path) -> str:

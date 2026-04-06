@@ -329,3 +329,386 @@ Based on research, potential gaps not explicit in the milestone description:
 
 *Feature research for: ACD Companion App — Desktop Git UI for non-technical Alteryx analysts*
 *Researched: 2026-03-13*
+
+---
+---
+
+# Features Research — LLM Documentation (April 2026)
+
+**Domain:** AI-powered documentation generation for Alteryx workflow files (.yxmd)
+**Researched:** 2026-04-02
+**Confidence:** MEDIUM (WebSearch verified with official sources; Alteryx-specific UX data inferred from analogous tools)
+
+---
+
+## Industry Patterns
+
+### What Mintlify Does
+
+Mintlify's auto-documentation agent operates in two distinct phases: planning and writing.
+
+**Planning phase:** The agent scrapes a repo's README, GitHub metadata, and exports/entry points. It infers project type and generates a JSON architectural plan defining: project name and branding, a full navigation hierarchy with tabs and groups, a key features list, and the public API surface. Brand assets (colors, favicon) are extracted automatically. This plan-first approach prevents the isolated, contradictory pages that naive LLM doc generation produces.
+
+**Writing phase:** Subagents write sections in parallel, one per navigation tab. Sections generated for a typical developer tool include:
+- Get Started (Introduction, Quickstart, Authentication)
+- Guides (Webhooks, Error Handling, Rate Limits, Pagination)
+- API Reference (auto-linked across sections)
+- SDKs
+
+**Quality pass:** The orchestrator reconciles outputs, verifies cross-references, and runs build validation via CLI to catch broken links.
+
+**Key insight for ACD:** Mintlify is a documentation *hosting platform* that generates API/SDK docs from code structure. It does not generate intent documents explaining *why* a workflow exists or what business problem it solves. That is the gap ACD's LLM feature fills for Alteryx workflows.
+
+Source: [Mintlify — Auto-generating docs from GitHub repos](https://www.mintlify.com/blog/auto-generate-docs-from-repos)
+
+### What Swimm Does
+
+Swimm takes a "contextual understanding" approach that differs fundamentally from Mintlify's structure-driven approach.
+
+**Static analysis foundation:** Swimm runs deterministic static analysis on the codebase to identify all relevant flows and logical components. Every part of the model's output is anchored to specific code locations, which Swimm claims prevents hallucinations.
+
+**Context beyond code:** Swimm explicitly incorporates factors not evident in code alone:
+- Business decisions behind implementation choices
+- Product design considerations
+- Roads not taken and why (negative decisions)
+- Historical context from previous documentation and team interactions
+
+**Swimm 2.0 — domain-level understanding:** The platform organizes applications by "domains" — collections of processes grouped by business function. Non-technical stakeholders can navigate from business capability to individual processes to specific code steps. This domain model is the closest analogue to what an Alteryx workflow intent document should contain.
+
+**Contextual AI assistant:** The `/ask Swimm` feature indexes documentation + codebase, then answers questions about both in IDE context. It personalizes responses to the organization's specific codebase.
+
+**Key insight for ACD:** Swimm's core value is capturing the *organizational context* that code alone cannot provide — the "why" behind decisions. The "business context" field in ACD's companion app first-commit flow directly addresses this same gap for Alteryx workflows.
+
+Source: [Swimm — Contextualised coding assistant](https://www.techzine.eu/blogs/analytics/115418/swimm-makes-splash-with-contextualised-software-coding-assistant/), [Swimm 2.0](https://swimm.io/blog/swimm-2-0-the-understanding-platform-for-ai-modernization)
+
+### GitHub Copilot Limitations
+
+GitHub Copilot documentation generation uses a "simple-prompt flow" against the generic LLM with no additional trained models or project-specific context. Key limitations:
+
+**What it misses:**
+- **Project-wide context:** Copilot generates file-level or function-level docs without awareness of how the piece fits the broader system.
+- **Business intent:** It can describe *what* code does but not *why* the business needed it.
+- **Domain semantics:** Generic LLM has no understanding of Alteryx tool semantics (a Filter tool vs. a Join tool vs. a Formula tool are just XML nodes to the generic model).
+- **Negative decisions:** It cannot document why an approach was *not* taken.
+- **Historical context:** Copilot sees only the current diff, not the evolution of decisions over time.
+- **Hallucination on proprietary domains:** Less popular or proprietary formats (like .yxmd) yield lower-quality outputs because training data coverage is thin.
+
+**The generic doc problem:** Because Copilot uses a generic model with no project-specific fine-tuning, it produces documentation that describes the mechanics but not the meaning. Users report that Copilot docs are "accurate but useless" — they describe what the code does in terms the developer could read directly.
+
+**Key insight for ACD:** A specialized prompt that understands Alteryx tool types, the workflow's structure (tool graph, connections, containers), and the user-provided business context will produce qualitatively better results than Copilot can for .yxmd files.
+
+Source: [Microsoft Learn — Generate Documentation Using GitHub Copilot](https://learn.microsoft.com/en-us/training/modules/generate-documentation-using-github-copilot-tools/), [Devoteam — Copilot functional specifications](https://www.devoteam.com/expert-view/github-copilot-functional-specifications/)
+
+---
+
+## Table Stakes (must have for credibility)
+
+- **Output is a plain Markdown file** committed to the repo alongside the workflow. Developers and analysts can read it without installing anything. The `docs/<name>.md` pattern is the industry default for docs-as-code.
+- **Grounded in the actual workflow structure.** Generated docs must reference the real tool count, input sources, and output targets extracted from the .yxmd file — not hallucinated placeholders.
+- **Clear AI-generated label.** Every generated document must carry a visible disclosure: generated date, generator version, and a prompt to human-review before treating as authoritative. This is increasingly a regulatory requirement (EU AI Act August 2026 obligations).
+- **Idempotent re-generation.** Running `alteryx-diff document workflow.yxmd` on an unchanged workflow must produce the same output. Users must be able to re-run without fear of overwriting customizations unexpectedly.
+- **Diff-aware change summaries.** When `--doc` is passed to the diff command, the generated summary must reference actual changed tools and connections — not just "some tools were modified."
+- **Human override respected.** If a user edits the generated doc manually, subsequent re-generations must not silently overwrite custom sections. At minimum, warn before overwriting.
+- **CLI-first interface.** `alteryx-diff document` and `alteryx-diff diff --doc` are the canonical entry points. The companion app wraps these commands — it does not reimplement them.
+- **Sub-10-second generation** for typical workflows (< 100 tools). Users will abandon a documentation command that takes more than 30 seconds. Cache intermediate representations aggressively.
+
+---
+
+## Differentiators (impressive, worth building)
+
+- **Alteryx-semantic prompt engineering.** The prompt includes a structured representation of the workflow graph: tool types, connection topology, container groupings, and tool annotations. This context is what separates ACD from generic Copilot doc generation.
+- **Business context injection.** The "business context" captured at first commit (or stored in `.acd/context.json`) is injected into every documentation prompt. This surfaces the organizational intent that static analysis cannot infer.
+- **SSE-streamed output in the diff view.** Streaming the AI summary token-by-token in the HTML diff report gives users immediate feedback and makes the feature feel fast even if total generation takes 10-15 seconds.
+- **Intent vs. change documents as separate modes.** `document` produces a durable intent document. `diff --doc` produces a point-in-time change record. Keeping these separate prevents change churn from corrupting the stable intent doc.
+- **Prompt version stamped in output.** Generated docs include a `<!-- acd-prompt-version: 1.2.0 -->` comment. When prompts improve, users can identify stale docs and trigger regeneration selectively.
+- **Stale doc detection.** After a prompt version bump, the CLI can scan `docs/*.md` files for old prompt version stamps and report which docs should be regenerated: `alteryx-diff document --check-stale`.
+- **Confidence signal on specific claims.** Rather than a single confidence score for the whole document, flag individual sections where confidence is lower (e.g., "Inferred from tool annotations — confirm business intent with workflow author").
+
+---
+
+## Anti-Features (avoid — causes pain or scope creep)
+
+- **Chat interface / Q&A over workflows.** Swimm's `/ask` feature is compelling but requires indexing infrastructure, session management, and continuous accuracy maintenance. It is a different product category. Defer indefinitely.
+- **Auto-commit generated docs.** Never commit generated docs automatically. Users must review and commit intentionally. Auto-committing AI-generated content into git history without human review creates audit liability.
+- **Whole-organization doc site generation.** Mintlify builds hosted doc sites. ACD generates per-workflow Markdown files. Do not scope-creep into site generation, navigation structures, or hosting.
+- **Inline tool-level annotations written back to .yxmd.** Writing AI-generated annotations back into the .yxmd XML would mutate the workflow file itself, making git diffs noisy and risking corruption. Keep generated content in the `docs/` directory, not in the source file.
+- **Confidence percentage as a number.** "72% confidence" feels precise but is not actionable. Use categorical signals (confirmed from structure / inferred from annotations / uncertain — verify with author) instead of numeric scores.
+- **Re-generating on every diff run.** Documentation generation should be explicit (`--doc` flag or separate `document` command), not a side effect of every diff. Implicit generation creates confusion about what changed and when.
+- **Multi-LLM comparison mode.** Offering GPT-4 vs. Claude comparisons adds configuration complexity with minimal user value. Pick one model per prompt version and commit to it.
+- **Markdown-to-PDF export.** Users who want PDFs can use Pandoc or their own tooling. Building export pipelines is scope creep.
+
+---
+
+## Intent Document Structure
+
+Recommended sections for a workflow intent document (`docs/<workflow-name>.md`):
+
+```markdown
+# [Workflow Name]
+
+> AI-generated documentation. Reviewed: [date]. Prompt version: [X.Y.Z].
+> Verify business context with workflow author before treating as authoritative.
+
+## Purpose
+
+One paragraph: what business problem does this workflow solve? Who uses the output?
+(Populated from business context field + inferred from workflow structure)
+
+## Inputs
+
+| Source | Format | Update Frequency | Notes |
+|--------|--------|-----------------|-------|
+| [Input tool name / path] | CSV / Excel / DB | Daily / Ad-hoc | [annotation if present] |
+
+## Outputs
+
+| Destination | Format | Consumer | Notes |
+|-------------|--------|----------|-------|
+| [Output tool name / path] | CSV / DB | [team or system] | ... |
+
+## Processing Steps
+
+Numbered summary of the major processing stages, derived from container groupings and tool sequence:
+1. [Stage name]: [what it does]
+2. ...
+
+(Do not list every tool — summarize at the container/phase level)
+
+## Key Business Logic
+
+Bullet list of the most important transformation rules, filter conditions, or calculations.
+Sourced from Formula tool expressions and Filter tool conditions found in the workflow.
+
+## Data Quality Checks
+
+Any Select tools with type enforcement, Filter tools that drop records, or sampling tools.
+Document expected record counts or drop rates if annotated.
+
+## Dependencies
+
+- **Upstream:** Workflows or data sources this workflow depends on
+- **Downstream:** Reports, dashboards, or workflows that consume this output
+
+## Known Limitations / Assumptions
+
+Inferred from tool annotations and business context. Explicitly uncertain items flagged here.
+
+## Change History
+
+Auto-populated from git log — most recent 5 commits affecting this file.
+
+## Document Metadata
+
+- Generated: [ISO 8601 datetime]
+- Generator: alteryx-diff [version]
+- Prompt version: [X.Y.Z]
+- Workflow tool count: [N]
+- Last workflow modified: [git commit hash]
+```
+
+**Ordering rationale:**
+- Purpose first — readers need the "why" before the "what"
+- Inputs/Outputs second — establishes the data contract
+- Processing Steps before Key Business Logic — structure before detail
+- Dependencies near the end — context for operators, not primary readers
+- Metadata last — administrative, not content
+
+---
+
+## Change Record Structure
+
+Recommended sections for a diff change summary embedded in the HTML diff report:
+
+```markdown
+## AI Change Summary
+
+> Generated by alteryx-diff [version]. Prompt version: [X.Y.Z].
+> Review before including in release notes or change management records.
+
+### What Changed
+
+[1-3 sentence plain-English summary of the net change to the workflow's behavior]
+
+### Modified Components
+
+- **Added:** [N tools] — [brief description of what was added and why, if inferrable]
+- **Removed:** [N tools] — [brief description]
+- **Modified:** [N tools] — [which tools, what changed in them]
+- **Connections:** [N added / N removed] — [data flow changes]
+
+### Likely Business Impact
+
+[1-2 sentences on what downstream consumers of this workflow should expect to change]
+Flag as "Uncertain — verify with workflow author" when business context is insufficient.
+
+### Reviewer Checklist
+
+- [ ] Verify input source changes are intentional
+- [ ] Confirm output schema changes are communicated to downstream consumers
+- [ ] Check removed tools did not contain logic moved elsewhere
+```
+
+**What makes a change summary useful vs annoying:**
+
+Useful:
+- Focuses on behavioral changes, not mechanical ones ("A Filter tool was modified to exclude records where Region = NULL" not "Filter tool condition string changed")
+- Identifies downstream impact explicitly
+- Is short enough to read in 30 seconds
+- Distinguishes between structural refactoring (no behavioral change) and functional changes
+
+Annoying:
+- Lists every XML attribute that changed
+- Repeats information already visible in the diff view
+- Produces more text than the original diff
+- Uses confident language for uncertain inferences without flagging uncertainty
+
+Source: [CodeRabbit PR summary approach](https://github.com/coderabbitai/ai-pr-reviewer), [AI commit summary structure](https://codemetrics.ai/ai-commit-summaries)
+
+---
+
+## UX Patterns
+
+### Confidence Scoring
+
+**Recommendation: Use categorical labels, not numeric scores.**
+
+Research shows users prefer AI systems that signal uncertainty over systems that give black-box answers. 63% of users are more likely to rely on AI systems that display confidence levels (Nielsen Norman Group, 2024-2025). However, numeric confidence percentages ("72% confident") feel precise without being actionable.
+
+**Recommended pattern for ACD:**
+
+Use three categorical labels applied at the section level, not the document level:
+
+| Label | When to use | Visual treatment |
+|-------|-------------|-----------------|
+| Confirmed from structure | Fact extracted directly from the .yxmd graph (tool count, input paths, output paths) | No special treatment — just state it |
+| Inferred from annotations | Derived from tool annotations or container labels, may be incomplete | Italicize or add a subtle note |
+| Uncertain — verify with author | Cannot be reliably inferred (business purpose, downstream consumers, data quality thresholds) | Callout block with review prompt |
+
+Avoid a single confidence score for the whole document. It either falsely reassures (if high) or undermines the whole document (if low).
+
+Source: [Smashing Magazine — Psychology of Trust in AI](https://www.smashingmagazine.com/2025/09/psychology-trust-ai-guide-measuring-designing-user-confidence/), [ACM — Impact of Confidence Ratings on User Trust in LLMs](https://dl.acm.org/doi/10.1145/3708319.3734178)
+
+### AI-Generated Content Labeling
+
+**Recommendation: Prominent, specific, contextual disclosure — not a generic badge.**
+
+Generic "AI Generated" badges reduce trust without helping users know what to verify. Specific disclosures that state what AI did, why it was used, and what human oversight applies perform better.
+
+**Pattern for ACD intent documents:**
+
+```markdown
+> AI-generated documentation. Based on workflow structure and business context
+> provided at first commit. Generated [date] with prompt version [X.Y.Z].
+> Sections marked "Uncertain" require human verification before use in
+> change management records.
+```
+
+**Pattern for diff report change summaries:**
+
+A visible banner at the top of the AI summary section: "AI-generated summary — review before including in release notes."
+
+**Regulatory note:** EU AI Act transparency obligations for AI-generated content become applicable in August 2026. The disclosure pattern above satisfies the spirit of these requirements for a developer tool context. Full compliance assessment required if deploying to EU-regulated industries.
+
+Source: [MIT Sloan — How should AI content be labeled](https://mitsloan.mit.edu/ideas-made-to-matter/how-should-ai-generated-content-be-labeled), [Cookie-script — Labeling AI-generated content](https://cookie-script.com/guides/how-to-label-ai-generated-content)
+
+### Docs-in-Git
+
+**Recommendation: Store generated docs in `docs/` alongside workflows. Commit intentionally, never automatically.**
+
+**The case for docs-in-git:**
+- Documentation lives with the code it describes — when workflows are versioned, their docs are versioned too
+- CI/CD can validate doc freshness (check prompt version stamp against current generator version)
+- Diff tools can show documentation changes alongside workflow changes in the same PR
+- No external hosting required
+
+**Downsides to mitigate:**
+- AI-generated docs committed without review create audit liability and waste developer trust
+- Docs go stale when workflows change but docs are not regenerated — the prompt version stamp enables stale detection
+- Generic content adds noise to git history — use a clear commit message convention: `docs: regenerate workflow.md [acd v1.2.0]`
+- Hallucinations in committed docs can mislead future maintainers — the "Uncertain — verify with author" labeling pattern addresses this
+
+**The `docs/` directory convention:**
+```
+project-root/
+  workflow.yxmd           # Alteryx workflow
+  docs/
+    workflow.md           # Generated intent document
+    .acd-prompt-version   # Current prompt version stamp for stale detection
+  .acd/
+    context.json          # Business context captured at first commit
+```
+
+Source: [dein.fr — Move docs into the repo](https://www.dein.fr/posts/2026-03-13-its-time-to-move-your-docs-in-the-repo), [IBM — AI code documentation](https://www.ibm.com/think/insights/ai-code-documentation-benefits-top-tips)
+
+---
+
+## Prompt Versioning / Doc Freshness
+
+**Problem:** When the documentation prompt improves (adds new sections, fixes hallucination patterns, changes section structure), previously generated docs become stale. Users may not know which docs reflect current best practice.
+
+**Recommendation: Semantic versioning for prompts + stale detection CLI command.**
+
+**Prompt versioning scheme:**
+- Major version: structural changes to the intent document template (new/removed sections)
+- Minor version: prompt text improvements that change output quality but not structure
+- Patch version: fixes to hallucination patterns or wording
+
+Store the prompt version in two places:
+1. In the generated document header comment: `<!-- acd-prompt-version: 1.2.0 -->`
+2. In `docs/.acd-prompt-version` file: current generator's prompt version
+
+**Stale detection:**
+```bash
+alteryx-diff document --check-stale
+# Output:
+# workflow-a.md: prompt version 1.0.0 (current: 1.2.0) — STALE
+# workflow-b.md: prompt version 1.2.0 — OK
+```
+
+**Regeneration workflow:**
+Users run `alteryx-diff document --all` or selectively regenerate stale docs. They review the diff of the regenerated doc against the old one before committing, just like reviewing a code change.
+
+**What leading tools do:**
+- Maxim AI uses automated version histories, audit trails, and performance dashboards
+- LaunchDarkly recommends feature flags for staged prompt rollouts (A/B test new prompt versions before deploying to all users)
+- The consensus pattern is semantic versioning + change log + rollback capability
+
+**Do not:** Auto-regenerate all docs when the prompt version bumps. This creates a massive undifferentiated commit and removes the human review step. Regeneration must be explicit.
+
+Source: [Maxim AI — Prompt versioning best practices 2025](https://www.getmaxim.ai/articles/prompt-versioning-and-its-best-practices-2025/), [LaunchDarkly — Prompt versioning and management](https://launchdarkly.com/blog/prompt-versioning-and-management/)
+
+---
+
+## Alteryx-Specific Documentation Context
+
+What a specialized Alteryx documentation tool can extract that generic LLM doc generators cannot:
+
+**From .yxmd structure:**
+- Tool type inventory (which Alteryx tools are used — Input Data, Output Data, Filter, Join, Formula, Summarize, etc.)
+- Tool connection graph (which tools feed which — the data lineage)
+- Container groupings and container labels (natural section headers for "Processing Steps")
+- Tool annotations (user-written notes embedded in tools — primary source of intent)
+- Workflow metadata (name, description, author from MetaInfo)
+- Input file paths and output file paths (from Input Data / Output Data tool configs)
+- Formula expressions (key business logic)
+- Filter conditions (data quality rules and business filters)
+
+**From git history:**
+- Commit messages on this workflow (evolution of intent over time)
+- Author(s) of the workflow
+- Change frequency (high churn = complex / frequently-adjusted logic)
+
+**From .acd/context.json (business context field):**
+- Business purpose stated by the workflow author
+- Intended consumers of the output
+- Data source ownership
+- Known limitations stated by the author
+
+This combination — structural extraction + git context + user-provided business context — is what produces documentation qualitatively better than GitHub Copilot can generate for .yxmd files.
+
+Source: [Alteryx Community — Documenting Your Alteryx Workflows](https://community.alteryx.com/t5/Engine-Works/Documenting-Your-Alteryx-Workflows/ba-p/1107279), [phData — How to Document Your Alteryx Workflow](https://www.phdata.io/blog/how-to-document-your-alteryx-workflow-and-create-a-workflow-template/)
+
+---
+
+*Feature research for: ACD v1.2 — LLM Documentation Generation*
+*Researched: 2026-04-02*
