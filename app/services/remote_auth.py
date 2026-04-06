@@ -1,15 +1,16 @@
 """Remote auth service — GitHub Device Flow and GitLab PAT credential management.
 
-Stores all credentials in OS keyring; never writes tokens to config_store.
+Stores credentials in a JSON file in the app data directory (no OS keychain).
 """
 
 from __future__ import annotations
 
-import sys
+import json
 import time
+from pathlib import Path
 
 import httpx
-import keyring
+import platformdirs
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -19,34 +20,32 @@ DEVICE_CODE_URL = "https://github.com/login/device/code"
 TOKEN_URL = "https://github.com/login/oauth/access_token"
 GITLAB_BASE = "https://gitlab.com/api/v4"
 CLIENT_ID = "Ov23liIZIzK0pYwmA580"
-SERVICE_GITHUB = "AlteryxGitCompanion:github"
-SERVICE_GITLAB = "AlteryxGitCompanion:gitlab"
-USERNAME_KEY = "token"
+APP_NAME = "AlteryxGitCompanion"
 
 
 # ---------------------------------------------------------------------------
-# PyInstaller keyring backend fix
+# File-based credential store
 # ---------------------------------------------------------------------------
 
 
-def _ensure_backend() -> None:
-    """Select the correct keyring backend when running as a frozen PyInstaller bundle.
-
-    Without this, PyInstaller strips backend discovery metadata and keyring falls
-    back to a null (no-op) backend, silently losing all stored credentials.
-    """
-    if getattr(sys, "frozen", False):
-        if sys.platform == "win32":
-            import keyring.backends.Windows  # type: ignore[import-not-found]
-
-            keyring.set_keyring(keyring.backends.Windows.WinVaultKeyring())
-        elif sys.platform == "darwin":
-            import keyring.backends.macOS  # type: ignore[import-not-found]
-
-            keyring.set_keyring(keyring.backends.macOS.Keyring())
+def _creds_path() -> Path:
+    data_dir = Path(platformdirs.user_data_dir(APP_NAME))
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return data_dir / "credentials.json"
 
 
-_ensure_backend()
+def _load_creds() -> dict:
+    path = _creds_path()
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_creds(creds: dict) -> None:
+    _creds_path().write_text(json.dumps(creds))
 
 
 # ---------------------------------------------------------------------------
@@ -110,33 +109,37 @@ def poll_and_store(device_code: str, interval: int) -> None:
 
 
 # ---------------------------------------------------------------------------
-# GitHub keyring helpers
+# GitHub credential helpers
 # ---------------------------------------------------------------------------
 
 
 def store_github_token(token: str) -> None:
-    """Store a GitHub access token in OS keyring."""
-    keyring.set_password(SERVICE_GITHUB, USERNAME_KEY, token)
+    """Store a GitHub access token in the credentials file."""
+    creds = _load_creds()
+    creds["github_token"] = token
+    _save_creds(creds)
 
 
 def get_github_token() -> str | None:
-    """Return the stored GitHub access token from OS keyring, or None."""
-    return keyring.get_password(SERVICE_GITHUB, USERNAME_KEY)
+    """Return the stored GitHub access token, or None."""
+    return _load_creds().get("github_token")
 
 
 # ---------------------------------------------------------------------------
-# GitLab keyring helpers
+# GitLab credential helpers
 # ---------------------------------------------------------------------------
 
 
 def store_gitlab_token(token: str) -> None:
-    """Store a GitLab PAT in OS keyring."""
-    keyring.set_password(SERVICE_GITLAB, USERNAME_KEY, token)
+    """Store a GitLab PAT in the credentials file."""
+    creds = _load_creds()
+    creds["gitlab_token"] = token
+    _save_creds(creds)
 
 
 def get_gitlab_token() -> str | None:
-    """Return the stored GitLab PAT from OS keyring, or None."""
-    return keyring.get_password(SERVICE_GITLAB, USERNAME_KEY)
+    """Return the stored GitLab PAT, or None."""
+    return _load_creds().get("gitlab_token")
 
 
 def get_token(provider: str) -> str | None:

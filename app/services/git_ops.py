@@ -87,10 +87,10 @@ def git_changed_workflows(folder: str) -> list[str]:
     for line in result.stdout.splitlines():
         if len(line) < 4:
             continue
-        filename = line[3:].strip()
+        filename = line[3:].strip().strip('"')
         # Handle rename format: "ORIG_PATH -> NEW_PATH" — take the new path
         if " -> " in filename:
-            filename = filename.split(" -> ")[-1].strip()
+            filename = filename.split(" -> ")[-1].strip().strip('"')
         if Path(filename).suffix in WORKFLOW_SUFFIXES:
             changed.append(filename)
     return changed
@@ -113,6 +113,16 @@ def git_has_commits(folder: str) -> bool:
     """
     result = subprocess.run(
         ["git", "-C", folder, "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
+
+
+def git_has_commits_before(folder: str, sha: str) -> bool:
+    """Return True if sha has at least one parent commit (not the initial commit)."""
+    result = subprocess.run(
+        ["git", "-C", folder, "rev-parse", "--verify", f"{sha}^1"],
         capture_output=True,
         text=True,
     )

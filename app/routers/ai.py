@@ -11,6 +11,7 @@ the [llm] extras installed.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import pathlib
@@ -56,52 +57,31 @@ async def ai_summary(folder: str, sha: str, file: str, request: Request):
             yield {"data": json.dumps({"type": "unavailable", "reason": "no_model"})}
             return
 
-        # Progress 1/3 (D-07 label — load-bearing)
-        yield {"data": json.dumps({"type": "progress", "step": "Analyzing topology..."})}
+        # Detect initial commit (no parent) server-side
+        is_initial_commit = not git_ops.git_has_commits_before(folder, sha)
 
-        # Build DiffResult via mkstemp pattern (same as history.py _run_diff)
+        # Progress 1/3 (D-07 label — load-bearing)
+        yield {
+            "data": json.dumps({"type": "progress", "step": "Analyzing topology..."})
+        }
+
         try:
-            parent_sha = f"{sha}~1"
-            old_bytes = git_ops.git_show_file(folder, parent_sha, file)
             new_bytes = git_ops.git_show_file(folder, sha, file)
         except Exception as exc:
-            yield {"data": json.dumps({"type": "error", "detail": f"git_show_file failed: {exc}"})}
+            yield {
+                "data": json.dumps(
+                    {"type": "error", "detail": f"git_show_file failed: {exc}"}
+                )
+            }
             return
-
-        fd_a, path_a = tempfile.mkstemp(suffix=".yxmd")
-        fd_b, path_b = tempfile.mkstemp(suffix=".yxmd")
-        try:
-            os.write(fd_a, old_bytes)
-            os.close(fd_a)
-            os.write(fd_b, new_bytes)
-            os.close(fd_b)
-
-            from alteryx_diff.llm.context_builder import ContextBuilder
-            from alteryx_diff.pipeline import DiffRequest
-            from alteryx_diff.pipeline import run as pipeline_run
-
-            response = pipeline_run(
-                DiffRequest(path_a=pathlib.Path(path_a), path_b=pathlib.Path(path_b))
-            )
-            context = ContextBuilder.build_from_diff(response.result)
-        finally:
-            try:
-                os.unlink(path_a)
-            except OSError:
-                pass
-            try:
-                os.unlink(path_b)
-            except OSError:
-                pass
 
         # Merge .acd/context.json business_context if present (APPAI-01 grounding)
         acd_ctx = pathlib.Path(folder) / ".acd" / "context.json"
+        business_context: str | None = None
         if acd_ctx.exists():
             try:
                 stored = json.loads(acd_ctx.read_text(encoding="utf-8"))
-                bc = stored.get("business_context")
-                if bc:
-                    context["business_context"] = bc
+                business_context = stored.get("business_context")
             except (OSError, json.JSONDecodeError):
                 pass
 
@@ -139,25 +119,129 @@ async def ai_summary(folder: str, sha: str, file: str, request: Request):
         # Progress 3/3 (D-07 label — load-bearing)
         yield {"data": json.dumps({"type": "progress", "step": "Assessing risks..."})}
 
-        # Single-shot LLM call (generate_change_narrative is NOT a LangGraph
-        # pipeline — progress events above are cosmetic timing signals per
-        # RESEARCH Pitfall 1).
-        try:
-            from alteryx_diff.llm.doc_graph import generate_change_narrative
+        if is_initial_commit:
+            # Initial commit — generate full workflow developer documentation
+            fd, path_b = tempfile.mkstemp(suffix=".yxmd")
+            try:
+                os.write(fd, new_bytes)
+                os.close(fd)
+                from alteryx_diff.llm.context_builder import ContextBuilder
+                from alteryx_diff.llm.doc_graph import generate_workflow_documentation
+                from alteryx_diff.parser import parse_one
 
-            narrative = await generate_change_narrative(context, llm)
-        except Exception as exc:
-            yield {"data": json.dumps({"type": "error", "detail": f"LLM call failed: {exc}"})}
-            return
+                doc = parse_one(pathlib.Path(path_b))
+                context = ContextBuilder.build_from_workflow(doc)
+                # Override temp file name with actual workflow filename
+                context["workflow_name"] = pathlib.Path(file).stem
+            finally:
+                with contextlib.suppress(OSError):
+                    os.unlink(path_b)
 
-        yield {
-            "data": json.dumps(
-                {
-                    "type": "result",
-                    "narrative": narrative.narrative,
-                    "risks": list(narrative.risks or []),
+            if business_context:
+                context["business_context"] = business_context
+
+            try:
+                workflow_doc = await generate_workflow_documentation(context, llm)
+            except Exception as exc:
+                yield {
+                    "data": json.dumps(
+                        {"type": "error", "detail": f"LLM call failed: {exc}"}
+                    )
                 }
+                return
+
+            import re as _re
+
+            def _fmt(text: str) -> str:
+                """Ensure numbered list items each start on their own line."""
+                # Insert newline before "N. " patterns that aren't already at line start
+                return _re.sub(r"(?<!\n)(\s)(\d+\.\s)", r"\n\2", text).strip()
+
+            workflow_stem = pathlib.Path(file).stem
+            risks_md = "\n".join(f"- {r}" for r in (workflow_doc.risks or []))
+            markdown = (
+                f"# {workflow_doc.workflow_name} — Developer Documentation\n\n"
+                f"## Overview\n\n{_fmt(workflow_doc.overview)}\n\n"
+                f"## Assumptions\n\n{_fmt(workflow_doc.assumptions)}\n\n"
+                f"## Data Sources\n\n{_fmt(workflow_doc.data_sources)}\n\n"
+                f"## Data Transformations\n\n{_fmt(workflow_doc.transformations)}\n\n"
+                f"## Data Flow\n\n{_fmt(workflow_doc.data_flow)}\n\n"
+                f"## Outputs\n\n{_fmt(workflow_doc.outputs)}\n\n"
+                f"## Data Dictionary\n\n{_fmt(workflow_doc.data_dictionary)}\n\n"
+                f"## Tool Inventory\n\n{_fmt(workflow_doc.tool_inventory)}\n\n"
+                f"## Dependencies\n\n{_fmt(workflow_doc.dependencies)}\n\n"
+                "## Configuration Notes\n\n"
+                f"{_fmt(workflow_doc.configuration_notes)}\n\n"
+                f"## Execution Guide\n\n{_fmt(workflow_doc.execution_guide)}\n\n"
+                f"## Error Handling\n\n{_fmt(workflow_doc.error_handling)}\n\n"
+                f"## Risks & Considerations\n\n{risks_md}\n"
             )
-        }
+
+            # Save to workflow directory
+            doc_path = pathlib.Path(folder) / f"{workflow_stem}-developer-doc.md"
+            with contextlib.suppress(OSError):
+                doc_path.write_text(markdown, encoding="utf-8")
+
+            yield {
+                "data": json.dumps(
+                    {
+                        "type": "result",
+                        "narrative": markdown,
+                        "risks": list(workflow_doc.risks or []),
+                        "doc_path": str(doc_path),
+                    }
+                )
+            }
+        else:
+            # Subsequent commit — generate change narrative from diff
+            old_bytes = git_ops.git_show_file(folder, f"{sha}~1", file)
+            fd_a, path_a = tempfile.mkstemp(suffix=".yxmd")
+            fd_b, path_b = tempfile.mkstemp(suffix=".yxmd")
+            try:
+                os.write(fd_a, old_bytes)
+                os.close(fd_a)
+                os.write(fd_b, new_bytes)
+                os.close(fd_b)
+
+                from alteryx_diff.llm.context_builder import ContextBuilder
+                from alteryx_diff.pipeline import DiffRequest
+                from alteryx_diff.pipeline import run as pipeline_run
+
+                response = pipeline_run(
+                    DiffRequest(
+                        path_a=pathlib.Path(path_a), path_b=pathlib.Path(path_b)
+                    )
+                )
+                context = ContextBuilder.build_from_diff(response.result)
+            finally:
+                with contextlib.suppress(OSError):
+                    os.unlink(path_a)
+                with contextlib.suppress(OSError):
+                    os.unlink(path_b)
+
+            if business_context:
+                context["business_context"] = business_context
+
+            try:
+                from alteryx_diff.llm.doc_graph import generate_change_narrative
+
+                narrative = await generate_change_narrative(context, llm)
+            except Exception as exc:
+                yield {
+                    "data": json.dumps(
+                        {"type": "error", "detail": f"LLM call failed: {exc}"}
+                    )
+                }
+                return
+
+            yield {
+                "data": json.dumps(
+                    {
+                        "type": "result",
+                        "narrative": narrative.narrative,
+                        "risks": list(narrative.risks or []),
+                    }
+                )
+            }
 
     return EventSourceResponse(event_generator())

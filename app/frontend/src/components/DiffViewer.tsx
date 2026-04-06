@@ -182,8 +182,8 @@ window.addEventListener('load', function() {
         )}
       </div>
 
-      {/* AI summary panel — APPAI-02. Hidden for first commits per D-05. */}
-      {!isFirstCommit && (
+      {/* AI summary panel — APPAI-02. */}
+      {(
         <div
           className="border-b px-4 py-3 bg-background shrink-0 min-h-[44px]"
           role="status"
@@ -194,7 +194,7 @@ window.addEventListener('load', function() {
               size="sm"
               onClick={() => ai.trigger(folder, sha, file)}
             >
-              Generate AI summary
+              {isFirstCommit ? 'Generate workflow documentation' : 'Generate AI summary'}
             </Button>
           )}
 

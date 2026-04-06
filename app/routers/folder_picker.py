@@ -9,7 +9,9 @@ from fastapi import APIRouter
 
 router = APIRouter(prefix="/api/folder-picker", tags=["folder-picker"])
 
-_PICKER_SCRIPT = """
+_MACOS_SCRIPT = 'POSIX path of (choose folder with prompt "Select Workflows Folder")'
+
+_TKINTER_SCRIPT = """
 import sys
 try:
     import tkinter as tk
@@ -30,12 +32,22 @@ except Exception:
 @router.post("")
 async def pick_folder() -> dict:
     """Open OS native folder picker dialog and return selected folder path."""
-    result = subprocess.run(
-        [sys.executable, "-c", _PICKER_SCRIPT],
-        capture_output=True,
-        text=True,
-    )
-    path = result.stdout.strip()
+    if sys.platform == "darwin":
+        result = subprocess.run(
+            ["osascript", "-e", _MACOS_SCRIPT],
+            capture_output=True,
+            text=True,
+        )
+        # osascript returns path with trailing newline; strip it
+        path = result.stdout.strip()
+    else:
+        result = subprocess.run(
+            [sys.executable, "-c", _TKINTER_SCRIPT],
+            capture_output=True,
+            text=True,
+        )
+        path = result.stdout.strip()
+
     if not path:
         return {"path": None, "cancelled": True}
     return {"path": path, "cancelled": False}

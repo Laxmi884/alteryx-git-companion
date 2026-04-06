@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
 import logging
 import sys
 from contextlib import asynccontextmanager

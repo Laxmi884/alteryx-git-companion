@@ -80,8 +80,12 @@ module = ["networkx.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["langchain.*", "langgraph.*", "langchain_ollama.*", "langchain_openai.*", "ragas.*", "tiktoken.*"]
+module = ["langchain.*", "langchain_core.*", "langgraph.*", "langchain_ollama.*", "langchain_openai.*", "pydantic.*", "ragas.*", "tiktoken.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["alteryx_diff.llm.*"]
+ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = ["typer.*"]

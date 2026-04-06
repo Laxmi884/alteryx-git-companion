@@ -5,8 +5,10 @@ Build a provider-agnostic documentation generation pipeline using LangGraph.
 Exports:
     DocState: TypedDict for the graph state
     build_doc_graph: factory function that returns a compiled LangGraph
-    generate_documentation: async convenience wrapper with single-retry on ValidationError
+    generate_documentation: async convenience wrapper with single-retry on
+        ValidationError
 """
+
 from __future__ import annotations
 
 import json
@@ -15,12 +17,23 @@ from typing import TYPE_CHECKING, Any, TypedDict
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from alteryx_diff.llm.models import ToolNote, WorkflowDocumentation
+from alteryx_diff.llm.models import (
+    ChangeNarrative,
+    DeveloperDocumentation,
+    ToolNote,
+    WorkflowDocumentation,
+)
 
 if TYPE_CHECKING:
     from langgraph.graph.state import CompiledStateGraph
 
-__all__ = ["build_doc_graph", "generate_documentation", "generate_change_narrative", "DocState"]
+__all__ = [
+    "build_doc_graph",
+    "generate_documentation",
+    "generate_change_narrative",
+    "generate_workflow_documentation",
+    "DocState",
+]
 
 
 class DocState(TypedDict):
@@ -34,7 +47,7 @@ class DocState(TypedDict):
     validation_error: str  # empty on first pass; str(ValidationError) on retry
 
 
-def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
+def build_doc_graph(llm: BaseChatModel) -> CompiledStateGraph:
     """Build and compile a LangGraph 4-node documentation pipeline.
 
     The pipeline runs linearly:
@@ -80,7 +93,8 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
 
         if connections:
             conn_desc = [
-                f"  Tool {c['src_tool']} ({c['src_anchor']}) -> Tool {c['dst_tool']} ({c['dst_anchor']})"
+                f"  Tool {c['src_tool']} ({c['src_anchor']})"
+                f" -> Tool {c['dst_tool']} ({c['dst_anchor']})"
                 for c in connections
             ]
             lines.append("Connections:")
@@ -100,16 +114,18 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
         system_msg = SystemMessage(
             content=(
                 "You are a technical documentation assistant for Alteryx workflows. "
-                "Only use information from the provided context — never invent tool names, "
-                "IDs, or behaviors not present in the data. "
-                "Produce a one-sentence role for each tool describing what it does in context."
+                "Only use information from the provided context —"
+                " never invent tool names, IDs, or behaviors not present in the data. "
+                "Produce a one-sentence role for each tool describing what it does"
+                " in context."
             )
         )
         human_msg = HumanMessage(
             content=(
                 f"Topology context:\n{topology_notes}\n\n"
                 f"Tools:\n{json.dumps(tools, indent=2)}\n\n"
-                "For each tool, describe its role in one sentence based on its tool_type and config."
+                "For each tool, describe its role in one sentence based on its"
+                " tool_type and config."
             )
         )
 
@@ -117,7 +133,9 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
             structured_llm = llm.with_structured_output(
                 list[ToolNote], method="json_schema"
             )
-            result: list[ToolNote] = await structured_llm.ainvoke([system_msg, human_msg])
+            result: list[ToolNote] = await structured_llm.ainvoke(
+                [system_msg, human_msg]
+            )
             annotations = json.dumps([note.model_dump() for note in result])
         except Exception:
             # Fallback: pass empty annotations; assemble_doc will handle
@@ -139,7 +157,7 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
                 "You are a data quality and workflow reliability expert. "
                 "Only identify risks from the provided workflow context — "
                 "do not invent issues not grounded in the data. "
-                "Return a JSON array of strings, each describing one production concern."
+                "Return a JSON array of strings, each describing one production concern."  # noqa: E501
             )
         )
         human_msg = HumanMessage(
@@ -169,9 +187,11 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
 
         system_content = (
             "You are a technical documentation writer for Alteryx workflows. "
-            "Only use information from the provided context — never invent workflow names, "
+            "Only use information from the provided context —"
+            " never invent workflow names, "
             "tool types, configurations, or behaviors not present in the data. "
-            "Generate complete, accurate documentation based solely on the analysis provided."
+            "Generate complete, accurate documentation based solely on the"
+            " analysis provided."
         )
         if validation_error:
             system_content += (
@@ -188,18 +208,21 @@ def build_doc_graph(llm: BaseChatModel) -> "CompiledStateGraph":
                 f"Risk analysis:\n{risk_notes}\n\n"
                 "Generate complete WorkflowDocumentation with: "
                 "workflow_name, intent (2-3 sentences), data_flow (prose), "
-                "tool_notes (list with tool_id/tool_type/role), and risks (list of strings)."
+                "tool_notes (list with tool_id/tool_type/role),"
+                " and risks (list of strings)."
             )
         )
 
         structured_llm = llm.with_structured_output(
             WorkflowDocumentation, method="json_schema"
         )
-        result: WorkflowDocumentation = await structured_llm.ainvoke([system_msg, human_msg])
+        result: WorkflowDocumentation = await structured_llm.ainvoke(
+            [system_msg, human_msg]
+        )
         return {"raw_doc_json": result.model_dump_json()}
 
     # --------------------------------------------------------------------------
-    # Wire up the graph: START -> analyze_topology -> annotate_tools -> risk_scan -> assemble_doc -> END
+    # Wire up the graph nodes in sequence
     # --------------------------------------------------------------------------
 
     builder: StateGraph = StateGraph(DocState)
@@ -228,14 +251,16 @@ async def generate_documentation(
     assemble_doc node can correct its output.
 
     Args:
-        context: ContextBuilder output dict (workflow_name, tools, connections, topology)
+        context: ContextBuilder output dict (workflow_name, tools, connections,
+            topology)
         llm: Any LangChain BaseChatModel (provider-agnostic)
 
     Returns:
         A validated WorkflowDocumentation instance.
 
     Raises:
-        pydantic.ValidationError: If both the first attempt and the retry fail validation.
+        pydantic.ValidationError: If both the first attempt and the retry fail
+            validation.
     """
     from pydantic import ValidationError
 
@@ -262,7 +287,7 @@ async def generate_documentation(
 async def generate_change_narrative(
     context: dict,
     llm: BaseChatModel,
-) -> "ChangeNarrative":
+) -> ChangeNarrative:
     """Generate a change narrative for a diff using a single structured LLM call.
 
     Unlike generate_documentation(), this does not use a LangGraph multi-node
@@ -276,8 +301,6 @@ async def generate_change_narrative(
     Returns:
         A validated ChangeNarrative instance.
     """
-    from alteryx_diff.llm.models import ChangeNarrative
-
     system_msg = SystemMessage(
         content=(
             "Only describe changes present in the provided diff context. "
@@ -290,10 +313,114 @@ async def generate_change_narrative(
             "Diff context:\n"
             f"{json.dumps(context, indent=2)}\n\n"
             "Provide:\n"
-            "1. A 2-4 paragraph narrative explaining the functional impact of these changes.\n"
+            "1. A 2-4 paragraph narrative explaining the functional impact"
+            " of these changes.\n"
             "2. A list of production/risk concerns (may be empty if none apply)."
         )
     )
     structured_llm = llm.with_structured_output(ChangeNarrative, method="json_schema")
     result: ChangeNarrative = await structured_llm.ainvoke([system_msg, human_msg])
     return result
+
+
+async def generate_workflow_documentation(
+    context: dict,
+    llm: BaseChatModel,
+) -> DeveloperDocumentation:
+    """Generate comprehensive developer-grade documentation for a new workflow.
+
+    Used for initial commits. Uses explicit JSON prompting for broad provider
+    compatibility.
+    """
+    import re
+
+    from pydantic import ValidationError
+
+    business_context = context.get("business_context", "")
+    bc_section = f"Business context: {business_context}\n" if business_context else ""
+
+    schema_example = json.dumps(
+        {
+            "workflow_name": "ExampleWorkflow",
+            "overview": (
+                "4-6 sentence purpose, business context, scope, and intended audience."
+            ),
+            "assumptions": "1. First assumption.\n2. Second assumption.",
+            "data_sources": (
+                "1. Tool 1 (DbFileInput): Queries SCHEMA.TABLE for FIELD1, FIELD2"
+                " where CONDITION.\n2. Tool 2 (DbFileInput): ..."
+            ),
+            "transformations": (
+                "1. Step name (Tool N): What it does and why."
+                "\n2. Step name (Tool N): ..."
+            ),
+            "data_flow": (
+                "Main flow: Source A → Join (Tool N) → Filter (Tool N) → Output."
+                "\nValidation flow: ..."
+            ),
+            "outputs": (
+                "1. Primary Output (Tool N): Path, format, delimiter, schema, purpose."
+                "\n2. ..."
+            ),
+            "data_dictionary": (
+                "1. FIELD_NAME (String): Description. Example: 'ABC123'."
+                "\n2. FIELD_NAME (Integer): ..."
+            ),
+            "tool_inventory": (
+                "1. Tool 1 (ToolType): Specific role in this workflow."
+                "\n2. Tool 2 (ToolType): ..."
+            ),
+            "dependencies": (
+                "1. ConnectionAlias: System, schema/path, access required.\n2. ..."
+            ),
+            "configuration_notes": (
+                "1. PARAMETER_NAME: Current value. Update to X for quarterly run Y."
+                "\n2. ..."
+            ),
+            "execution_guide": (
+                "1. Open workflow in Alteryx Designer."
+                "\n2. Update snapshot_month parameter.\n3. ..."
+            ),
+            "error_handling": (
+                "1. Tool N Test: Checks X, expects Y. If fails: do Z.\n2. ..."
+            ),
+            "risks": ["Specific production risk with impact and recommendation."],
+        },
+        indent=2,
+    )
+
+    system_msg = SystemMessage(
+        content=(
+            "You are a senior data engineer writing comprehensive developer"
+            " documentation for an Alteryx workflow. "
+            "Respond ONLY with a single valid JSON object —"
+            " no markdown fences, no explanation outside the JSON. "
+            "Be thorough and specific. Only use facts from the provided context."
+        )
+    )
+    tools_json = json.dumps(context.get("tools", []), indent=2)
+    conns_json = json.dumps(context.get("connections", []), indent=2)
+    topo_json = json.dumps(context.get("topology", {}), indent=2)
+    human_msg = HumanMessage(
+        content=(
+            f"Workflow: {context.get('workflow_name', 'Unknown')}\n"
+            f"{bc_section}"
+            f"Tools ({context.get('tool_count', 0)}):\n{tools_json}\n\n"
+            f"Connections:\n{conns_json}\n\n"
+            f"Topology: {topo_json}\n\n"
+            f"Return a JSON object exactly matching this schema:\n{schema_example}"
+        )
+    )
+    response = await llm.ainvoke([system_msg, human_msg])
+    raw = response.content if hasattr(response, "content") else str(response)
+
+    raw = re.sub(r"^```(?:json)?\s*", "", raw.strip(), flags=re.IGNORECASE)
+    raw = re.sub(r"\s*```$", "", raw.strip())
+
+    try:
+        return DeveloperDocumentation.model_validate_json(raw.strip())
+    except (ValidationError, ValueError):
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if match:
+            return DeveloperDocumentation.model_validate_json(match.group())
+        raise
