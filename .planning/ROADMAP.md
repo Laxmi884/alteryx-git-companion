@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-9 (shipped 2026-03-07)
 - ✅ **v1.1 Alteryx Git Companion** — Phases 10-22 (shipped 2026-04-02)
-- 🚧 **v1.2 LLM Documentation** — Phases 23-27 (in progress)
+- ✅ **v1.2 LLM Documentation** — Phases 23-27 (shipped 2026-04-06)
 
 ## Phases
 
@@ -46,7 +46,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 
 </details>
 
-### 🚧 v1.2 LLM Documentation (In Progress)
+### ✅ v1.2 LLM Documentation (SHIPPED 2026-04-06)
 
 **Milestone Goal:** Automatically generate developer-grade workflow documentation and change narratives from the parser's structured output — anchored to parsed data, with zero hallucination tolerance via Python-side grounding validation.
 
@@ -54,7 +54,7 @@ Full phase details: [.planning/milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADM
 - [x] **Phase 24: DocumentationGraph + DocRenderer + Ollama** - LangGraph pipeline + renderer + offline provider (CORE-03, CORE-04, EVAL-01) — completed 2026-04-05
 - [x] **Phase 25: CLI Integration** - `document` subcommand + `diff --doc` flag (CLI-01, CLI-02) — completed 2026-04-05
 - [x] **Phase 26: Companion App AI Integration** - Business context field + SSE-streamed AI summary (APPAI-01, APPAI-02) — verified 2026-04-06
-- [ ] **Phase 27: RAGAS Evaluation Harness** - Faithfulness eval + end-to-end verification (EVAL-02)
+- [x] **Phase 27: RAGAS Evaluation Harness** - Faithfulness eval + end-to-end verification (EVAL-02) — verified 2026-04-06
 
 **v1.2 Execution Order:** 23 → 24 → 25 → 26 → 27
 
@@ -378,7 +378,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 27-01-PLAN.md — RAGAS eval harness: ragas_eval.py + ContextBuilder integration + sample fixtures + README
+- [x] 27-01-PLAN.md — RAGAS eval harness: ragas_eval.py + ContextBuilder integration + sample fixtures + README
 
 ---
 
@@ -417,4 +417,4 @@ Plans:
 | 24. DocumentationGraph + DocRenderer + Ollama | v1.2 | 4/4 | Complete | 2026-04-05 |
 | 25. CLI Integration | v1.2 | 3/3 | Complete | 2026-04-05 |
 | 26. Companion App AI Integration | v1.2 | 4/4 | Verified (human_needed) | 2026-04-06 |
-| 27. RAGAS Evaluation Harness | v1.2 | 0/1 | Not started | — |
+| 27. RAGAS Evaluation Harness | v1.2 | 1/1 | Verified (human_needed) | 2026-04-06 |

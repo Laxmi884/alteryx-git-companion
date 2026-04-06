@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: LLM Documentation
-status: verifying
-stopped_at: Phase 27 context gathered (discuss mode)
-last_updated: "2026-04-06T18:59:18.472Z"
-last_activity: 2026-04-06 -- Phase 26 verified (4/4 plans complete, 21 tests green, CORE-01 compliant)
+status: complete
+stopped_at: Phase 27 verified (human_needed — live LLM run required)
+last_updated: "2026-04-06T20:00:00.000Z"
+last_activity: 2026-04-06 -- Phase 27 verified; v1.2 milestone complete
 progress:
   total_phases: 15
   completed_phases: 15
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
-**Current focus:** Phase 26 — companion-app-ai-integration
+**Current focus:** v1.2 milestone complete — all 5 phases (23-27) verified
 
 ## Current Position
 
-Phase: 26 (companion-app-ai-integration) — VERIFIED (human_needed)
-Plan: 4 of 4 complete
-Status: Awaiting human verification (browser SSE streaming + first-commit UI)
-Last activity: 2026-04-06 -- Phase 26 verified (4/4 plans complete, 21 tests green, CORE-01 compliant)
+Phase: 27 (ragas-evaluation-harness) — VERIFIED
+Plan: 1 of 1
+Status: Phase 27 verified (human_needed). v1.2 milestone complete.
+Last activity: 2026-04-06 -- Phase 27 verified; v1.2 shipped
 
-Progress: [██░░░░░░░░] 20% (v1.2 — 1/5 phases complete)
+Progress: [██████████] 100% (v1.2 — 5/5 phases complete)
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Progress: [██░░░░░░░░] 20% (v1.2 — 1/5 phases complete)
 **Recent Trend:**
 
 - v1.1 complete (Phases 10-22)
-- v1.2 not started
+- v1.2 complete (Phases 23-27) — shipped 2026-04-06
 - Trend: —
 
 *Updated after each plan completion*
