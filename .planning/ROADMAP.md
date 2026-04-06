@@ -375,7 +375,7 @@ Plans:
   1. Running `python tests/eval/ragas_eval.py` against a set of reference workflows executes without errors and prints a `faithfulness` score (0.0–1.0) for each sample
   2. The harness uses `ContextBuilder` output as `retrieved_contexts` — confirming the evaluation measures grounding against structured data, not raw XML
   3. A README or docstring in `tests/eval/ragas_eval.py` documents how to run the harness, what score threshold is acceptable (>=0.8), and how to add new test samples
-**Plans**: 0 plans — NOT STARTED
+**Plans**: 1 plan
 
 Plans:
 - [ ] 27-01-PLAN.md — RAGAS eval harness: ragas_eval.py + ContextBuilder integration + sample fixtures + README
