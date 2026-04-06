@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { useAISummary } from '@/hooks/useAISummary'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface DiffViewerProps {
   sha: string
@@ -26,6 +29,12 @@ export function DiffViewer({
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [compareMode, setCompareMode] = useState<'previous' | 'main'>('previous')
+  const ai = useAISummary()
+
+  useEffect(() => {
+    ai.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sha, file, folder])
 
   useEffect(() => {
     let blobUrl: string | null = null
@@ -172,6 +181,94 @@ window.addEventListener('load', function() {
           </div>
         )}
       </div>
+
+      {/* AI summary panel — APPAI-02. Hidden for first commits per D-05. */}
+      {!isFirstCommit && (
+        <div
+          className="border-b px-4 py-3 bg-background shrink-0 min-h-[44px]"
+          role="status"
+          aria-live="polite"
+        >
+          {ai.status === 'idle' && (
+            <Button
+              size="sm"
+              onClick={() => ai.trigger(folder, sha, file)}
+            >
+              Generate AI summary
+            </Button>
+          )}
+
+          {ai.status === 'loading' && (
+            <div className="flex flex-col gap-1">
+              {ai.steps.slice(0, -1).map((step, i) => (
+                <p key={i} className="text-xs text-muted-foreground">
+                  {step}
+                </p>
+              ))}
+              <div className="flex items-center gap-2">
+                <div
+                  className="animate-spin border-2 border-primary/20 border-t-primary rounded-full w-4 h-4"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Loading...</span>
+                <p className="text-sm text-foreground">
+                  {ai.steps[ai.steps.length - 1] ?? 'Starting...'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {ai.status === 'result' && ai.narrative && (
+            <div className="flex flex-col gap-2">
+              <Card>
+                <CardContent className="pt-4">
+                  <p className="text-sm whitespace-pre-wrap">{ai.narrative}</p>
+                  {ai.risks.length > 0 && (
+                    <ul className="mt-3 text-xs text-muted-foreground list-disc pl-5">
+                      {ai.risks.map((risk, i) => (
+                        <li key={i}>{risk}</li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => ai.trigger(folder, sha, file)}
+                >
+                  Regenerate
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {ai.status === 'unavailable_no_extras' && (
+            <p className="text-sm text-muted-foreground">
+              AI summary unavailable — install LLM extras
+            </p>
+          )}
+
+          {ai.status === 'unavailable_no_model' && (
+            <p className="text-sm text-muted-foreground">
+              No LLM model configured
+            </p>
+          )}
+
+          {ai.status === 'error' && (
+            <p className="text-sm text-muted-foreground">
+              Summary failed{ai.errorDetail ? ` — ${ai.errorDetail}` : ''}.{' '}
+              <button
+                className="text-primary hover:underline"
+                onClick={() => ai.trigger(folder, sha, file)}
+              >
+                Retry
+              </button>
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Content area */}
       <div className="flex-1 relative overflow-hidden">
