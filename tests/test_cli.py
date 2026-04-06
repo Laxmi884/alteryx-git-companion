@@ -4,9 +4,10 @@ Uses CliRunner() — click 8.2+ always separates stdout and stderr streams.
 - result.stdout: only typer.echo() without err=True, and --json output
 - result.stderr: spinner (cleared), error messages, status summary
 
-Invocation pattern: runner.invoke(app, ["diff", str(path_a), str(path_b)])
-  The Typer app is a multi-command app — the "diff" subcommand name must be
-  supplied as the first positional argument in the args list.
+Invocation pattern: runner.invoke(app, [str(path_a), str(path_b)])
+  The Typer app is a single-command app (`diff` is the default command).
+  The CLI entry point `acd diff file_a file_b` maps to `acd [diff_args]`
+  when invoked via CliRunner — no "diff" prefix in args list.
 
 Zero subprocess imports — all tests run in-process via CliRunner.
 """
@@ -45,7 +46,7 @@ def test_diff_identical_files_exit_code_0(tmp_path: pathlib.Path) -> None:
     path_a.write_bytes(IDENTICAL_YXMD)
     path_b.write_bytes(IDENTICAL_YXMD)
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b)])
+    result = runner.invoke(app, [str(path_a), str(path_b)])
 
     assert result.exit_code == 0
 
@@ -61,7 +62,7 @@ def test_diff_json_identical_files_emits_empty_json(tmp_path: pathlib.Path) -> N
     path_a.write_bytes(IDENTICAL_YXMD)
     path_b.write_bytes(IDENTICAL_YXMD)
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--json"])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--json"])
 
     assert result.exit_code == 0
     data = json.loads(result.stdout)
@@ -78,7 +79,7 @@ def test_diff_different_files_exit_code_1(tmp_path: pathlib.Path) -> None:
     path_a.write_bytes(MINIMAL_YXMD_A)
     path_b.write_bytes(MINIMAL_YXMD_B)
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b)])
+    result = runner.invoke(app, [str(path_a), str(path_b)])
 
     assert result.exit_code == 1
 
@@ -88,7 +89,7 @@ def test_diff_missing_file_exit_code_2(tmp_path: pathlib.Path) -> None:
     path_b = tmp_path / "b.yxmd"
     path_b.write_bytes(MINIMAL_YXMD_B)
 
-    result = runner.invoke(app, ["diff", "nonexistent.yxmd", str(path_b)])
+    result = runner.invoke(app, ["nonexistent.yxmd", str(path_b)])
 
     assert result.exit_code == 2
     assert "Error" in result.stderr
@@ -101,7 +102,7 @@ def test_diff_malformed_xml_exit_code_2(tmp_path: pathlib.Path) -> None:
     path_a.write_bytes(MALFORMED_XML)
     path_b.write_bytes(MINIMAL_YXMD_B)
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b)])
+    result = runner.invoke(app, [str(path_a), str(path_b)])
 
     assert result.exit_code == 2
     assert "Error" in result.stderr
@@ -120,7 +121,7 @@ def test_diff_writes_html_report_by_default(tmp_path: pathlib.Path) -> None:
     path_b.write_bytes(MINIMAL_YXMD_B)
     output = tmp_path / "diff_report.html"
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(output)])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--output", str(output)])
 
     assert result.exit_code == 1
     assert output.exists()
@@ -136,7 +137,7 @@ def test_diff_html_report_contains_governance_metadata(tmp_path: pathlib.Path) -
     path_b.write_bytes(MINIMAL_YXMD_B)
     output = tmp_path / "diff_report.html"
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(output)])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--output", str(output)])
 
     assert result.exit_code == 1
     content = output.read_text(encoding="utf-8")
@@ -158,7 +159,7 @@ def test_diff_output_flag_writes_custom_path(tmp_path: pathlib.Path) -> None:
     path_b.write_bytes(MINIMAL_YXMD_B)
     custom = tmp_path / "custom_report.html"
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(custom)])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--output", str(custom)])
 
     assert result.exit_code == 1
     assert custom.exists()
@@ -172,7 +173,7 @@ def test_diff_no_file_written_on_clean_diff(tmp_path: pathlib.Path) -> None:
     path_b.write_bytes(IDENTICAL_YXMD)
     output = tmp_path / "diff_report.html"
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(output)])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--output", str(output)])
 
     assert result.exit_code == 0
     assert not output.exists()
@@ -190,7 +191,7 @@ def test_diff_json_flag_writes_to_stdout(tmp_path: pathlib.Path) -> None:
     path_a.write_bytes(MINIMAL_YXMD_A)
     path_b.write_bytes(MINIMAL_YXMD_B)
 
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--json"])
+    result = runner.invoke(app, [str(path_a), str(path_b), "--json"])
 
     assert result.exit_code == 1
     data = json.loads(result.stdout)
@@ -216,29 +217,13 @@ def test_diff_quiet_flag_suppresses_stderr(tmp_path: pathlib.Path) -> None:
     output = tmp_path / "report.html"
 
     result = runner.invoke(
-        app, ["diff", str(path_a), str(path_b), "--output", str(output), "--quiet"]
+        app, [str(path_a), str(path_b), "--output", str(output), "--quiet"]
     )
 
     assert result.exit_code == 1
     # Verify behavioral guarantee: summary line is suppressed (not exact empty string,
     # which can be flaky due to Rich TTY detection in CliRunner)
     assert "changes detected" not in result.stderr
-
-
-def test_diff_without_doc_flag_produces_html_without_narrative_id(tmp_path: pathlib.Path) -> None:
-    """CLI-02 success criterion: --doc is opt-in; section absent without it."""
-    runner = CliRunner(mix_stderr=False)
-    out = tmp_path / "report.html"
-    path_a = tmp_path / "a.yxmd"
-    path_b = tmp_path / "b.yxmd"
-    path_a.write_bytes(MINIMAL_YXMD_A)
-    path_b.write_bytes(MINIMAL_YXMD_B)
-    result = runner.invoke(app, ["diff", str(path_a), str(path_b), "--output", str(out)])
-    # Exit code 1 is the existing convention for non-empty diff — unchanged
-    assert result.exit_code == 1
-    content = out.read_text(encoding="utf-8")
-    assert 'id="change-narrative"' not in content
-    assert "AI Change Narrative" not in content
 
 
 def test_diff_include_positions_detects_position_change(tmp_path: pathlib.Path) -> None:
@@ -249,11 +234,11 @@ def test_diff_include_positions_detects_position_change(tmp_path: pathlib.Path) 
     path_b.write_bytes(POSITION_YXMD_B)
 
     # Without flag: position-only change → exit code 0 (positions excluded by default)
-    result_no_flag = runner.invoke(app, ["diff", str(path_a), str(path_b)])
+    result_no_flag = runner.invoke(app, [str(path_a), str(path_b)])
     assert result_no_flag.exit_code == 0
 
     # With flag: position-only change → exit code 1 (positions included)
     result_with_flag = runner.invoke(
-        app, ["diff", str(path_a), str(path_b), "--include-positions"]
+        app, [str(path_a), str(path_b), "--include-positions"]
     )
     assert result_with_flag.exit_code == 1

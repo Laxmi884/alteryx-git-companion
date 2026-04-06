@@ -1,36 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: LLM Documentation
+milestone: v1.1
+milestone_name: Alteryx Git Companion
 status: verifying
-stopped_at: Phase 26 context gathered (discuss mode)
-last_updated: "2026-04-05T22:10:08.614Z"
-last_activity: 2026-04-05
+stopped_at: Completed 260401-rd4-PLAN.md — fix yxmd double-extension detection and no-commits push guard
+last_updated: "2026-04-01T23:51:05.257Z"
+last_activity: 2026-04-01 - Completed quick task 260401-rd4: fix yxmd file not detected as change and push failing with connection error
 progress:
   total_phases: 15
   completed_phases: 15
   total_plans: 55
   completed_plans: 55
-  percent: 100
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-02)
+See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** Accurate detection of functional changes — zero false positives from layout noise, zero missed configuration changes.
-**Current focus:** Phase 25 — cli-integration
+**Current focus:** Phase 22 — html-report-redesign
 
 ## Current Position
 
-Phase: 25
+Phase: 22
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-05
+Last activity: 2026-03-28
 
-Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
+Progress: [░░░░░░░░░░] 0% (v1.1)
 
 ## Performance Metrics
 
@@ -48,8 +48,7 @@ Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
 
 **Recent Trend:**
 
-- v1.1 complete (Phases 10-22)
-- v1.2 not started
+- v1.1 not started
 - Trend: —
 
 *Updated after each plan completion*
@@ -107,12 +106,6 @@ Progress: [░░░░░░░░░░] 0% (v1.2 — 0/5 phases complete)
 | Phase 22-html-report-redesign P02 | 3 | 1 tasks | 1 files |
 | Phase 22 P01 | 217 | 1 tasks | 1 files |
 | Phase 22-html-report-redesign P03 | 5 | 2 tasks | 1 files |
-| Phase 23-llm-foundation P01 | 4 | 3 tasks | 7 files |
-| Phase 24 P01 | 149 | 2 tasks | 6 files |
-| Phase 24 P02 | 7 | 1 tasks | 2 files |
-| Phase 25 P01 | 4 | 4 tasks | 6 files |
-| Phase 25 P02 | 341 | 4 tasks | 4 files |
-| Phase 25 P03 | 6 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -126,12 +119,6 @@ Recent decisions affecting current work:
 - [Roadmap v1.1]: Phase 18 (CI Polish) targets separate repo (/Users/laxmikantmukkawar/alteryx/) — independent of desktop app phases
 - [Roadmap v1.1]: System tray / auto-start (Phase 15) placed after core save/history loop (Phases 13-14) — core value validated before deployment UX
 - [Roadmap v1.1]: Branch features (Phase 17) depend on Remote (Phase 16) — need a remote to push branches to
-- [Roadmap v1.2]: Phase numbering starts at 23 — continuous from v1.1 (ended at 22)
-- [Roadmap v1.2]: CORE-01 (optional [llm] extras) is Phase 23 — import guard and pyproject.toml wiring must be first; breaking the 252-test suite is the #1 risk
-- [Roadmap v1.2]: EVAL-01 (Ollama) grouped with Phase 24 (DocumentationGraph) — langchain-ollama is an [llm] extra; Ollama config is a provider variant of the same LLM boundary
-- [Roadmap v1.2]: APPAI-01/02 are their own phase (26) — companion app frontend/backend; depend on core LLM library (Phase 23-24) and CLI (Phase 25) being built first
-- [Roadmap v1.2]: EVAL-02 (RAGAS) is Phase 27 (last) — dev-only eval harness; requires everything else working to generate samples to evaluate
-- [Roadmap v1.2]: langchain version pin is ~=1.2 (not ~=0.3 as originally noted in PROJECT.md Key Decisions) — STACK.md research confirmed 1.2.14 is current production-stable as of April 2026
 - [Phase 10-app-scaffold]: SPAStaticFiles subclass required for SPA routing — Starlette StaticFiles(html=True) doesn't fall back to index.html for unknown paths
 - [Phase 10-app-scaffold]: pytest pythonpath=['.'] added so app/ package at repo root is importable alongside src/ layout
 - [Phase 10-app-scaffold]: shadcn@latest init --defaults incompatible with Vite 8 — manual setup of components.json, lib/utils.ts, and CSS required
@@ -248,36 +235,21 @@ Recent decisions affecting current work:
 - [Phase 22]: Theme system uses html.light class (not data-theme): dark on :root default, light overrides on html.light
 - [Phase 22]: expandAll/collapseAll fixed to query section-* container divs instead of h2 heading which has no .tool-row children
 - [Phase 22-html-report-redesign]: No code changes required — Plans 01 and 02 integrated cleanly with zero test failures on first run
-- [Phase 23-llm-foundation]: ContextBuilder uses static methods (pure data transformation, no state needed)
-- [Phase 23-llm-foundation]: topology.connections intentionally duplicates top-level connections (D-07) for LLM locality
-- [Phase 23-llm-foundation]: test_context_builder.py uses pytest.importorskip('langchain') — skips without extras, runs in llm CI job
-- [Phase 24]: WorkflowDocumentation has exactly 5 fields (no assumptions field) per D-03; strip_noise applied only in build_from_workflow
-- [Phase 24]: DocState uses TypedDict (not Pydantic BaseModel) for LangGraph state per D-09
-- [Phase 24]: generate_documentation retry spreads initial_state as base (not previous state) to prevent stale intermediate data per Pitfall 4
-- [Phase 24]: asyncio.run() used in async LLM tests (no pytest-asyncio); consistent with test_watch.py pattern
-- [Phase 25]: generate_change_narrative uses single structured LLM call (not LangGraph) -- diff context is compact enough for single-shot
-- [Phase 25]: id=change-narrative is load-bearing in HTMLRenderer output -- Plan 03 tests assert its presence/absence
-- [Phase 25]: Patched generate_documentation at source module (alteryx_diff.llm.doc_graph) not at cli module due to deferred import inside document() function body (CORE-01 compliance)
-- [Phase 25]: Used sys.modules injection for langchain_ollama mock to handle environments without langchain_ollama installed
-- [Phase 25]: Narrative gated after result.is_empty early exit (Pitfall 5 compliance)
 
 ### Roadmap Evolution
 
 - Phase 16.1 inserted after Phase 16: Git history UX with push integration and git graph view (URGENT)
 - Phase 18.1 inserted after Phase 18: Creation of PR (URGENT)
-- v1.2 roadmap created 2026-04-03: Phases 23-27 defined
 
 ### Pending Todos
 
 - Validate GUID_VALUE_KEYS against real .yxmd files (tech debt from v1.0)
 - Wire JSONRenderer into CLI --json path or document _cli_json_output() schema as stable (tech debt from v1.0)
-- Update PROJECT.md Key Decisions: langchain version pin is ~=1.2 (not ~=0.3) per STACK.md research
 
 ### Blockers/Concerns
 
 - PyInstaller .exe may trigger Windows Defender SmartScreen — plan for code signing or user-facing bypass instructions in Phase 10
 - watchdog has known issues with SMB/network drives — Phase 12 must explicitly test or document fallback behavior
-- Phase 23 (CORE-01): NOT importing from alteryx_diff.llm.* at module top level anywhere in the existing codebase is the #1 risk — a single accidental top-level import will break the 252-test suite for users without [llm] extras
 
 ### Quick Tasks Completed
 
@@ -287,6 +259,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-05T22:10:08.610Z
-Stopped at: Phase 26 context gathered (discuss mode)
-Resume file: .planning/phases/26-companion-app-ai-integration/26-CONTEXT.md
+Last session: 2026-04-01T23:51:05.250Z
+Stopped at: Completed 260401-rd4-PLAN.md — fix yxmd double-extension detection and no-commits push guard
+Resume file: None
