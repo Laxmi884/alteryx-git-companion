@@ -17,20 +17,24 @@ Usage:
     export OPENROUTER_API_KEY=your-key
     python tests/eval/ragas_eval.py
 
+    # Evaluate specific .yxmd files in addition to built-in fixtures:
+    python tests/eval/ragas_eval.py --workflow "/path/to/Sales Analysis.yxmd"
+    python tests/eval/ragas_eval.py --workflow a.yxmd --workflow b.yxmd
+
 Threshold: faithfulness >= 0.8 is considered passing.
 Scores are reported per-sample and as a mean. The script does NOT
 fail on threshold miss — it reports and the developer decides.
 
 Adding samples:
-    1. Define a new XML bytes constant in the FIXTURES list below
-    2. Give it a descriptive stem name
-    3. Re-run the script
+    1. Pass --workflow /path/to/file.yxmd at the command line, or
+    2. Define a new XML bytes constant in the FIXTURES list below
 
 Requires: pip install 'alteryx-diff[llm]'
 """
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import os
@@ -262,7 +266,7 @@ def _context_to_strings(context_dict: dict) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:
+def main(extra_fixtures: list[tuple[str, bytes]] | None = None) -> None:
     """Run the RAGAS evaluation harness.
 
     All LLM and RAGAS imports happen inside this function so the module is
@@ -300,16 +304,18 @@ def main() -> None:
     critic_base = _build_llm_from_env("RAGAS_CRITIC_MODEL", required=False) or generator_llm
     critic_llm = LangchainLLMWrapper(critic_base)
 
+    all_fixtures = FIXTURES + (extra_fixtures or [])
+
     print("=== RAGAS Evaluation Harness ===\n")
     print(f"Generator LLM: {os.environ['ACD_LLM_MODEL']}")
     critic_model = os.environ.get("RAGAS_CRITIC_MODEL", "(same as generator)")
     print(f"Critic LLM:    {critic_model}")
-    print(f"Samples:       {len(FIXTURES)}")
+    print(f"Samples:       {len(all_fixtures)}")
     print(f"Threshold:     faithfulness >= {FAITHFULNESS_THRESHOLD}\n")
 
     # Build samples — run each fixture through the full pipeline
     samples = []
-    for stem, xml_bytes in FIXTURES:
+    for stem, xml_bytes in all_fixtures:
         print(f"Processing: {stem}...")
         context = _workflow_bytes_to_context(xml_bytes, stem)
         doc = asyncio.run(generate_documentation(context, generator_llm))
@@ -377,4 +383,22 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="RAGAS evaluation harness")
+    parser.add_argument(
+        "--workflow",
+        metavar="PATH",
+        action="append",
+        default=[],
+        help="Path to a .yxmd file to evaluate (can be repeated)",
+    )
+    args = parser.parse_args()
+
+    extra: list[tuple[str, bytes]] = []
+    for wf_path in args.workflow:
+        p = pathlib.Path(wf_path)
+        if not p.exists():
+            print(f"Error: workflow file not found: {p}", file=sys.stderr)
+            sys.exit(1)
+        extra.append((p.stem, p.read_bytes()))
+
+    main(extra_fixtures=extra)
