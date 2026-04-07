@@ -274,10 +274,14 @@ def main() -> None:
     try:
         from dotenv import load_dotenv
 
-        _env_file = pathlib.Path(__file__).parent / ".env"
-        if _env_file.exists():
-            load_dotenv(_env_file)
-            print(f"Loaded env from {_env_file}")
+        # Search order: tests/eval/.env → project root .env
+        _here = pathlib.Path(__file__).parent
+        _root = _here.parent.parent
+        for _env_file in (_here / ".env", _root / ".env"):
+            if _env_file.exists():
+                load_dotenv(_env_file)
+                print(f"Loaded env from {_env_file}")
+                break
     except ImportError:
         pass  # python-dotenv not installed — fall back to shell env vars
 
@@ -344,6 +348,32 @@ def main() -> None:
         f"(threshold: >={FAITHFULNESS_THRESHOLD})  [{status}]"
     )
     print(f"Mean answer_relevancy:  {mean_rel:.3f}")
+
+    # Save results to tests/eval/results/<timestamp>.json
+    import datetime
+
+    results_dir = pathlib.Path(__file__).parent / "results"
+    results_dir.mkdir(exist_ok=True)
+    ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    results_path = results_dir / f"{ts}.json"
+    results_payload = {
+        "timestamp": ts,
+        "generator": os.environ.get("ACD_LLM_MODEL", "unknown"),
+        "critic": os.environ.get("RAGAS_CRITIC_MODEL", "(same as generator)"),
+        "threshold": FAITHFULNESS_THRESHOLD,
+        "status": status,
+        "summary": {"faithfulness": round(mean_faith, 4), "answer_relevancy": round(mean_rel, 4)},
+        "samples": [
+            {
+                "sample": i + 1,
+                "faithfulness": round(row.get("faithfulness", float("nan")), 4),
+                "answer_relevancy": round(row.get("answer_relevancy", float("nan")), 4),
+            }
+            for i, row in result_df.iterrows()
+        ],
+    }
+    results_path.write_text(json.dumps(results_payload, indent=2), encoding="utf-8")
+    print(f"\nResults saved → {results_path}")
 
 
 if __name__ == "__main__":

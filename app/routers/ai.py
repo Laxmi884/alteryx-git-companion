@@ -168,13 +168,13 @@ async def ai_summary(folder: str, sha: str, file: str, request: Request):
                 f"## Data Flow\n\n{_fmt(workflow_doc.data_flow)}\n\n"
                 f"## Outputs\n\n{_fmt(workflow_doc.outputs)}\n\n"
                 f"## Data Dictionary\n\n{_fmt(workflow_doc.data_dictionary)}\n\n"
-                f"## Tool Inventory\n\n{_fmt(workflow_doc.tool_inventory)}\n\n"
                 f"## Dependencies\n\n{_fmt(workflow_doc.dependencies)}\n\n"
                 "## Configuration Notes\n\n"
                 f"{_fmt(workflow_doc.configuration_notes)}\n\n"
                 f"## Execution Guide\n\n{_fmt(workflow_doc.execution_guide)}\n\n"
                 f"## Error Handling\n\n{_fmt(workflow_doc.error_handling)}\n\n"
-                f"## Risks & Considerations\n\n{risks_md}\n"
+                f"## Risks & Considerations\n\n{risks_md}\n\n"
+                f"## Tool Inventory\n\n{_fmt(workflow_doc.tool_inventory)}\n"
             )
 
             # Save to workflow directory
