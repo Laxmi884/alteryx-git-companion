@@ -266,7 +266,13 @@ def _context_to_strings(context_dict: dict) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def main(extra_fixtures: list[tuple[str, bytes]] | None = None) -> None:
+def main(
+    extra_fixtures: list[tuple[str, bytes]] | None = None,
+    prebuilt_samples: list[tuple[str, bytes, str]] | None = None,
+) -> None:
+    """extra_fixtures: (stem, xml_bytes) — generate doc then score.
+    prebuilt_samples: (stem, xml_bytes, existing_doc_text) — skip generation, score directly.
+    """
     """Run the RAGAS evaluation harness.
 
     All LLM and RAGAS imports happen inside this function so the module is
@@ -299,30 +305,47 @@ def main(extra_fixtures: list[tuple[str, bytes]] | None = None) -> None:
     from ragas.llms import LangchainLLMWrapper  # type: ignore[import-not-found]
     from ragas.metrics import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
 
+    all_fixtures = FIXTURES + (extra_fixtures or [])
+    all_prebuilt = prebuilt_samples or []
+    needs_generator = bool(all_fixtures)
+
     # Build LLMs (per D-04: separate generator and critic roles)
-    generator_llm = _build_llm_from_env("ACD_LLM_MODEL", required=True)
+    generator_llm = _build_llm_from_env("ACD_LLM_MODEL", required=needs_generator)
     critic_base = _build_llm_from_env("RAGAS_CRITIC_MODEL", required=False) or generator_llm
     critic_llm = LangchainLLMWrapper(critic_base)
 
-    all_fixtures = FIXTURES + (extra_fixtures or [])
-
     print("=== RAGAS Evaluation Harness ===\n")
-    print(f"Generator LLM: {os.environ['ACD_LLM_MODEL']}")
+    if needs_generator:
+        print(f"Generator LLM: {os.environ['ACD_LLM_MODEL']}")
+    else:
+        print("Generator LLM: (skipped — using pre-built docs)")
     critic_model = os.environ.get("RAGAS_CRITIC_MODEL", "(same as generator)")
     print(f"Critic LLM:    {critic_model}")
-    print(f"Samples:       {len(all_fixtures)}")
+    print(f"Samples:       {len(all_fixtures) + len(all_prebuilt)}")
     print(f"Threshold:     faithfulness >= {FAITHFULNESS_THRESHOLD}\n")
 
     # Build samples — run each fixture through the full pipeline
     samples = []
     for stem, xml_bytes in all_fixtures:
-        print(f"Processing: {stem}...")
+        print(f"Processing (generate): {stem}...")
         context = _workflow_bytes_to_context(xml_bytes, stem)
         doc = asyncio.run(generate_documentation(context, generator_llm))
         samples.append(
             {
                 "user_input": "Document this Alteryx workflow.",
                 "response": doc.model_dump_json(),
+                "retrieved_contexts": _context_to_strings(context),
+            }
+        )
+
+    # Pre-built samples — skip generation, score existing doc directly
+    for stem, xml_bytes, doc_text in all_prebuilt:
+        print(f"Processing (pre-built): {stem}...")
+        context = _workflow_bytes_to_context(xml_bytes, stem)
+        samples.append(
+            {
+                "user_input": "Document this Alteryx workflow.",
+                "response": doc_text,
                 "retrieved_contexts": _context_to_strings(context),
             }
         )
@@ -389,16 +412,48 @@ if __name__ == "__main__":
         metavar="PATH",
         action="append",
         default=[],
-        help="Path to a .yxmd file to evaluate (can be repeated)",
+        help="Path to a .yxmd file — generates doc then scores it (can be repeated)",
+    )
+    parser.add_argument(
+        "--doc",
+        metavar="PATH",
+        action="append",
+        default=[],
+        help=(
+            "Path to an existing doc (.md) paired with its .yxmd via --workflow "
+            "(skips generation, scores existing doc). "
+            "Must be specified the same number of times as --workflow when used."
+        ),
     )
     args = parser.parse_args()
 
-    extra: list[tuple[str, bytes]] = []
-    for wf_path in args.workflow:
-        p = pathlib.Path(wf_path)
-        if not p.exists():
-            print(f"Error: workflow file not found: {p}", file=sys.stderr)
-            sys.exit(1)
-        extra.append((p.stem, p.read_bytes()))
+    if args.doc and len(args.doc) != len(args.workflow):
+        print(
+            "Error: --doc requires exactly one --workflow per --doc.\n"
+            f"Got {len(args.workflow)} --workflow and {len(args.doc)} --doc.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
-    main(extra_fixtures=extra)
+    extra: list[tuple[str, bytes]] = []
+    prebuilt: list[tuple[str, bytes, str]] = []
+
+    if args.doc:
+        # Score existing docs — pair each --workflow with its --doc
+        for wf_path, doc_path in zip(args.workflow, args.doc):
+            wf = pathlib.Path(wf_path)
+            doc = pathlib.Path(doc_path)
+            for p, label in ((wf, "--workflow"), (doc, "--doc")):
+                if not p.exists():
+                    print(f"Error: {label} file not found: {p}", file=sys.stderr)
+                    sys.exit(1)
+            prebuilt.append((wf.stem, wf.read_bytes(), doc.read_text(encoding="utf-8")))
+    else:
+        for wf_path in args.workflow:
+            p = pathlib.Path(wf_path)
+            if not p.exists():
+                print(f"Error: workflow file not found: {p}", file=sys.stderr)
+                sys.exit(1)
+            extra.append((p.stem, p.read_bytes()))
+
+    main(extra_fixtures=extra, prebuilt_samples=prebuilt)
