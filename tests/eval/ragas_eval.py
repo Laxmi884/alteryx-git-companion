@@ -303,7 +303,10 @@ def main(
     from ragas import evaluate  # type: ignore[import-not-found]
     from ragas.dataset_schema import EvaluationDataset  # type: ignore[import-not-found]
     from ragas.llms import LangchainLLMWrapper  # type: ignore[import-not-found]
-    from ragas.metrics import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
+    try:
+        from ragas.metrics.collections import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
+    except ImportError:
+        from ragas.metrics import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
 
     all_fixtures = FIXTURES + (extra_fixtures or [])
     all_prebuilt = prebuilt_samples or []
@@ -313,6 +316,14 @@ def main(
     generator_llm = _build_llm_from_env("ACD_LLM_MODEL", required=needs_generator)
     critic_base = _build_llm_from_env("RAGAS_CRITIC_MODEL", required=False) or generator_llm
     critic_llm = LangchainLLMWrapper(critic_base)
+
+    # AnswerRelevancy requires OpenAI embeddings — skip if no OPENAI_API_KEY
+    has_openai_key = bool(os.environ.get("OPENAI_API_KEY"))
+    metrics = [Faithfulness()]
+    if has_openai_key:
+        metrics.append(AnswerRelevancy())
+    else:
+        print("Note: OPENAI_API_KEY not set — skipping AnswerRelevancy (needs OpenAI embeddings). Only Faithfulness will be scored.\n")
 
     print("=== RAGAS Evaluation Harness ===\n")
     if needs_generator:
@@ -356,7 +367,7 @@ def main(
     dataset = EvaluationDataset.from_list(samples)
     result = evaluate(
         dataset=dataset,
-        metrics=[Faithfulness(), AnswerRelevancy()],
+        metrics=metrics,
         llm=critic_llm,
     )
 
