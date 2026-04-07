@@ -303,10 +303,7 @@ def main(
     from ragas import evaluate  # type: ignore[import-not-found]
     from ragas.dataset_schema import EvaluationDataset  # type: ignore[import-not-found]
     from ragas.llms import LangchainLLMWrapper  # type: ignore[import-not-found]
-    try:
-        from ragas.metrics.collections import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
-    except ImportError:
-        from ragas.metrics import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
+    from ragas.metrics import AnswerRelevancy, Faithfulness  # type: ignore[import-not-found]
 
     all_fixtures = FIXTURES + (extra_fixtures or [])
     all_prebuilt = prebuilt_samples or []
@@ -364,30 +361,37 @@ def main(
     print(f"\nRunning RAGAS evaluation ({len(samples)} samples)...\n")
 
     # Evaluate faithfulness + answer_relevancy (per D-06)
+    # Timeout raised to 300s per sample — large docs require many LLM calls
+    from ragas.run_config import RunConfig  # type: ignore[import-not-found]
+
     dataset = EvaluationDataset.from_list(samples)
     result = evaluate(
         dataset=dataset,
         metrics=metrics,
         llm=critic_llm,
+        run_config=RunConfig(timeout=300, max_retries=3),
     )
 
     # Print per-sample and summary results (per D-07)
     result_df = result.to_pandas()
+    has_relevancy = "answer_relevancy" in result_df.columns
     print("--- Per-Sample Results ---")
     for i, row in result_df.iterrows():
         faithfulness = row.get("faithfulness", float("nan"))
-        relevancy = row.get("answer_relevancy", float("nan"))
-        print(f"  Sample {i+1}: faithfulness={faithfulness:.3f}  answer_relevancy={relevancy:.3f}")
+        line = f"  Sample {i+1}: faithfulness={faithfulness:.3f}"
+        if has_relevancy:
+            line += f"  answer_relevancy={row.get('answer_relevancy', float('nan')):.3f}"
+        print(line)
 
     mean_faith = result_df["faithfulness"].mean()
-    mean_rel = result_df["answer_relevancy"].mean()
     status = "PASS" if mean_faith >= FAITHFULNESS_THRESHOLD else "BELOW THRESHOLD"
     print(f"\n--- Summary ---")
     print(
         f"Mean faithfulness:      {mean_faith:.3f}  "
         f"(threshold: >={FAITHFULNESS_THRESHOLD})  [{status}]"
     )
-    print(f"Mean answer_relevancy:  {mean_rel:.3f}")
+    if has_relevancy:
+        print(f"Mean answer_relevancy:  {result_df['answer_relevancy'].mean():.3f}")
 
     # Save results to tests/eval/results/<timestamp>.json
     import datetime
@@ -402,12 +406,15 @@ def main(
         "critic": os.environ.get("RAGAS_CRITIC_MODEL", "(same as generator)"),
         "threshold": FAITHFULNESS_THRESHOLD,
         "status": status,
-        "summary": {"faithfulness": round(mean_faith, 4), "answer_relevancy": round(mean_rel, 4)},
+        "summary": {
+            "faithfulness": round(mean_faith, 4),
+            **({"answer_relevancy": round(result_df["answer_relevancy"].mean(), 4)} if has_relevancy else {}),
+        },
         "samples": [
             {
                 "sample": i + 1,
                 "faithfulness": round(row.get("faithfulness", float("nan")), 4),
-                "answer_relevancy": round(row.get("answer_relevancy", float("nan")), 4),
+                **({"answer_relevancy": round(row.get("answer_relevancy", float("nan")), 4)} if has_relevancy else {}),
             }
             for i, row in result_df.iterrows()
         ],
