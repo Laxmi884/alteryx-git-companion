@@ -114,18 +114,31 @@ def build_doc_graph(llm: BaseChatModel) -> CompiledStateGraph:
         system_msg = SystemMessage(
             content=(
                 "You are a technical documentation assistant for Alteryx workflows. "
-                "Only use information from the provided context —"
-                " never invent tool names, IDs, or behaviors not present in the data. "
-                "Produce a one-sentence role for each tool describing what it does"
-                " in context."
+                "Only use information from the provided context — "
+                "never invent tool names, IDs, or behaviors not present in the data.\n"
+                "Rules:\n"
+                "1. Set tool_type to the EXACT tool_type string from the tools list — "
+                "copy it character-for-character. Never substitute anchor names "
+                "(Output, Input, Left, Right, Join, True, False) for tool_type.\n"
+                "2. Only describe what the config explicitly shows. "
+                "Do not infer connection strings, database schemas, query details, "
+                "or file formats beyond what is in the config.\n"
+                "3. Describe the tool's specific role in this workflow using actual "
+                "config values (expressions, aliases, modes, field names) — "
+                "not generic descriptions of what the tool type does."
             )
         )
+        # Build a compact type reference so the LLM copies types accurately.
+        type_ref = ", ".join(f"{t['tool_id']}={t['tool_type']}" for t in tools)
         human_msg = HumanMessage(
             content=(
                 f"Topology context:\n{topology_notes}\n\n"
                 f"Tools:\n{json.dumps(tools, indent=2)}\n\n"
-                "For each tool, describe its role in one sentence based on its"
-                " tool_type and config."
+                f"Required tool_type values (copy exactly): {type_ref}\n\n"
+                "For each tool: set tool_id and tool_type exactly as listed above, "
+                "then write a one-sentence role based solely on the actual config "
+                "values (expressions, aliases, modes, field names). "
+                "Do not guess values that are absent from the config."
             )
         )
 
@@ -155,18 +168,25 @@ def build_doc_graph(llm: BaseChatModel) -> CompiledStateGraph:
         system_msg = SystemMessage(
             content=(
                 "You are a data quality and workflow reliability expert. "
-                "Only identify risks from the provided workflow context — "
-                "do not invent issues not grounded in the data. "
-                "Return a JSON array of strings, each describing one production concern."  # noqa: E501
+                "Only identify risks that are directly evidenced by the provided "
+                "workflow configuration — do not add generic best-practice advice "
+                "(no monitoring, logging, retry, or permissions warnings unless the "
+                "config explicitly shows a gap). "
+                "Each risk must cite the specific tool ID or config value that "
+                "motivates it. "
+                "Return a JSON array of strings, each describing one production"
+                " concern."
             )
         )
         human_msg = HumanMessage(
             content=(
                 f"Topology:\n{topology_notes}\n\n"
                 f"Workflow context:\n{json.dumps(context, indent=2)}\n\n"
-                "List production risks: data quality issues, missing error handling, "
-                "config gotchas, or potential failure points. "
-                "Return as a JSON array of strings."
+                "List only risks grounded in the actual config: missing error paths, "
+                "hardcoded file paths, filter conditions that may produce empty"
+                " output, join modes that may drop records, or outputs with no"
+                " downstream sink. Return as a JSON array of strings. "
+                "If no grounded risks exist, return an empty array []."
             )
         )
 
@@ -187,11 +207,21 @@ def build_doc_graph(llm: BaseChatModel) -> CompiledStateGraph:
 
         system_content = (
             "You are a technical documentation writer for Alteryx workflows. "
-            "Only use information from the provided context —"
-            " never invent workflow names, "
-            "tool types, configurations, or behaviors not present in the data. "
-            "Generate complete, accurate documentation based solely on the"
-            " analysis provided."
+            "Generate documentation based solely on the provided analysis — "
+            "never invent workflow names, tool IDs, tool types, field names, "
+            "expressions, file paths, or behaviors not present in the data.\n"
+            "Rules:\n"
+            "1. workflow_name must be taken verbatim from the context.\n"
+            "2. In tool_notes, copy tool_id and tool_type exactly from the tool "
+            "annotations — never use connection anchor names (Output, Input, Left, "
+            "Right, Join, True, False) as tool_type.\n"
+            "3. data_flow must follow the actual connections: describe tools in "
+            "source-to-sink order as shown in the topology, referencing tool IDs.\n"
+            "4. Do not infer schema, query, or connection details beyond what is "
+            "explicitly in the config. If a value is absent, omit it rather than"
+            " guess.\n"
+            "5. risks must reference specific tool IDs or config values — no generic "
+            "advice."
         )
         if validation_error:
             system_content += (

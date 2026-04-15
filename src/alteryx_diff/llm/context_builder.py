@@ -1,7 +1,8 @@
-"""ContextBuilder: transforms WorkflowDoc/DiffResult into token-efficient dicts for LLM consumption.
+"""ContextBuilder: transforms WorkflowDoc/DiffResult into token-efficient dicts.
 
 No LLM imports here — only alteryx_diff.models and networkx.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -43,7 +44,9 @@ def _compute_topology(doc: WorkflowDoc) -> dict[str, Any]:
 
 
 class ContextBuilder:
-    """Transforms WorkflowDoc and DiffResult dataclasses into token-efficient JSON dicts."""
+    """Transforms WorkflowDoc and DiffResult dataclasses into token-efficient JSON
+    dicts.
+    """
 
     @staticmethod
     def build_from_workflow(doc: WorkflowDoc) -> dict[str, Any]:
@@ -57,7 +60,7 @@ class ContextBuilder:
         tools = [
             {
                 "tool_id": int(node.tool_id),
-                "tool_type": node.tool_type,
+                "tool_type": node.tool_type or "Unknown",
                 "config": strip_noise(node.config),
             }
             for node in doc.nodes
@@ -111,7 +114,9 @@ class ContextBuilder:
             {
                 "tool_id": int(nd.tool_id),
                 "tool_type": nd.new_node.tool_type,
-                "field_diffs": {field: list(vals) for field, vals in nd.field_diffs.items()},
+                "field_diffs": {
+                    field: list(vals) for field, vals in nd.field_diffs.items()
+                },
             }
             for nd in result.modified_nodes
         ]
