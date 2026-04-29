@@ -38,7 +38,7 @@ acd = "alteryx_git_companion.cli:app"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
+    "pytest>=9.0.3",
     "mypy>=1.15",
     "lxml-stubs>=0.5",
     "ruff>=0.15",
