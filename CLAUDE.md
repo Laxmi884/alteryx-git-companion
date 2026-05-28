@@ -1,5 +1,9 @@
 # Alteryx Git Companion — Claude Code Instructions
 
+## Session Start
+
+Always invoke the `claude-mem:smart-explore` skill before your first response in any session.
+
 ## Release Workflow (GitHub Actions)
 
 The release workflow (`.github/workflows/release.yml`) builds `AlterxyGitCompanion.exe` on a Windows runner and uploads it to GitHub Releases.
